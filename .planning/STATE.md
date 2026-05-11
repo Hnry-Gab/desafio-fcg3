@@ -6,7 +6,7 @@ status: completed
 last_updated: "2026-05-10T01:03:34.132Z"
 last_activity: 2026-05-10
 progress:
-  total_phases: 7
+  total_phases: 8
   completed_phases: 2
   total_plans: 16
   completed_plans: 16
@@ -47,6 +47,7 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 | 22 | FCM Push Notifications | Improvements | Phases 20, 21 |
 | 23 | New Features | Features | — |
 | 24 | UI Polish & Integration | Polish | — (depends on all) |
+| 25 | Melhorias FrontEnd | Polish | — (depends on Phase 24) |
 
 ## Architecture Constraints (non-negotiable)
 
@@ -58,6 +59,12 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - Two separate PostgreSQL drivers: `asyncpg` for FastAPI + MCP; `psycopg3` for LangChain service
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 25 added: Melhorias FrontEnd
+
+### Implementation Notes
 
 - v1.0 + v2.0 shipped: 17 phases, 77 plans, ~35,907 LOC
 - Flutter uses Riverpod + GoRouter + Dio with QueuedInterceptor
