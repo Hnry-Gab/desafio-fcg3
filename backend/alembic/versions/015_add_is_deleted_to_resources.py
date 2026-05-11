@@ -1,7 +1,7 @@
 """Add is_deleted column to resources table.
 
 Revision ID: 015a
-Revises: 014a
+Revises: 014c
 Create Date: 2026-05-09
 
 Adds is_deleted boolean column for true soft-delete (distinct from is_available toggle).
@@ -14,7 +14,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "015a"
-down_revision = "014a"
+down_revision = "014c"
 branch_labels = None
 depends_on = None
 

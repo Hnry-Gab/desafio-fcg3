@@ -1,7 +1,7 @@
 """Add rag_logs table for RAG observability.
 
-Revision ID: 014a
-Revises: 013a
+Revision ID: 014b
+Revises: 014a
 Create Date: 2026-05-09 03:32:00
 
 Stores per-invocation RAG metadata (query, retrieved chunks with scores,
@@ -15,8 +15,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 # revision identifiers, used by Alembic.
-revision = "014a"
-down_revision = "013a"
+revision = "014b"
+down_revision = "014a"
 branch_labels = None
 depends_on = None
 

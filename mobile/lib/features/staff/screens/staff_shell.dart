@@ -46,7 +46,7 @@ class _StaffShellState extends ConsumerState<StaffShell> {
     if (location.startsWith(RoutePaths.staffDocuments)) return 3;
     if (location.startsWith(RoutePaths.staffResources)) return 4;
     if (location.startsWith(RoutePaths.staffGestao)) return 5;
-    if (location.startsWith(RoutePaths.staffCadastro)) return 5;
+    if (location.startsWith(RoutePaths.staffCadastro)) return 6;
     return 0;
   }
 
@@ -64,6 +64,7 @@ class _StaffShellState extends ConsumerState<StaffShell> {
         context.go(RoutePaths.staffResources);
       case 5:
         context.go(RoutePaths.staffGestao);
+      case 6:
         context.go(RoutePaths.staffCadastro);
     }
   }
@@ -108,6 +109,8 @@ class _StaffShellState extends ConsumerState<StaffShell> {
       icon: Icon(Icons.admin_panel_settings_outlined),
       selectedIcon: Icon(Icons.admin_panel_settings),
       label: Text('Gestão'),
+    ),
+    NavigationRailDestination(
       icon: Icon(Icons.people_outline),
       selectedIcon: Icon(Icons.people),
       label: Text('Alunos'),
