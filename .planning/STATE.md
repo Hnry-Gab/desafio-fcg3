@@ -3,31 +3,31 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
 status: executing
-last_updated: "2026-05-11T15:08:45.074Z"
-last_activity: 2026-05-11 -- Phase 25 planning complete
+last_updated: "2026-05-11T15:28:05.720Z"
+last_activity: 2026-05-11
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 20
-  completed_plans: 16
-  percent: 80
+  completed_plans: 17
+  percent: 85
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 20
-Plan: Not started
+Phase: 25 (melhorias-frontend) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-05-11 -- Phase 25 planning complete
+Last activity: 2026-05-11 -- Completed 25-01 (light mode contrast + desktop nav cleanup)
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação acadêmica — com ações concretas executadas em tempo real.
-**Current focus:** Phase 19 — staff-ux-corrections
+**Current focus:** Phase 25 — melhorias-frontend
 
 ## Milestones Shipped
 
@@ -130,6 +130,9 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **19-09:** StaffStudentModel @JsonKey maps ra→registration_number, semester as int (not String)
 - **19-09:** Backend StudentListItem includes phone field
 - **19-09:** Cadastro form removes address/campus (don't exist in DB), sends registration_number/semester
+- **25-01:** Light primary changed from #00E5FF to #00695C for WCAG AA compliance (~5.6:1 contrast)
+- **25-01:** Desktop NavigationRail ghost Suporte destination removed (4 items now match mobile nav)
+- **25-01:** Logo brightness-adaptive behavior verified — no changes needed (Phase 17 implementation correct)
 
 ## Session Continuity
 
