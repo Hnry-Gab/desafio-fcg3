@@ -4,7 +4,7 @@
 
 - **v1.0 Backend + AI + MCP** — Phases 1-6 (shipped 2026-05-04)
 - **v2.0 Flutter Frontend** — Phases 7-17 (shipped 2026-05-07)
-- 🚧 **v3.0 Correções, Melhorias & Features** — Phases 18-24 (in progress)
+- 🚧 **v3.0 Correções, Melhorias & Features** — Phases 18-25 (in progress)
 
 ---
 
@@ -76,6 +76,7 @@ GROUP 4 — Polish (depends on all above):
 - [ ] **Phase 22: FCM Push Notifications** - End-to-end push infrastructure (backend + Flutter)
 - [ ] **Phase 23: New Features** - Cardápio semanal, perfil do aluno, grade curricular
 - [ ] **Phase 24: UI Polish & Integration** - Splash screen, dashboard metrics, end-to-end coherence
+- [ ] **Phase 25: Melhorias FrontEnd** - Correções de UI/UX (overflow, contraste, fontes, favicon, logo, datas, gramática)
 
 ## Phase Details
 
@@ -195,6 +196,29 @@ Plans:
 **Plans**: TBD
 **UI hint**: yes
 
+### Phase 25: Melhorias FrontEnd
+
+**Goal:** Corrigir problemas visuais e de UX reportados: overflow de pixels, contraste claro/escuro, tamanho de fontes, favicon próprio, logo Alpha, formato de datas, erros gramaticais, e ícone de suporte removido
+**Depends on:** Phase 24
+**Requirements**: D-01, D-02, D-03, D-04, D-05, D-06, D-07, D-08, D-09, D-10, D-11, D-12, D-13, D-14, D-15, D-16, D-17, D-18, D-19, D-20, D-21, D-22, D-23, D-24, D-25, D-26
+**Success Criteria** (what must be TRUE):
+  1. Nenhum overflow de pixels visível em qualquer tela (desktop, iPhone SE)
+  2. Contraste adequado de ícones e fontes em ambos os modos (Light e Dark)
+  3. Favicon próprio substituindo o default do Flutter
+  4. Logo Alpha com tamanho e visual adequados em ambos os modos
+  5. Formato de data explícito (sem ambiguidade com contagem de fase)
+  6. Erros gramaticais corrigidos; textos atualizados ("Requer Aprovação")
+  7. Ícone de Suporte removido da navbar no modo desktop
+**Plans:** 4 plans
+
+Plans:
+- [ ] 25-01-PLAN.md — Light mode contrast fix + support icon removal + logo verification
+- [ ] 25-02-PLAN.md — Favicon & web branding (icons, manifest, meta)
+- [ ] 25-03-PLAN.md — Date formatting utility + refactor 13 screens
+- [ ] 25-04-PLAN.md — Pixel overflow fixes + font sizes + grammar corrections
+
+**UI hint**: yes
+
 ---
 
 ## Progress
@@ -214,7 +238,8 @@ Plans:
 | 22. FCM Push Notifications | v3.0 | 0/TBD | Not started | - |
 | 23. New Features | v3.0 | 0/TBD | Not started | - |
 | 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |
+| 25. Melhorias FrontEnd | v3.0 | 0/4 | Planned | - |
 
 ---
 
-**Total project:** 24 phases across 3 milestones.
+**Total project:** 25 phases across 3 milestones.
