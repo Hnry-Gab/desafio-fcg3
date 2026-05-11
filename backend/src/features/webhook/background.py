@@ -31,8 +31,9 @@ logger = logging.getLogger(__name__)
 _session_locks: dict[str, asyncio.Lock] = {}
 
 FALLBACK_MESSAGE = (
-    "Desculpe, estou com dificuldades tecnicas. "
-    "Tente novamente em alguns minutos."
+    "Opa, tive um probleminha tecnico agora. "
+    "Tente novamente em alguns minutos ou procure a secretaria. "
+    "Desculpe pelo inconveniente!"
 )
 
 # Escalation constants (HI-01)
@@ -45,7 +46,10 @@ ESCALATION_BOT_PHRASES = [
     "secretaria presencialmente",
     "entrar em contato com a secretaria",
 ]
-ESCALATION_ACK_MESSAGE = "Vou transferir voce para um atendente. Aguarde um momento."
+ESCALATION_ACK_MESSAGE = (
+    "Entendo! Vou te conectar com um atendente da secretaria "
+    "que vai poder te ajudar melhor com isso. Aguarde um momento! 🙏"
+)
 
 # Farewell detection indicators (D-02 Layer 1, D-04)
 # Uses tiered strong/weak indicators for farewell detection.

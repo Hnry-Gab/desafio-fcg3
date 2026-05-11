@@ -18,12 +18,26 @@ KNOWLEDGE_DIR = Path(__file__).parent / "knowledge"
 AUDIT_PATH = KNOWLEDGE_DIR / ".last_ingest.json"
 
 CATEGORY_MAP = {
+    # Original 6 files
     "matricula.md": "regras_matricula",
     "regulamento.md": "regulamento",
     "documentos.md": "documentos",
     "faq.md": "faq",
     "calendario.md": "agendamento",
     "curriculo.md": "curriculo",
+    # Expanded files (Phase 25, D-28)
+    "atividades_complementares_regras.md": "atividades_complementares",
+    "bolsas_auxilios.md": "bolsas_auxilios",
+    "canais_atendimento.md": "canais_atendimento",
+    "corpo_docente.md": "corpo_docente",
+    "edital_mobilidade_2026_1.md": "mobilidade_academica",
+    "equivalencia_matrizes.md": "equivalencia_matrizes",
+    "grade_horaria.md": "grade_horaria",
+    "infraestrutura_laboratorios.md": "infraestrutura_laboratorios",
+    "manual_estagio.md": "manual_estagio",
+    "manual_tcc_plagio.md": "manual_tcc_plagio",
+    "projetos_extensao.md": "projetos_extensao",
+    "sla_atendimento_digital.md": "sla_atendimento_digital",
 }
 
 

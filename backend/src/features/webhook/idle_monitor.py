@@ -29,10 +29,10 @@ logger = logging.getLogger(__name__)
 IDLE_FOLLOWUP_SECONDS = 300  # 5 minutes
 IDLE_CLOSE_SECONDS = 600  # 10 minutes total (5 min followup + 5 min more)
 
-FOLLOWUP_MESSAGE = "Oi! Precisa de mais alguma coisa? Estou aqui se precisar."
+FOLLOWUP_MESSAGE = "Oi! Voce estava conversando comigo ha pouco. Quer que eu continue te ajudando ou posso ajudar com outra coisa?"
 GOODBYE_MESSAGE = (
-    "Parece que voce esta ocupado(a). Vou encerrar por aqui. "
-    "Se precisar, e so mandar mensagem! Ate mais!"
+    "Parece que voce esta ocupado(a)! Vou encerrar por aqui. "
+    "Quando precisar, e so mandar mensagem. Ate mais! 👋"
 )
 
 # Track active idle timers per session
@@ -87,7 +87,7 @@ async def _idle_check(
         # Send follow-up (D-03: only after idle period)
         followup = FOLLOWUP_MESSAGE
         if student_name:
-            followup = f"Oi, {student_name}! Precisa de mais alguma coisa?"
+            followup = f"Oi, {student_name}! Voce estava conversando comigo ha pouco. Quer que eu continue ou posso ajudar com outra coisa?"
         await wa_client.send_text_message(phone, followup)
 
         # Save follow-up as assistant message
@@ -134,7 +134,7 @@ async def _idle_check(
 
             goodbye = GOODBYE_MESSAGE
             if student_name:
-                goodbye = f"Ate mais, {student_name}! Se precisar, e so mandar mensagem."
+                goodbye = f"Ate mais, {student_name}! Se precisar de qualquer coisa, e so mandar mensagem. Bons estudos! 📚"
 
             from src.features.webhook.service import WebhookService
 
