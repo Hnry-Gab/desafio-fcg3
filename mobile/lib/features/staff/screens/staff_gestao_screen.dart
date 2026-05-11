@@ -54,7 +54,7 @@ class _ProviderGestaoView extends StatelessWidget {
         ),
         body: const TabBarView(
           children: [
-            _StaffListTab(),
+            StaffListTab(),
             // Alunos tab — placeholder pending Phase 19 integration (D-13)
             Center(
               child: Text('Gestão de alunos será integrada em breve'),
@@ -85,14 +85,15 @@ class _StaffGestaoView extends StatelessWidget {
 }
 
 /// Main staff list widget with search, filter chips, card list, and FAB.
-class _StaffListTab extends ConsumerStatefulWidget {
-  const _StaffListTab();
+/// Public so it can be reused in the provider view of StaffCadastroScreen.
+class StaffListTab extends ConsumerStatefulWidget {
+  const StaffListTab({super.key});
 
   @override
-  ConsumerState<_StaffListTab> createState() => _StaffListTabState();
+  ConsumerState<StaffListTab> createState() => _StaffListTabState();
 }
 
-class _StaffListTabState extends ConsumerState<_StaffListTab> {
+class _StaffListTabState extends ConsumerState<StaffListTab> {
   final _searchController = TextEditingController();
   Timer? _debounce;
   String? _activeFilter;

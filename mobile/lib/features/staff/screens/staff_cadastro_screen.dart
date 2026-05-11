@@ -8,11 +8,77 @@ import '../../../shared/widgets/app_error_state.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/responsive_container.dart';
 import '../../../shared/widgets/staff_search_bar.dart';
+import '../../../features/auth/providers/auth_provider.dart';
+import '../../../features/auth/providers/auth_state.dart';
 import '../models/staff_student_model.dart';
 import '../providers/staff_cadastro_provider.dart';
+import 'staff_gestao_screen.dart' show StaffListTab;
 
+/// Cadastro screen — role-based branching:
+/// - Provider sees TabBar: "Alunos" + "Staff" (like client resources pattern)
+/// - Staff sees student list directly
 class StaffCadastroScreen extends ConsumerWidget {
   const StaffCadastroScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    final isProvider =
+        authState is AuthAuthenticated && authState.user.isProvider;
+
+    if (isProvider) {
+      return const _ProviderCadastroView();
+    }
+    return const _StaffCadastroView();
+  }
+}
+
+/// Provider view: TabBar with "Alunos" and "Staff" tabs.
+class _ProviderCadastroView extends StatelessWidget {
+  const _ProviderCadastroView();
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Cadastro'),
+          actions: const [AppBarActions()],
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Alunos'),
+              Tab(text: 'Staff'),
+            ],
+          ),
+        ),
+        body: const TabBarView(
+          children: [
+            _StudentListTab(showAppBar: false),
+            StaffListTab(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Staff view: shows student list directly without TabBar.
+class _StaffCadastroView extends StatelessWidget {
+  const _StaffCadastroView();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _StudentListTab(showAppBar: true);
+  }
+}
+
+/// Student list tab — extracted from the original StaffCadastroScreen body.
+/// When [showAppBar] is true, renders its own Scaffold with AppBar (standalone use).
+/// When false, renders a Scaffold without AppBar (for use inside TabBarView).
+class _StudentListTab extends ConsumerWidget {
+  final bool showAppBar;
+  const _StudentListTab({this.showAppBar = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,10 +88,12 @@ class StaffCadastroScreen extends ConsumerWidget {
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cadastro de Alunos'),
-        actions: const [AppBarActions()],
-      ),
+      appBar: showAppBar
+          ? AppBar(
+              title: const Text('Cadastro de Alunos'),
+              actions: const [AppBarActions()],
+            )
+          : null,
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showStudentFormSheet(context, ref),
         tooltip: 'Novo Aluno',

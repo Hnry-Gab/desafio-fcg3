@@ -24,7 +24,6 @@ class RouteNames {
   // Staff tabs (continued)
   static const String staffResources = 'staff-resources';
   static const String staffIntervention = 'staff-intervention';
-  static const String staffGestao = 'staff-gestao';
   static const String staffCadastro = 'staff-cadastro';
 
   // Staff detail
@@ -56,7 +55,6 @@ class RoutePaths {
   // Staff tabs (continued)
   static const String staffResources = '/staff/resources';
   static const String staffIntervention = '/staff/intervention';
-  static const String staffGestao = '/staff/gestao';
   static const String staffCadastro = '/staff/cadastro';
 
   // Staff detail
