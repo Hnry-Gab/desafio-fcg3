@@ -34,6 +34,7 @@ from src.features.chat.schemas import (
     StaffReplyRequest,
     StaffReplyResponse,
     SessionActionResponse,
+    RenameSessionRequest,
 )
 from src.features.webhook.dependencies import get_whatsapp_client
 
@@ -68,10 +69,41 @@ async def list_chat_sessions(
     # Students are forcibly scoped to their own student_id — IDOR protection
     effective_student_id = current_user.id if current_user.role == "student" else student_id
     sessions, total = await chat_service.list_sessions(db, effective_student_id, status, page, per_page)
+    session_responses = []
+    for s in sessions:
+        resp = ChatSessionResponse(
+            id=s.id, student_id=s.student_id, whatsapp_phone=s.whatsapp_phone,
+            status=s.status, name=s.name, verification_state=s.verification_state,
+            assigned_staff_id=s.assigned_staff_id, escalated_at=s.escalated_at,
+            started_at=s.started_at, ended_at=s.ended_at, updated_at=s.updated_at,
+            student_name=s.student.name if s.student else None,
+            student_ra=s.student.registration_number if s.student else None,
+        )
+        session_responses.append(resp)
     return ChatSessionListResponse(
-        data=sessions,
+        data=session_responses,
         pagination={"page": page, "per_page": per_page, "total": total},
     )
+
+
+# ------------------------------------------------------------------
+# PUT /chat-sessions/{id} — rename session (student owns it)
+# ------------------------------------------------------------------
+
+@router.put(
+    "/{session_id}",
+    response_model=ChatSessionResponse,
+)
+async def rename_session(
+    session_id: UUID,
+    body: RenameSessionRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """Rename a chat session. Students can only rename their own sessions."""
+    session = await chat_service.rename_session(session_id, current_user.id, body.name, db)
+    await db.commit()
+    return session
 
 
 # ------------------------------------------------------------------
@@ -90,10 +122,21 @@ async def list_intervention_sessions(
 ):
     """List sessions pending or active in human intervention (staff-only).
 
-    Returns all 'human_needed' sessions + staff's own 'human_active' sessions (T-14-04).
+    Returns all 'human_needed' sessions + staff's own 'human_active' + closed sessions (T-14-04).
     """
     sessions = await chat_service.list_intervention_sessions(db, current_user.id)
-    return sessions
+    session_responses = [
+        ChatSessionResponse(
+            id=s.id, student_id=s.student_id, whatsapp_phone=s.whatsapp_phone,
+            status=s.status, name=s.name, verification_state=s.verification_state,
+            assigned_staff_id=s.assigned_staff_id, escalated_at=s.escalated_at,
+            started_at=s.started_at, ended_at=s.ended_at, updated_at=s.updated_at,
+            student_name=s.student.name if s.student else None,
+            student_ra=s.student.registration_number if s.student else None,
+        )
+        for s in sessions
+    ]
+    return session_responses
 
 
 # ------------------------------------------------------------------
