@@ -3,15 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
 status: executing
-
-last_updated: "2026-05-09T04:04:36.756Z"
-last_activity: 2026-05-09
+last_updated: "2026-05-11T22:46:20.616Z"
+last_activity: 2026-05-11 -- Phase 25 planning complete
 progress:
-  total_phases: 7
-  completed_phases: 4
-  total_plans: 35
+  total_phases: 8
+  completed_phases: 5
+  total_plans: 38
   completed_plans: 35
-  percent: 100
+  percent: 92
 ---
 
 # Project State
@@ -20,8 +19,8 @@ progress:
 
 Phase: 23
 Plan: Not started
-Status: Executing Phase 22
-Last activity: 2026-05-11 - Completed quick task 260511-92x: Reorganizar navegacao staff/provider
+Status: Ready to execute
+Last activity: 2026-05-11 -- Phase 25 planning complete
 
 ## Project Reference
 
