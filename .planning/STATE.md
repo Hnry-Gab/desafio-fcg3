@@ -21,7 +21,7 @@ progress:
 Phase: 23
 Plan: Not started
 Status: Executing Phase 22
-Last activity: 2026-05-09
+Last activity: 2026-05-11 - Completed quick task 260511-92x: Reorganizar navegacao staff/provider
 
 ## Project Reference
 
@@ -124,6 +124,12 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **19-09:** StaffStudentModel @JsonKey maps ra→registration_number, semester as int (not String)
 - **19-09:** Backend StudentListItem includes phone field
 - **19-09:** Cadastro form removes address/campus (don't exist in DB), sends registration_number/semester
+
+### Quick Tasks Completed
+
+| #   | Description | Date | Commit | Directory |
+| --- | ----------- | ---- | ------ | --------- |
+| 260511-92x | Reorganizar navegacao staff/provider: remover placeholder, tabs provider, seed provider | 2026-05-11 | 912f013 | [260511-92x-reorganizar-navegacao-staff-provider-rem](./quick/260511-92x-reorganizar-navegacao-staff-provider-rem/) |
 
 ## Session Continuity
 
