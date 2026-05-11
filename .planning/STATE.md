@@ -2,25 +2,25 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
-status: executing
-last_updated: "2026-05-11T16:12:34.892Z"
+status: verifying
+last_updated: "2026-05-11T16:39:02.987Z"
 last_activity: 2026-05-11
 progress:
   total_phases: 8
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 20
-  completed_plans: 19
-  percent: 95
+  completed_plans: 20
+  percent: 100
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 25 (melhorias-frontend) — EXECUTING
-Plan: 4 of 4
-Status: Ready to execute
-Last activity: 2026-05-11 -- Completed 25-03 (shared date_utils.dart refactoring)
+Phase: 25 (melhorias-frontend) — COMPLETE
+Plan: 4 of 4 (all plans complete)
+Status: Phase complete — ready for verification
+Last activity: 2026-05-11 -- Completed 25-04 (overflow fixes, font sizes, PT-BR grammar)
 
 ## Project Reference
 
@@ -141,6 +141,10 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **25-03:** Year-aware display: DD/MM current year, DD/MM/YYYY otherwise (D-07)
 - **25-03:** Short-form relative time: agora/Xm/Xh/Xd with 7-day threshold (D-08, D-09)
 - **25-03:** 12+ inline date functions eliminated from 13 screen files (D-10)
+- **25-04:** Dashboard "Taxa de Resolução" row wrapped in Expanded + ellipsis for overflow safety
+- **25-04:** OTP input boxes wrapped in Flexible for 320dp screen safety
+- **25-04:** fontSize 10→11 on all 18 informational label occurrences (nav labels kept at 10)
+- **25-04:** PT-BR grammar: fixed missing accents (próximo, sessão, ação) in 8 files
 
 ## Session Continuity
 
