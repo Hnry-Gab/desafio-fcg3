@@ -8,6 +8,7 @@ import '../../../shared/widgets/app_skeleton_list.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/app_error_state.dart';
 import '../../../shared/widgets/glass_card.dart';
+import '../../../shared/utils/date_utils.dart';
 import '../../../shared/widgets/responsive_container.dart';
 import '../providers/notification_provider.dart';
 import '../providers/document_provider.dart';
@@ -298,7 +299,7 @@ class _NotificationCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        _formatRelativeTime(notification.timestamp),
+                        formatRelativeTime(notification.timestamp),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context)
@@ -408,17 +409,3 @@ class _FilterTab extends StatelessWidget {
   }
 }
 
-String _formatRelativeTime(DateTime timestamp) {
-  final diff = DateTime.now().difference(timestamp);
-  if (diff.isNegative) {
-    final absDiff = timestamp.difference(DateTime.now());
-    if (absDiff.inMinutes < 60) return 'em ${absDiff.inMinutes}min';
-    if (absDiff.inHours < 24) return 'em ${absDiff.inHours}h';
-    if (absDiff.inDays < 7) return 'em ${absDiff.inDays}d';
-    return '${timestamp.day}/${timestamp.month}';
-  }
-  if (diff.inMinutes < 60) return 'há ${diff.inMinutes}min';
-  if (diff.inHours < 24) return 'há ${diff.inHours}h';
-  if (diff.inDays < 7) return 'há ${diff.inDays}d';
-  return '${timestamp.day}/${timestamp.month}';
-}

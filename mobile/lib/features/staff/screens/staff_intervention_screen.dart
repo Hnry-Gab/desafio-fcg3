@@ -12,6 +12,7 @@ import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/responsive_container.dart';
 import '../models/intervention_session_model.dart';
 import '../providers/staff_intervention_provider.dart';
+import '../../../shared/utils/date_utils.dart';
 
 class StaffInterventionScreen extends ConsumerStatefulWidget {
   const StaffInterventionScreen({super.key});
@@ -275,7 +276,7 @@ class _InterventionCard extends ConsumerWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                _relativeTime(session.startedAt),
+                formatRelativeTime(session.startedAt),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colors.onSurfaceVariant,
                   fontStyle: FontStyle.italic,
@@ -327,17 +328,6 @@ class _InterventionCard extends ConsumerWidget {
         );
       }
     }
-  }
-
-  String _relativeTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final diff = now.difference(dateTime);
-
-    if (diff.inMinutes < 1) return 'agora';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m atrás';
-    if (diff.inHours < 24) return '${diff.inHours}h atrás';
-    if (diff.inDays < 7) return '${diff.inDays}d atrás';
-    return '${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}';
   }
 }
 

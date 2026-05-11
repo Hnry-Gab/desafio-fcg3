@@ -17,15 +17,7 @@ import '../providers/document_provider.dart';
 import '../providers/appointment_provider.dart';
 import '../models/chat_session_model.dart';
 import '../models/appointment_model.dart';
-
-
-String _formatDateTime(DateTime dt) {
-  final day = dt.day.toString().padLeft(2, '0');
-  final month = dt.month.toString().padLeft(2, '0');
-  final hour = dt.hour.toString().padLeft(2, '0');
-  final minute = dt.minute.toString().padLeft(2, '0');
-  return '$day/$month $hour:$minute';
-}
+import '../../../shared/utils/date_utils.dart';
 
 class ClientHomeScreen extends ConsumerWidget {
   const ClientHomeScreen({super.key});
@@ -185,7 +177,7 @@ class ClientHomeScreen extends ConsumerWidget {
         if (sessions.isEmpty) {
           lastTime = 'Nenhuma';
         } else {
-          lastTime = _formatDateTime(sessions.first.startedAt);
+          lastTime = formatDateTime(sessions.first.startedAt);
         }
         return _SummaryGlassCard(
           icon: Icons.smart_toy_outlined,

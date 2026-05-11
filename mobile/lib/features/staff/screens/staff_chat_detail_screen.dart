@@ -8,6 +8,7 @@ import '../../client/models/chat_session_model.dart';
 import '../../client/models/chat_message_model.dart';
 import '../../client/models/action_log_model.dart';
 import '../providers/staff_chat_provider.dart';
+import '../../../shared/utils/date_utils.dart';
 
 class StaffChatDetailScreen extends ConsumerStatefulWidget {
   final String sessionId;
@@ -97,7 +98,7 @@ class _ChatInfoHeader extends StatelessWidget {
     final colors = theme.colorScheme;
     final studentName = session!.studentName ?? session!.name ?? 'Aluno';
     final studentRa = session!.studentRa;
-    final formattedDate = _formatDateTime(session!.startedAt);
+    final formattedDate = formatDateTime(session!.startedAt);
     final status = session!.status;
 
     return Container(
@@ -171,15 +172,6 @@ class _ChatInfoHeader extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _formatDateTime(DateTime dt) {
-    final day = dt.day.toString().padLeft(2, '0');
-    final month = dt.month.toString().padLeft(2, '0');
-    final year = dt.year;
-    final hour = dt.hour.toString().padLeft(2, '0');
-    final minute = dt.minute.toString().padLeft(2, '0');
-    return '$day/$month/$year $hour:$minute';
   }
 }
 

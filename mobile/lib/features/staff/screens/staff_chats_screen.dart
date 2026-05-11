@@ -12,6 +12,7 @@ import '../../../shared/widgets/staff_search_bar.dart';
 import '../models/intervention_session_model.dart';
 import '../providers/staff_chat_provider.dart';
 import '../providers/staff_intervention_provider.dart';
+import '../../../shared/utils/date_utils.dart';
 
 /// Unified Chats screen with 4 sub-tabs:
 /// Todos, Pendentes, Em atendimento, Concluídos
@@ -429,7 +430,7 @@ class _ChatSessionCard extends StatelessWidget {
               _StatusBadge(status: item.status),
               const SizedBox(height: 4),
               Text(
-                _relativeTime(item.date),
+                formatRelativeTime(item.date),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colors.onSurfaceVariant,
                   fontSize: 10,
@@ -455,17 +456,6 @@ class _ChatSessionCard extends StatelessWidget {
     }
     // Fallback: return as-is
     return phone;
-  }
-
-  String _relativeTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final diff = now.difference(dateTime);
-
-    if (diff.inMinutes < 1) return 'agora';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m atrás';
-    if (diff.inHours < 24) return '${diff.inHours}h atrás';
-    if (diff.inDays < 7) return '${diff.inDays}d atrás';
-    return '${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}';
   }
 }
 

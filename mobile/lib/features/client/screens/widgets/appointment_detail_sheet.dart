@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../models/appointment_model.dart';
+import '../../../../shared/utils/date_utils.dart';
 
 /// Shows a bottom sheet with full appointment details.
 void showAppointmentDetailSheet(
@@ -95,7 +96,7 @@ class _AppointmentDetailSheet extends StatelessWidget {
             _DetailRow(label: 'Horário fim', value: appointment.endTime!),
           _DetailRow(
               label: 'Criado em',
-              value: _formatDateTime(appointment.createdAt)),
+              value: formatDateTime(appointment.createdAt)),
         ],
       ),
     );
@@ -116,15 +117,6 @@ class _AppointmentDetailSheet extends StatelessWidget {
         'no_show' => 'Não compareceu',
         _ => status,
       };
-
-  String _formatDateTime(DateTime date) {
-    final day = date.day.toString().padLeft(2, '0');
-    final month = date.month.toString().padLeft(2, '0');
-    final year = date.year;
-    final hour = date.hour.toString().padLeft(2, '0');
-    final minute = date.minute.toString().padLeft(2, '0');
-    return '$day/$month/$year $hour:$minute';
-  }
 }
 
 class _DetailRow extends StatelessWidget {

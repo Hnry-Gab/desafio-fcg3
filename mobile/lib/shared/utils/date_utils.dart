@@ -2,6 +2,7 @@
 ///
 /// All screens should import this file instead of defining inline
 /// formatting functions. Follows D-05 through D-09 conventions.
+library;
 
 /// Format a DateTime as a date string.
 /// Current year: DD/MM. Different year: DD/MM/YYYY.

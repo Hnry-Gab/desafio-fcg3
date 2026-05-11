@@ -12,6 +12,7 @@ import '../../../shared/widgets/responsive_container.dart';
 import '../../client/models/chat_session_model.dart';
 import '../../client/models/chat_message_model.dart';
 import '../providers/staff_chat_provider.dart';
+import '../../../shared/utils/date_utils.dart';
 
 class StaffAiScreen extends ConsumerStatefulWidget {
   const StaffAiScreen({super.key});
@@ -452,7 +453,7 @@ class _SessionCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _formatDate(session.startedAt),
+                  formatDate(session.startedAt),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.onSurfaceVariant,
                   ),
@@ -488,13 +489,6 @@ class _SessionCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    final day = date.day.toString().padLeft(2, '0');
-    final month = date.month.toString().padLeft(2, '0');
-    final year = date.year;
-    return '$day/$month/$year';
   }
 }
 

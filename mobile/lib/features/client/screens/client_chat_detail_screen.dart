@@ -8,6 +8,7 @@ import '../../../shared/widgets/app_skeleton_chat.dart';
 import '../../../shared/widgets/app_skeleton_list.dart';
 import '../models/chat_message_model.dart';
 import '../models/action_log_model.dart';
+import '../../../shared/utils/date_utils.dart';
 import '../providers/chat_provider.dart';
 
 class ClientChatDetailScreen extends ConsumerStatefulWidget {
@@ -250,14 +251,6 @@ class _ActionLogTile extends StatelessWidget {
 
   const _ActionLogTile({required this.log});
 
-  String _formatDate(DateTime dt) {
-    final day = dt.day.toString().padLeft(2, '0');
-    final month = dt.month.toString().padLeft(2, '0');
-    final hour = dt.hour.toString().padLeft(2, '0');
-    final minute = dt.minute.toString().padLeft(2, '0');
-    return '$day/$month $hour:$minute';
-  }
-
   String _prettyJson(Map<String, dynamic> json) {
     const encoder = JsonEncoder.withIndent('  ');
     return encoder.convert(json);
@@ -273,7 +266,7 @@ class _ActionLogTile extends StatelessWidget {
         color: log.isError ? theme.colorScheme.error : (theme.brightness == Brightness.dark ? const Color(0xFF81C784) : const Color(0xFF4CAF50)),
       ),
       title: Text(log.toolName),
-      subtitle: Text('${_formatDate(log.createdAt)} \u00b7 ${log.status}'),
+      subtitle: Text('${formatDateTime(log.createdAt)} \u00b7 ${log.status}'),
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),

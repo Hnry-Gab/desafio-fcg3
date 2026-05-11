@@ -15,6 +15,7 @@ import '../models/document_model.dart';
 import '../providers/document_provider.dart';
 import 'widgets/document_detail_sheet.dart';
 import 'widgets/document_request_sheet.dart';
+import '../../../shared/utils/date_utils.dart';
 
 /// Builds a full download URL from a relative file path.
 /// The backend returns paths like `/uploads/documents/uuid_file.pdf`
@@ -309,7 +310,7 @@ class _DocumentCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Solicitado em ${_formatDateTime(document.requestedAt)}',
+                  'Solicitado em ${formatDateTime(document.requestedAt)}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: colors.onSurfaceVariant,
                       ),
@@ -373,14 +374,5 @@ class _DocumentCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _formatDateTime(DateTime date) {
-    final day = date.day.toString().padLeft(2, '0');
-    final month = date.month.toString().padLeft(2, '0');
-    final year = date.year;
-    final hour = date.hour.toString().padLeft(2, '0');
-    final minute = date.minute.toString().padLeft(2, '0');
-    return '$day/$month/$year $hour:$minute';
   }
 }

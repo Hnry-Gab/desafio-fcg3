@@ -13,6 +13,7 @@ import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/responsive_container.dart';
 import '../models/chat_session_model.dart';
 import '../models/chat_message_model.dart';
+import '../../../shared/utils/date_utils.dart';
 import '../providers/chat_provider.dart';
 
 class ClientChatScreen extends ConsumerStatefulWidget {
@@ -660,14 +661,6 @@ class _SessionCard extends StatelessWidget {
     this.onLongPress,
   });
 
-  String _formatDate(DateTime dt) {
-    final day = dt.day.toString().padLeft(2, '0');
-    final month = dt.month.toString().padLeft(2, '0');
-    final hour = dt.hour.toString().padLeft(2, '0');
-    final minute = dt.minute.toString().padLeft(2, '0');
-    return '$day/$month $hour:$minute';
-  }
-
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -710,7 +703,7 @@ class _SessionCard extends StatelessWidget {
                   children: [
                     Flexible(
                       child: Text(
-                        session.name ?? 'Sessão ${_formatDate(session.startedAt)}',
+                        session.name ?? 'Sessão ${formatDateTime(session.startedAt)}',
                         style:
                             Theme.of(context).textTheme.titleSmall?.copyWith(
                                   fontWeight: FontWeight.bold,
@@ -720,7 +713,7 @@ class _SessionCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      _formatDate(session.startedAt),
+                      formatDateTime(session.startedAt),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

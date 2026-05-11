@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../client/models/appointment_model.dart';
 import '../../../shared/widgets/responsive_container.dart';
 import '../providers/staff_schedule_provider.dart';
+import '../../../shared/utils/date_utils.dart';
 
 class StaffAppointmentDetailScreen extends ConsumerWidget {
   final AppointmentModel appointment;
@@ -41,7 +42,7 @@ class StaffAppointmentDetailScreen extends ConsumerWidget {
               // Data de emissão / criação
               _DetailRow(
                 label: 'Data de emissão',
-                value: _formatDate(appointment.createdAt),
+                value: formatDate(appointment.createdAt),
               ),
               const SizedBox(height: 16),
               // Recurso
@@ -218,13 +219,6 @@ class StaffAppointmentDetailScreen extends ConsumerWidget {
         }
       }
     }
-  }
-
-  String _formatDate(DateTime date) {
-    final day = date.day.toString().padLeft(2, '0');
-    final month = date.month.toString().padLeft(2, '0');
-    final year = date.year.toString();
-    return '$day/$month/$year';
   }
 }
 

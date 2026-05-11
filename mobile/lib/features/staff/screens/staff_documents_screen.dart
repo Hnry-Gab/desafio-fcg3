@@ -13,6 +13,7 @@ import '../../client/models/document_model.dart';
 import '../providers/staff_document_provider.dart';
 import 'widgets/send_document_sheet.dart';
 import 'widgets/update_status_sheet.dart';
+import '../../../shared/utils/date_utils.dart';
 
 class StaffDocumentsScreen extends ConsumerStatefulWidget {
   final String? initialFilter;
@@ -361,12 +362,12 @@ class _StaffDocumentDetailContent extends StatelessWidget {
           ),
           _DetailRow(
             label: 'Data solicitação',
-            value: _formatDateTime(document.requestedAt),
+            value: formatDateTime(document.requestedAt),
           ),
           if (document.completedAt != null)
             _DetailRow(
               label: 'Concluído em',
-              value: _formatDateTime(document.completedAt!),
+              value: formatDateTime(document.completedAt!),
             ),
           if (document.notes != null && document.notes!.isNotEmpty)
             _DetailRow(label: 'Observações', value: document.notes!),
@@ -388,15 +389,6 @@ class _StaffDocumentDetailContent extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _formatDateTime(DateTime date) {
-    final day = date.day.toString().padLeft(2, '0');
-    final month = date.month.toString().padLeft(2, '0');
-    final year = date.year;
-    final hour = date.hour.toString().padLeft(2, '0');
-    final minute = date.minute.toString().padLeft(2, '0');
-    return '$day/$month/$year $hour:$minute';
   }
 }
 
@@ -602,7 +594,7 @@ class _StaffDocumentCard extends StatelessWidget {
                       ),
                 ),
                 Text(
-                  'Solicitado em ${_formatDate(document.requestedAt)}',
+                  'Solicitado em ${formatDate(document.requestedAt)}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: colors.onSurfaceVariant,
                       ),
@@ -645,12 +637,5 @@ class _StaffDocumentCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    final day = date.day.toString().padLeft(2, '0');
-    final month = date.month.toString().padLeft(2, '0');
-    final year = date.year;
-    return '$day/$month/$year';
   }
 }
