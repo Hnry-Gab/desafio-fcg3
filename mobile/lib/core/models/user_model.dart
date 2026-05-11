@@ -10,6 +10,8 @@ class UserModel {
   @JsonKey(readValue: _readRole)
   final String role; // 'student', 'staff', or 'provider'
   final String? phone;
+  @JsonKey(defaultValue: 'active')
+  final String status; // 'active', 'inactive', 'graduated', 'locked'
 
   const UserModel({
     required this.id,
@@ -17,6 +19,7 @@ class UserModel {
     required this.email,
     required this.role,
     this.phone,
+    this.status = 'active',
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>
@@ -27,6 +30,7 @@ class UserModel {
   bool get isStaff => role == 'staff';
   bool get isProvider => role == 'provider';
   bool get isStaffOrProvider => isStaff || isProvider;
+  bool get isActive => status == 'active';
 }
 
 Object? _readRole(Map json, String key) => json['role'] ?? json['type'];

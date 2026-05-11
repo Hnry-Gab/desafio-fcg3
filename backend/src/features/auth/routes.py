@@ -169,13 +169,26 @@ async def logout(
 
 
 @router.get("/me", response_model=MeResponse, status_code=200)
-async def me(current_user: CurrentUser = Depends(get_current_user)) -> MeResponse:
-    """D-05: payload is rich enough that we don't query the DB — token IS the source."""
+async def me(
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+) -> MeResponse:
+    """D-05: Returns user info. Queries DB for student status to enforce inactive block."""
+    status = "active"
+    if current_user.role == "student":
+        result = await db.execute(
+            select(Student.status).where(Student.id == current_user.id)
+        )
+        row = result.scalar_one_or_none()
+        if row is not None:
+            status = row
+
     return MeResponse(
         id=str(current_user.id),
         email=current_user.email,
         name=current_user.name,
         role=current_user.role,
+        status=status,
     )
 
 

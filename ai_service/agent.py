@@ -8,13 +8,14 @@ from typing import Any
 
 from langchain.agents import create_agent
 from langchain.agents.middleware import wrap_tool_call
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
 from ai_service.database import load_chat_history
 from ai_service.embedding_factory import create_embeddings
 from ai_service.llm_factory import create_llm
 from ai_service.mcp_tools import load_mcp_tools
 from ai_service.rag import create_rag_tool
+from ai_service.security import sanitize_input, filter_output
 
 logger = logging.getLogger(__name__)
 
@@ -110,6 +111,9 @@ async def invoke_agent(
     system_prompt: str,
     session_id: str,
     user_message: str,
+    is_new_session: bool = False,
+    student_name: str = "",
+    verification_state: str = "unverified",
 ) -> str:
     """Process one student message through the LangChain agent.
 
@@ -117,7 +121,20 @@ async def invoke_agent(
     session-specific ``X-Chat-Session-ID`` header. Conversation history is
     loaded fresh from PostgreSQL on every invocation to preserve the stateless
     service design for the AI container.
+
+    When is_new_session=True and no prior history exists, a welcome instruction
+    is injected so the agent generates a personalized greeting (D-01, LANG-01).
     """
+
+    # Layer 2: Input sanitization (D-05)
+    sanitized_message, injection_detected = sanitize_input(user_message)
+
+    # If injection detected, prepend a context note for the agent (D-06)
+    if injection_detected:
+        logger.warning("Injection attempt detected for session %s", session_id)
+        # The agent's system prompt instructs it to warn the student (## Seguranca section)
+        # We use the sanitized message so the agent still sees context
+        user_message = sanitized_message
 
     mcp_tools = await load_mcp_tools(settings.MCP_SERVER_URL, session_id)
     embeddings = create_embeddings(settings)
@@ -125,6 +142,7 @@ async def invoke_agent(
         db_pool,
         embeddings,
         similarity_threshold=settings.RAG_SIMILARITY_THRESHOLD,
+        session_id=session_id,
     )
     agent = create_chat_agent(settings, [*mcp_tools, rag_tool], system_prompt)
 
@@ -133,7 +151,32 @@ async def invoke_agent(
         session_id,
         k=settings.CHAT_HISTORY_K,
     )
-    all_messages = [*history_messages, HumanMessage(content=user_message)]
+
+    # D-01, LANG-01: Inject welcome generation instruction on new sessions
+    if is_new_session:
+        name_part = f" o aluno {student_name}" if student_name else " o aluno"
+        welcome_instruction = SystemMessage(
+            content=(
+                f"Este e o inicio de uma nova conversa. Cumprimente{name_part} pelo nome "
+                "de forma calorosa e breve, apresente-se como Alpha, e pergunte como "
+                "pode ajudar. Em seguida, responda a mensagem do aluno."
+            )
+        )
+        all_messages = [welcome_instruction, *history_messages, HumanMessage(content=user_message)]
+    else:
+        all_messages = [*history_messages, HumanMessage(content=user_message)]
+
+    # D-14/D-15: Inject verification state context so agent knows student status
+    if verification_state != "verified":
+        verification_context = SystemMessage(
+            content=(
+                "Estado de verificacao do aluno: NAO VERIFICADO. "
+                "Operacoes de leitura estao liberadas. "
+                "Se o aluno solicitar uma acao que altere dados e a ferramenta retornar erro de verificacao, "
+                "solicite o email institucional do aluno para enviar o codigo de verificacao."
+            )
+        )
+        all_messages = [verification_context, *all_messages]
 
     try:
         result = await asyncio.wait_for(
@@ -157,4 +200,12 @@ async def invoke_agent(
         logger.exception("Agent execution failed for session %s", session_id)
         return FALLBACK_MESSAGE
 
-    return _extract_response_text(result)
+    response_text = _extract_response_text(result)
+
+    # Layer 4: Output filtering (D-05)
+    filtered_response, was_filtered = filter_output(response_text)
+    if was_filtered:
+        logger.warning("Output filter triggered for session %s", session_id)
+    response_text = filtered_response
+
+    return response_text

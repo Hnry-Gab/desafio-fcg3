@@ -18,6 +18,7 @@ class RouteNames {
   static const String staffDashboard = 'staff-dashboard';
   static const String staffSchedule = 'staff-schedule';
   static const String staffAI = 'staff-ai';
+  static const String staffChats = 'staff-chats';
   static const String staffDocuments = 'staff-documents';
 
   // Staff tabs (continued)
@@ -48,6 +49,7 @@ class RoutePaths {
   static const String staffDashboard = '/staff';
   static const String staffSchedule = '/staff/schedule';
   static const String staffAI = '/staff/ai';
+  static const String staffChats = '/staff/chats';
   static const String staffDocuments = '/staff/documents';
 
   // Staff tabs (continued)
