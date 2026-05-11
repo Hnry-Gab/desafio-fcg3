@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/config/env_config.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/widgets/app_bar_actions.dart';
 import '../../../shared/widgets/app_skeleton_list.dart';
@@ -12,6 +13,19 @@ import '../models/document_model.dart';
 import '../providers/document_provider.dart';
 import 'widgets/document_detail_sheet.dart';
 import 'widgets/document_request_sheet.dart';
+
+/// Builds a full download URL from a relative file path.
+/// The backend returns paths like `/uploads/documents/uuid_file.pdf`
+/// which need the server origin prepended for download.
+String buildDownloadUrl(String relativePath) {
+  if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
+    return relativePath; // Already absolute
+  }
+  // Extract server origin from API base URL (strip /api/v1 suffix)
+  final apiBase = Uri.parse(AppConfig.apiBaseUrl);
+  final origin = '${apiBase.scheme}://${apiBase.host}${apiBase.hasPort ? ':${apiBase.port}' : ''}';
+  return '$origin$relativePath';
+}
 
 class ClientDocumentsScreen extends ConsumerStatefulWidget {
   const ClientDocumentsScreen({super.key});
@@ -169,7 +183,8 @@ class _ClientDocumentsScreenState extends ConsumerState<ClientDocumentsScreen> {
   }
 
   Future<void> _launchDownload(String url) async {
-    final uri = Uri.parse(url);
+    final fullUrl = buildDownloadUrl(url);
+    final uri = Uri.parse(fullUrl);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }

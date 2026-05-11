@@ -45,6 +45,7 @@ class _StaffShellState extends ConsumerState<StaffShell> {
     if (location.startsWith(RoutePaths.staffChats)) return 2;
     if (location.startsWith(RoutePaths.staffDocuments)) return 3;
     if (location.startsWith(RoutePaths.staffResources)) return 4;
+    if (location.startsWith(RoutePaths.staffCadastro)) return 5;
     return 0;
   }
 
@@ -60,6 +61,8 @@ class _StaffShellState extends ConsumerState<StaffShell> {
         context.go(RoutePaths.staffDocuments);
       case 4:
         context.go(RoutePaths.staffResources);
+      case 5:
+        context.go(RoutePaths.staffCadastro);
     }
   }
 
@@ -69,6 +72,7 @@ class _StaffShellState extends ConsumerState<StaffShell> {
     _NavItem(icon: Icons.chat_bubble_outline, activeIcon: Icons.chat_bubble, label: 'Chats'),
     _NavItem(icon: Icons.folder_outlined, activeIcon: Icons.folder, label: 'Docs'),
     _NavItem(icon: Icons.meeting_room_outlined, activeIcon: Icons.meeting_room, label: 'Recursos'),
+    _NavItem(icon: Icons.people_outline, activeIcon: Icons.people, label: 'Alunos'),
   ];
 
   static const _railDestinations = [
@@ -96,6 +100,11 @@ class _StaffShellState extends ConsumerState<StaffShell> {
       icon: Icon(Icons.meeting_room_outlined),
       selectedIcon: Icon(Icons.meeting_room),
       label: Text('Recursos'),
+    ),
+    NavigationRailDestination(
+      icon: Icon(Icons.people_outline),
+      selectedIcon: Icon(Icons.people),
+      label: Text('Alunos'),
     ),
   ];
 

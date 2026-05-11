@@ -43,12 +43,14 @@ class StaffScheduleService {
 
   /// POST /scheduling/slots — create availability slots
   Future<void> createSlots({
+    required String resourceId,
     required String date,
     required String startTime,
     required String endTime,
     required int slotDurationMinutes,
   }) async {
     await _client.dio.post('/scheduling/slots', data: {
+      'resource_id': resourceId,
       'date': date,
       'start_time': startTime,
       'end_time': endTime,

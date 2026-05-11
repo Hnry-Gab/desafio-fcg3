@@ -1,4 +1,6 @@
+import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../client/models/document_model.dart';
@@ -31,6 +33,7 @@ class _UpdateStatusSheetState extends ConsumerState<_UpdateStatusSheet> {
   late String _selectedStatus;
   String? _pickedFilePath;
   String? _pickedFileName;
+  Uint8List? _pickedFileBytes;
   bool _isLoading = false;
 
   @override
@@ -43,6 +46,7 @@ class _UpdateStatusSheetState extends ConsumerState<_UpdateStatusSheet> {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'png', 'jpg'],
+      withData: kIsWeb,
     );
     if (result != null && result.files.isNotEmpty) {
       final file = result.files.first;
@@ -58,16 +62,18 @@ class _UpdateStatusSheetState extends ConsumerState<_UpdateStatusSheet> {
         return;
       }
       setState(() {
-        _pickedFilePath = file.path;
+        _pickedFilePath = kIsWeb ? null : file.path;
         _pickedFileName = file.name;
+        _pickedFileBytes = file.bytes;
       });
     }
   }
 
   Future<void> _submit() async {
     // Validate: file required when setting status to 'ready'
+    final hasFile = _pickedFilePath != null || _pickedFileBytes != null;
     if (_selectedStatus == 'ready' &&
-        _pickedFilePath == null &&
+        !hasFile &&
         widget.document.fileUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -86,11 +92,18 @@ class _UpdateStatusSheetState extends ConsumerState<_UpdateStatusSheet> {
       String? uploadedUrl;
 
       // If status is 'ready' and file is picked, upload first
-      if (_selectedStatus == 'ready' && _pickedFilePath != null) {
-        uploadedUrl = await service.uploadFile(
-          _pickedFilePath!,
-          _pickedFileName!,
-        );
+      if (_selectedStatus == 'ready' && hasFile) {
+        if (_pickedFileBytes != null && kIsWeb) {
+          uploadedUrl = await service.uploadFileBytes(
+            _pickedFileBytes!,
+            _pickedFileName!,
+          );
+        } else if (_pickedFilePath != null) {
+          uploadedUrl = await service.uploadFile(
+            _pickedFilePath!,
+            _pickedFileName!,
+          );
+        }
       }
 
       // Update document status

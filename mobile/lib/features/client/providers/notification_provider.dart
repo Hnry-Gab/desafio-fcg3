@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'document_provider.dart';
 import 'appointment_provider.dart';
 
@@ -10,17 +11,37 @@ enum NotificationType { documentStatus, appointmentReminder, errorAlert }
 
 enum NotificationFilter { all, unread, read }
 
-@riverpod
+const _readIdsKey = 'read_notification_ids';
+
+@Riverpod(keepAlive: true)
 class ReadNotificationIds extends _$ReadNotificationIds {
   @override
-  Set<String> build() => {};
+  Set<String> build() {
+    _loadFromStorage();
+    return {};
+  }
+
+  Future<void> _loadFromStorage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getStringList(_readIdsKey);
+    if (stored != null && stored.isNotEmpty) {
+      state = {...state, ...stored};
+    }
+  }
+
+  Future<void> _saveToStorage() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_readIdsKey, state.toList());
+  }
 
   void markAsRead(String id) {
     state = {...state, id};
+    _saveToStorage();
   }
 
   void markAllAsRead(List<String> ids) {
     state = {...state, ...ids};
+    _saveToStorage();
   }
 }
 

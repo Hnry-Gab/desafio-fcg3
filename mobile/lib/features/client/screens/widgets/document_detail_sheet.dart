@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../models/document_model.dart';
+import '../client_documents_screen.dart' show buildDownloadUrl;
 
 /// Shows the document detail bottom sheet with full info.
 void showDocumentDetailSheet(BuildContext context, DocumentModel document) {
@@ -86,7 +87,7 @@ class _DocumentDetailSheet extends StatelessWidget {
                 icon: const Icon(Icons.download),
                 label: const Text('Baixar documento'),
                 onPressed: () => launchUrl(
-                  Uri.parse(document.fileUrl!),
+                  Uri.parse(buildDownloadUrl(document.fileUrl!)),
                   mode: LaunchMode.externalApplication,
                 ),
               ),

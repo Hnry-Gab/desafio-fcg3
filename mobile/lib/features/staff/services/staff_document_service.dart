@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import '../../../core/network/dio_client.dart';
 import '../../client/models/document_model.dart';
@@ -40,6 +41,19 @@ class StaffDocumentService {
   Future<String> uploadFile(String filePath, String fileName) async {
     final formData = FormData.fromMap({
       'file': await MultipartFile.fromFile(filePath, filename: fileName),
+    });
+    final response = await _client.dio.post(
+      '/documents/upload',
+      data: formData,
+    );
+    final data = response.data as Map<String, dynamic>;
+    return data['url'] as String;
+  }
+
+  /// POST /documents/upload — upload file from bytes (web support)
+  Future<String> uploadFileBytes(Uint8List bytes, String fileName) async {
+    final formData = FormData.fromMap({
+      'file': MultipartFile.fromBytes(bytes, filename: fileName),
     });
     final response = await _client.dio.post(
       '/documents/upload',

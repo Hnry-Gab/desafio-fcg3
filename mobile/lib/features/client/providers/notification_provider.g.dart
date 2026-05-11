@@ -27,12 +27,12 @@ final derivedNotificationsProvider =
 typedef DerivedNotificationsRef =
     AutoDisposeFutureProviderRef<List<DerivedNotification>>;
 String _$readNotificationIdsHash() =>
-    r'd6f42fbbc5edc7e480bfab58cd3d06e57440f171';
+    r'144338ecc52775c1ebed9ed24d023217dd268b5f';
 
 /// See also [ReadNotificationIds].
 @ProviderFor(ReadNotificationIds)
 final readNotificationIdsProvider =
-    AutoDisposeNotifierProvider<ReadNotificationIds, Set<String>>.internal(
+    NotifierProvider<ReadNotificationIds, Set<String>>.internal(
       ReadNotificationIds.new,
       name: r'readNotificationIdsProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -42,7 +42,7 @@ final readNotificationIdsProvider =
       allTransitiveDependencies: null,
     );
 
-typedef _$ReadNotificationIds = AutoDisposeNotifier<Set<String>>;
+typedef _$ReadNotificationIds = Notifier<Set<String>>;
 String _$notificationFilterNotifierHash() =>
     r'db59c3bb1ae13493d81a7ce44162d5d96bf86ce5';
 

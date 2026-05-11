@@ -77,31 +77,50 @@ class _StaffDocumentsScreenState extends ConsumerState<StaffDocumentsScreen> {
                 color: colors.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
               ),
-              child: Row(
-                children: [
-                  _FilterTab(
-                    label: 'Todos',
-                    isSelected: filter == null,
-                    onTap: () => ref
-                        .read(staffDocumentFilterProvider.notifier)
-                        .setFilter(null),
-                  ),
-                  _FilterTab(
-                    label: 'Processando',
-                    isSelected: filter == 'processing',
-                    onTap: () => ref
-                        .read(staffDocumentFilterProvider.notifier)
-                        .setFilter(
-                            filter == 'processing' ? null : 'processing'),
-                  ),
-                  _FilterTab(
-                    label: 'Prontos',
-                    isSelected: filter == 'ready',
-                    onTap: () => ref
-                        .read(staffDocumentFilterProvider.notifier)
-                        .setFilter(filter == 'ready' ? null : 'ready'),
-                  ),
-                ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _FilterTab(
+                      label: 'Todos',
+                      isSelected: filter == null,
+                      onTap: () => ref
+                          .read(staffDocumentFilterProvider.notifier)
+                          .setFilter(null),
+                    ),
+                    _FilterTab(
+                      label: 'Solicitado',
+                      isSelected: filter == 'requested',
+                      onTap: () => ref
+                          .read(staffDocumentFilterProvider.notifier)
+                          .setFilter(
+                              filter == 'requested' ? null : 'requested'),
+                    ),
+                    _FilterTab(
+                      label: 'Processando',
+                      isSelected: filter == 'processing',
+                      onTap: () => ref
+                          .read(staffDocumentFilterProvider.notifier)
+                          .setFilter(
+                              filter == 'processing' ? null : 'processing'),
+                    ),
+                    _FilterTab(
+                      label: 'Prontos',
+                      isSelected: filter == 'ready',
+                      onTap: () => ref
+                          .read(staffDocumentFilterProvider.notifier)
+                          .setFilter(filter == 'ready' ? null : 'ready'),
+                    ),
+                    _FilterTab(
+                      label: 'Entregue',
+                      isSelected: filter == 'delivered',
+                      onTap: () => ref
+                          .read(staffDocumentFilterProvider.notifier)
+                          .setFilter(
+                              filter == 'delivered' ? null : 'delivered'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -255,6 +274,8 @@ class _StaffDocumentsScreenState extends ConsumerState<StaffDocumentsScreen> {
         result = result.where((d) => d.type == typeFilter).toList();
       }
     }
+    // Sort by request date descending (most recent first)
+    result.sort((a, b) => b.requestedAt.compareTo(a.requestedAt));
     return result;
   }
 }
@@ -285,8 +306,6 @@ class _StaffDocumentDetailContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isProcessing = document.status == 'processing' ||
-        document.status == 'requested';
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -326,6 +345,10 @@ class _StaffDocumentDetailContent extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Detail rows
+          if (document.studentName != null)
+            _DetailRow(label: 'Aluno', value: document.studentName!),
+          if (document.studentEmail != null)
+            _DetailRow(label: 'Email', value: document.studentEmail!),
           _DetailRow(label: 'Tipo', value: _typeLabel(document.type)),
           _DetailRow(
             label: 'Status',
@@ -345,33 +368,17 @@ class _StaffDocumentDetailContent extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // Action buttons
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.edit),
-                  label: const Text('Atualizar Status'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    showUpdateStatusSheet(context, ref, document);
-                  },
-                ),
-              ),
-              if (isProcessing) ...[
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton.icon(
-                    icon: const Icon(Icons.upload_file),
-                    label: const Text('Enviar Arquivo'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      showUpdateStatusSheet(context, ref, document);
-                    },
-                  ),
-                ),
-              ],
-            ],
+          // Action button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.edit),
+              label: const Text('Atualizar Status'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                showUpdateStatusSheet(context, ref, document);
+              },
+            ),
           ),
         ],
       ),
@@ -483,36 +490,34 @@ class _FilterTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? colors.surfaceContainerLowest
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: colors.primary.withValues(alpha: 0.06),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color:
-                      isSelected ? colors.primary : colors.onSurfaceVariant,
-                ),
-          ),
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? colors.surfaceContainerLowest
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: colors.primary.withValues(alpha: 0.06),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color:
+                    isSelected ? colors.primary : colors.onSurfaceVariant,
+              ),
         ),
       ),
     );
@@ -575,13 +580,22 @@ class _StaffDocumentCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _typeLabel(document.type),
+                  document.studentName ?? document.studentEmail ?? 'Aluno',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: colors.onSurface,
                       ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
+                Text(
+                  _typeLabel(document.type),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
                 Text(
                   'Solicitado em ${_formatDate(document.requestedAt)}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(

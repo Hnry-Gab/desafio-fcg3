@@ -51,36 +51,47 @@ class StaffCadastroScreen extends ConsumerWidget {
                 color: colors.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _FilterTab(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _FilterTab(
                       label: 'Todos',
                       isSelected: filter == null,
                       onTap: () => ref
                           .read(staffCadastroFilterProvider.notifier)
                           .setFilter(null),
                     ),
-                  ),
-                  Expanded(
-                    child: _FilterTab(
+                    _FilterTab(
                       label: 'Ativos',
                       isSelected: filter == 'active',
                       onTap: () => ref
                           .read(staffCadastroFilterProvider.notifier)
                           .setFilter(filter == 'active' ? null : 'active'),
                     ),
-                  ),
-                  Expanded(
-                    child: _FilterTab(
+                    _FilterTab(
                       label: 'Inativos',
                       isSelected: filter == 'inactive',
                       onTap: () => ref
                           .read(staffCadastroFilterProvider.notifier)
                           .setFilter(filter == 'inactive' ? null : 'inactive'),
                     ),
-                  ),
-                ],
+                    _FilterTab(
+                      label: 'Graduados',
+                      isSelected: filter == 'graduated',
+                      onTap: () => ref
+                          .read(staffCadastroFilterProvider.notifier)
+                          .setFilter(filter == 'graduated' ? null : 'graduated'),
+                    ),
+                    _FilterTab(
+                      label: 'Trancados',
+                      isSelected: filter == 'locked',
+                      onTap: () => ref
+                          .read(staffCadastroFilterProvider.notifier)
+                          .setFilter(filter == 'locked' ? null : 'locked'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -155,10 +166,8 @@ class StaffCadastroScreen extends ConsumerWidget {
     var result = students;
 
     // Status filter
-    if (statusFilter == 'active') {
-      result = result.where((s) => s.isActive).toList();
-    } else if (statusFilter == 'inactive') {
-      result = result.where((s) => !s.isActive).toList();
+    if (statusFilter != null) {
+      result = result.where((s) => s.status == statusFilter).toList();
     }
 
     // Search filter
@@ -413,9 +422,9 @@ class _StudentCard extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Excluir Aluno'),
+        title: const Text('Excluir Aluno Permanentemente'),
         content: Text(
-            'Tem certeza que deseja excluir "${student.name}"? O aluno será desativado.'),
+            'Tem certeza que deseja excluir "${student.name}"? Esta ação é irreversível e todos os dados serão removidos.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -424,7 +433,7 @@ class _StudentCard extends ConsumerWidget {
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: FilledButton.styleFrom(backgroundColor: colors.error),
-            child: const Text('Excluir'),
+            child: const Text('Excluir Permanentemente'),
           ),
         ],
       ),
@@ -546,9 +555,6 @@ class _StudentFormSheetState extends State<_StudentFormSheet> {
       if (_phoneCtrl.text.trim().isNotEmpty) {
         data['phone'] = _phoneCtrl.text.trim();
       }
-      if (_raCtrl.text.trim().isNotEmpty) {
-        data['registration_number'] = _raCtrl.text.trim();
-      }
       if (_periodCtrl.text.trim().isNotEmpty) {
         data['semester'] = int.tryParse(_periodCtrl.text.trim());
       }
@@ -664,11 +670,13 @@ class _StudentFormSheetState extends State<_StudentFormSheet> {
                           keyboardType: TextInputType.phone,
                         ),
                         const SizedBox(height: AppSpacing.md),
-                        _buildField(
-                          controller: _raCtrl,
-                          label: 'RA',
-                        ),
-                        const SizedBox(height: AppSpacing.md),
+                        if (isEdit)
+                          _buildField(
+                            controller: _raCtrl,
+                            label: 'RA (gerado automaticamente)',
+                            readOnly: true,
+                          ),
+                        if (isEdit) const SizedBox(height: AppSpacing.md),
                         _buildField(
                           controller: _periodCtrl,
                           label: 'Período',
@@ -707,11 +715,14 @@ class _StudentFormSheetState extends State<_StudentFormSheet> {
     required String label,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
+    bool readOnly = false,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       validator: validator,
+      readOnly: readOnly,
+      enabled: !readOnly,
       decoration: InputDecoration(
         labelText: label,
         border: OutlineInputBorder(

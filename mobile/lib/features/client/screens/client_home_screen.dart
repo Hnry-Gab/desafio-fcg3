@@ -231,12 +231,6 @@ class ClientHomeScreen extends ConsumerWidget {
 
     final actions = [
       _QuickAction(
-        label: 'Agendamentos',
-        icon: Icons.calendar_today_outlined,
-        color: colors.secondary,
-        onTap: () => context.go('${RoutePaths.clientResources}?tab=1'),
-      ),
-      _QuickAction(
         label: 'Solicitar documentos',
         icon: Icons.description_outlined,
         color: colors.primary,
@@ -244,12 +238,6 @@ class ClientHomeScreen extends ConsumerWidget {
           ref.read(documentAutoOpenDrawerProvider.notifier).state = true;
           context.go(RoutePaths.clientDocuments);
         },
-      ),
-      _QuickAction(
-        label: 'Notificações',
-        icon: Icons.notifications_outlined,
-        color: colors.tertiary,
-        onTap: () => context.go(RoutePaths.clientNotifications),
       ),
     ];
 

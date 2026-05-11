@@ -34,6 +34,14 @@ class Auth extends _$Auth {
 
     try {
       final user = await _authService.getMe();
+      // Block inactive students from accessing the app
+      if (user.isStudent && !user.isActive) {
+        await storage.delete(key: _accessTokenKey);
+        await storage.delete(key: _refreshTokenKey);
+        state = const AuthError(
+            message: 'Sua conta está inativa. Entre em contato com a secretaria.');
+        return;
+      }
       state = AuthAuthenticated(user: user);
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
@@ -71,6 +79,14 @@ class Auth extends _$Auth {
 
       try {
         final user = await _authService.getMe();
+        // Block inactive students from accessing the app
+        if (user.isStudent && !user.isActive) {
+          await storage.delete(key: _accessTokenKey);
+          await storage.delete(key: _refreshTokenKey);
+          state = const AuthError(
+              message: 'Sua conta está inativa. Entre em contato com a secretaria.');
+          return AuthVerifyResult.networkError;
+        }
         state = AuthAuthenticated(user: user);
         return AuthVerifyResult.success;
       } catch (_) {
