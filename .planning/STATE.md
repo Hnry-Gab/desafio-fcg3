@@ -3,13 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
 status: executing
-last_updated: "2026-05-09T21:54:56.127Z"
+
+last_updated: "2026-05-09T04:04:36.756Z"
 last_activity: 2026-05-09
 progress:
   total_phases: 7
-  completed_phases: 3
-  total_plans: 27
-  completed_plans: 27
+  completed_phases: 4
+  total_plans: 35
+  completed_plans: 35
   percent: 100
 ---
 
@@ -17,17 +18,17 @@ progress:
 
 ## Current Position
 
-Phase: 21 (roles-auth-expansion) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 21
-Last activity: 2026-05-09 -- Phase 21 execution started
+Phase: 23
+Plan: Not started
+Status: Executing Phase 22
+Last activity: 2026-05-09
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação acadêmica — com ações concretas executadas em tempo real.
-**Current focus:** Phase 21 — roles-auth-expansion
+**Current focus:** Phase 22 — fcm-push-notifications
 
 ## Milestones Shipped
 

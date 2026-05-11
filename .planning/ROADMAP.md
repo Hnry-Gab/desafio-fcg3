@@ -69,13 +69,14 @@ GROUP 4 — Polish (depends on all above):
 
 ## Phases
 
+
 - [x] **Phase 18: Student UX Corrections** - Fix navigation, chat UX, documents, notifications on student screens (gap closure)
  (completed 2026-05-09)
 - [x] **Phase 19: Staff UX Corrections** - Fix dashboard, agendamentos, chats, intervenção, documentos, recursos, cadastro (gap closure in progress)
  (completed 2026-05-10)
 - [x] **Phase 20: LangChain Workflow** - Complete agent lifecycle, RAG, MCP, defenses, logging (gap closure in progress) (completed 2026-05-09)
 - [x] **Phase 21: Roles & Auth Expansion** - Add provider role with hierarchical CRUDs (completed 2026-05-09)
-- [ ] **Phase 22: FCM Push Notifications** - End-to-end push infrastructure (backend + Flutter)
+- [x] **Phase 22: FCM Push Notifications** - End-to-end push infrastructure (backend + Flutter) (completed 2026-05-09)
 - [ ] **Phase 23: New Features** - Cardápio semanal, perfil do aluno, grade curricular
 - [ ] **Phase 24: UI Polish & Integration** - Splash screen, dashboard metrics, end-to-end coherence
 
@@ -189,7 +190,14 @@ Plans:
   2. Push notification appears in phone notification bar when document is ready, enrollment confirmed, appointment confirmed, or new chat message received
   3. Notifications display correctly in both foreground and background states
   4. Tapping a notification navigates the user to the relevant screen in the app
-**Plans**: TBD
+**Plans:** 4/4 plans complete
+
+Plans:
+- [x] 22-01-PLAN.md — Backend FCM infrastructure (token CRUD + notification service)
+- [x] 22-02-PLAN.md — Flutter Firebase setup + FCM token lifecycle management
+- [x] 22-03-PLAN.md — Backend event triggers + unit tests
+- [x] 22-04-PLAN.md — Flutter notification handlers + deep-link navigation
+
 **UI hint**: yes
 
 ### Phase 23: New Features
@@ -233,7 +241,7 @@ Plans:
 | 19. Staff UX Corrections | v3.0 | 9/9 | Complete    | 2026-05-10 |
 | 20. LangChain Workflow | v3.0 | 11/11 | Complete   | 2026-05-09 |
 | 21. Roles & Auth Expansion | v3.0 | 4/4 | Complete   | 2026-05-09 |
-| 22. FCM Push Notifications | v3.0 | 0/TBD | Not started | - |
+| 22. FCM Push Notifications | v3.0 | 4/4 | Complete    | 2026-05-09 |
 | 23. New Features | v3.0 | 0/TBD | Not started | - |
 | 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |
 

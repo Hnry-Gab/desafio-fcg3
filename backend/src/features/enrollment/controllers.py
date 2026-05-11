@@ -19,12 +19,14 @@ Staff:
 
 from __future__ import annotations
 
+import asyncio
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.infrastructure.database import get_db_session
+from src.features.notifications.services import notification_service
 from src.shared.dependencies import (
     UserContext,
     check_ownership,
@@ -133,7 +135,29 @@ async def confirm_enrollment(
     result = await enrollment_service.confirm_enrollment(
         db, enrollment_id=enrollment_id, student_id=user.id,
     )
+
+    # Capture values before commit to avoid lazy-load issues (WR-01)
+    student_id_for_notification = user.id
+    enrollment_id_for_notification = enrollment_id
+
     await db.commit()
+
+    # FCM: Notify student that enrollment was confirmed
+
+    async def _send_notification():
+        async for fresh_db in get_db_session():
+            try:
+                await notification_service.notify_enrollment_confirmed(
+                    fresh_db, student_id_for_notification, enrollment_id_for_notification
+                )
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).error(
+                    "FCM notification failed in background task: %s", exc
+                )
+
+    asyncio.create_task(_send_notification())
+
     return result
 
 
