@@ -20,7 +20,7 @@ progress:
 Phase: 25
 Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-05-11
+Last activity: 2026-05-11 - Completed quick task 260511-l1h: Fix dashboard metric cards bottom overflow
 
 ## Project Reference
 
@@ -145,6 +145,12 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **25-04:** OTP input boxes wrapped in Flexible for 320dp screen safety
 - **25-04:** fontSize 10→11 on all 18 informational label occurrences (nav labels kept at 10)
 - **25-04:** PT-BR grammar: fixed missing accents (próximo, sessão, ação) in 8 files
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+| --- | ----------- | ---- | ------ | --------- |
+| 260511-l1h | Fix dashboard metric cards bottom overflow by removing fixed height or using Flexible for responsiveness | 2026-05-11 | f80f571 | [260511-l1h-fix-dashboard-metric-cards-bottom-overfl](./quick/260511-l1h-fix-dashboard-metric-cards-bottom-overfl/) |
 
 ## Session Continuity
 
