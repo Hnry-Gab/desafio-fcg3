@@ -115,9 +115,10 @@ class _GlassBottomNavState extends State<GlassBottomNav>
             animation: _curvedAnimation,
             builder: (context, _) {
               return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: List.generate(widget.destinations.length, (index) {
-                  return _buildNavItem(context, index, colors);
+                  return Expanded(
+                    child: _buildNavItem(context, index, colors),
+                  );
                 }),
               );
             },
@@ -187,7 +188,7 @@ class _GlassBottomNavState extends State<GlassBottomNav>
       behavior: HitTestBehavior.opaque,
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
+          horizontal: AppSpacing.xs,
           vertical: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
@@ -215,13 +216,18 @@ class _GlassBottomNavState extends State<GlassBottomNav>
               color: itemColor,
             ),
             const SizedBox(height: 2),
-            Text(
-              item.label,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.5,
-                color: itemColor,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                item.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                  color: itemColor,
+                ),
               ),
             ),
           ],

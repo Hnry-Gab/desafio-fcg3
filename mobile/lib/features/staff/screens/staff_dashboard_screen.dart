@@ -94,64 +94,92 @@ class StaffDashboardScreen extends ConsumerWidget {
                           ],
 
                           // KPI Grid
-                          GridView.count(
-                            crossAxisCount: crossAxisCount,
-                            crossAxisSpacing: AppSpacing.md,
-                            mainAxisSpacing: AppSpacing.md,
-                            childAspectRatio: 1.3,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            children: [
-                              AnimatedEntrance(
-                                delay: AppAnimations.getEntranceDelay(2),
-                                child: _KpiCard(
-                                  icon: Icons.people_outlined,
-                                  iconColor: colors.primary,
-                                  containerColor: colors.primaryContainer,
-                                  value: dashboard.totalStudents.toString(),
-                                  label: 'Alunos',
-                                  onTap: null,
-                                ),
-                              ),
-                              AnimatedEntrance(
-                                delay: AppAnimations.getEntranceDelay(3),
-                                child: _KpiCard(
-                                  icon: Icons.chat_bubble_outlined,
-                                  iconColor: colors.secondary,
-                                  containerColor: colors.secondaryContainer,
-                                  value:
-                                      dashboard.activeChatSessions.toString(),
-                                  label: 'Chats Hoje',
-                                  onTap: () => context.go('${RoutePaths.staffChats}?filter=hoje'),
-                                ),
-                              ),
-                              AnimatedEntrance(
-                                delay: AppAnimations.getEntranceDelay(4),
-                                child: _KpiCard(
-                                  icon: Icons.warning_amber_outlined,
-                                  iconColor: colors.error,
-                                  containerColor: colors.errorContainer,
-                                  value:
-                                      dashboard.pendingDocuments.toString(),
-                                  label: 'Docs Pendentes',
-                                  onTap: () =>
-                                      context.go('${RoutePaths.staffDocuments}?filter=pendentes'),
-                                ),
-                              ),
-                              AnimatedEntrance(
-                                delay: AppAnimations.getEntranceDelay(5),
-                                child: _KpiCard(
-                                  icon: Icons.calendar_today_outlined,
-                                  iconColor: colors.tertiary,
-                                  containerColor: colors.tertiaryContainer,
-                                  value: dashboard.upcomingAppointments
-                                      .toString(),
-                                  label: 'Agendamentos',
-                                  onTap: () =>
-                                      context.go(RoutePaths.staffSchedule),
-                                ),
-                              ),
-                            ],
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final gap = AppSpacing.md;
+                              final childWidth = (constraints.maxWidth -
+                                      gap * (crossAxisCount - 1)) /
+                                  crossAxisCount;
+
+                              return Wrap(
+                                spacing: gap,
+                                runSpacing: gap,
+                                children: [
+                                  SizedBox(
+                                    width: childWidth,
+                                    child: AnimatedEntrance(
+                                      delay:
+                                          AppAnimations.getEntranceDelay(2),
+                                      child: _KpiCard(
+                                        icon: Icons.people_outlined,
+                                        iconColor: colors.primary,
+                                        containerColor:
+                                            colors.primaryContainer,
+                                        value: dashboard.totalStudents
+                                            .toString(),
+                                        label: 'Alunos',
+                                        onTap: null,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: childWidth,
+                                    child: AnimatedEntrance(
+                                      delay:
+                                          AppAnimations.getEntranceDelay(3),
+                                      child: _KpiCard(
+                                        icon: Icons.chat_bubble_outlined,
+                                        iconColor: colors.secondary,
+                                        containerColor:
+                                            colors.secondaryContainer,
+                                        value: dashboard.activeChatSessions
+                                            .toString(),
+                                        label: 'Chats Hoje',
+                                        onTap: () => context.go(
+                                            '${RoutePaths.staffChats}?filter=hoje'),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: childWidth,
+                                    child: AnimatedEntrance(
+                                      delay:
+                                          AppAnimations.getEntranceDelay(4),
+                                      child: _KpiCard(
+                                        icon: Icons.warning_amber_outlined,
+                                        iconColor: colors.error,
+                                        containerColor:
+                                            colors.errorContainer,
+                                        value: dashboard.pendingDocuments
+                                            .toString(),
+                                        label: 'Docs Pendentes',
+                                        onTap: () => context.go(
+                                            '${RoutePaths.staffDocuments}?filter=pendentes'),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: childWidth,
+                                    child: AnimatedEntrance(
+                                      delay:
+                                          AppAnimations.getEntranceDelay(5),
+                                      child: _KpiCard(
+                                        icon: Icons.calendar_today_outlined,
+                                        iconColor: colors.tertiary,
+                                        containerColor:
+                                            colors.tertiaryContainer,
+                                        value: dashboard
+                                            .upcomingAppointments
+                                            .toString(),
+                                        label: 'Agendamentos',
+                                        onTap: () => context
+                                            .go(RoutePaths.staffSchedule),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                           const SizedBox(height: AppSpacing.lg),
 
@@ -387,7 +415,7 @@ class _KpiCard extends StatelessWidget {
       onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             padding: const EdgeInsets.all(10),
@@ -397,7 +425,7 @@ class _KpiCard extends StatelessWidget {
             ),
             child: Icon(icon, color: iconColor, size: 20),
           ),
-          const Spacer(),
+          const SizedBox(height: AppSpacing.sm),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,

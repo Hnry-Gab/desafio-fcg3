@@ -262,7 +262,10 @@ class AppTheme {
   static ThemeData get dark => ThemeData(
         useMaterial3: true,
         colorScheme: _darkColorScheme,
-        textTheme: _baseTextTheme,
+        textTheme: _baseTextTheme.apply(
+          bodyColor: AppColors.darkOnSurface,
+          displayColor: AppColors.darkOnSurface,
+        ),
         appBarTheme: AppBarTheme(
           centerTitle: false,
           elevation: 0,
