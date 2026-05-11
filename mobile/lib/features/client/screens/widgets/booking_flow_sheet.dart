@@ -241,7 +241,7 @@ class _BookingFlowSheetState extends ConsumerState<_BookingFlowSheet> {
                   Text(
                     'Autorização',
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 11,
                       fontWeight: FontWeight.bold,
                       color: isDark ? Colors.amber.shade300 : Colors.amber.shade700,
                     ),
@@ -632,7 +632,7 @@ class _StepDot extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: FontWeight.w600,
             color: isActive ? colors.primary : colors.onSurfaceVariant,
           ),

@@ -337,7 +337,7 @@ class _DocumentCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: FontWeight.bold,
                 color: isReady ? colors.tertiary : (isDark ? Colors.amber.shade300 : Colors.amber.shade700),
               ),

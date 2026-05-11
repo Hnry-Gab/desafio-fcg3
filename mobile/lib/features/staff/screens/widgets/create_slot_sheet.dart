@@ -159,7 +159,7 @@ class _CreateSlotSheetState extends ConsumerState<_CreateSlotSheet> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Erro ao executar acao. Tente novamente.'),
+            content: Text('Erro ao executar ação. Tente novamente.'),
           ),
         );
       }

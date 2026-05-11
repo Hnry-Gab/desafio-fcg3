@@ -277,7 +277,7 @@ class _ResourceCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
                             color: isDark ? Colors.amber.shade300 : Colors.amber.shade700,
                           ),
@@ -552,7 +552,7 @@ class _StatusBadge extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: FontWeight.bold,
           color: badgeColor,
         ),

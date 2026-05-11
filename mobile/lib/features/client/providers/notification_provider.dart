@@ -118,7 +118,7 @@ Future<List<DerivedNotification>> derivedNotifications(Ref ref) async {
           notifications.add(DerivedNotification(
             id: 'apt-${apt.id}',
             type: NotificationType.appointmentReminder,
-            title: 'Agendamento proximo',
+            title: 'Agendamento próximo',
             subtitle: '${apt.reason} — ${apt.slotDate} ${apt.slotStartTime ?? ""}',
             timestamp: aptDate,
             icon: Icons.access_time,

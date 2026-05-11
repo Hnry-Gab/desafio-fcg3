@@ -318,7 +318,7 @@ class _AppointmentCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: FontWeight.bold,
                 color: isScheduled
                     ? (isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32))

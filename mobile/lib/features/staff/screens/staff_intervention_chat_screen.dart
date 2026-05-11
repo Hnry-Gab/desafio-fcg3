@@ -255,7 +255,7 @@ class _InterventionMessageBubble extends StatelessWidget {
                 Text(
                   isUser ? 'Aluno' : (message.role == 'assistant' ? 'IA' : 'Staff'),
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: isUser
                         ? colors.onSurfaceVariant
@@ -286,7 +286,7 @@ class _InterventionMessageBubble extends StatelessWidget {
                     Text(
                       _formatTime(message.createdAt),
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 11,
                         fontWeight: FontWeight.bold,
                         color: isUser
                             ? colors.onSurfaceVariant

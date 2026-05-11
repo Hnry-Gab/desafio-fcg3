@@ -433,7 +433,7 @@ class _ChatSessionCard extends StatelessWidget {
                 formatRelativeTime(item.date),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colors.onSurfaceVariant,
-                  fontSize: 10,
+                  fontSize: 11,
                 ),
               ),
             ],

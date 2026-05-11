@@ -211,7 +211,7 @@ class _StaffMessagesTab extends ConsumerWidget {
                 Icon(Icons.chat_bubble_outline, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
                 const SizedBox(height: 16),
                 Text(
-                  'Nenhuma mensagem nesta sessao',
+                  'Nenhuma mensagem nesta sessão',
                   style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
                 ),
               ],
@@ -328,7 +328,7 @@ class _StaffActionsTab extends ConsumerWidget {
                 Icon(Icons.history_outlined, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
                 const SizedBox(height: 16),
                 Text(
-                  'Nenhuma acao registrada nesta sessao',
+                  'Nenhuma ação registrada nesta sessão',
                   style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
                 ),
               ],

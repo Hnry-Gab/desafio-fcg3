@@ -275,7 +275,7 @@ class _MessagesPanel extends ConsumerWidget {
         if (messages.isEmpty) {
           return const AppEmptyState(
             icon: Icons.chat_bubble_outline,
-            message: 'Nenhuma mensagem nesta sessao',
+            message: 'Nenhuma mensagem nesta sessão',
           );
         }
 
@@ -313,7 +313,7 @@ class _ActionsPanel extends ConsumerWidget {
         if (logs.isEmpty) {
           return const AppEmptyState(
             icon: Icons.history_outlined,
-            message: 'Nenhuma acao registrada',
+            message: 'Nenhuma ação registrada',
           );
         }
 
@@ -478,7 +478,7 @@ class _SessionCard extends StatelessWidget {
             child: Text(
               isActive ? 'Ativa' : 'Encerrada',
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: FontWeight.bold,
                 color: isActive
                     ? (isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32))
