@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
 status: verifying
-last_updated: "2026-05-11T16:39:02.987Z"
+last_updated: "2026-05-11T17:05:55.584Z"
 last_activity: 2026-05-11
 progress:
   total_phases: 8
@@ -17,10 +17,10 @@ progress:
 
 ## Current Position
 
-Phase: 25 (melhorias-frontend) — COMPLETE
-Plan: 4 of 4 (all plans complete)
+Phase: 25
+Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-05-11 -- Completed 25-04 (overflow fixes, font sizes, PT-BR grammar)
+Last activity: 2026-05-11
 
 ## Project Reference
 

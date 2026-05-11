@@ -238,7 +238,7 @@ Plans:
 | 22. FCM Push Notifications | v3.0 | 0/TBD | Not started | - |
 | 23. New Features | v3.0 | 0/TBD | Not started | - |
 | 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |
-| 25. Melhorias FrontEnd | v3.0 | 4/4 | Complete   | 2026-05-11 |
+| 25. Melhorias FrontEnd | v3.0 | 4/4 | Complete    | 2026-05-11 |
 
 ---
 
