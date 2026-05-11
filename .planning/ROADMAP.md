@@ -79,6 +79,7 @@ GROUP 4 — Polish (depends on all above):
 - [x] **Phase 22: FCM Push Notifications** - End-to-end push infrastructure (backend + Flutter) (completed 2026-05-09)
 - [ ] **Phase 23: New Features** - Cardápio semanal, perfil do aluno, grade curricular
 - [ ] **Phase 24: UI Polish & Integration** - Splash screen, dashboard metrics, end-to-end coherence
+- [ ] **Phase 25: Chatbot Interaction Polish** - System prompt rewrite, proactive behavior, tone calibration, hardcoded messages
 
 ## Phase Details
 
@@ -225,6 +226,20 @@ Plans:
 **Plans**: TBD
 **UI hint**: yes
 
+### Phase 25: Chatbot Interaction Polish
+
+**Goal**: Alpha chatbot delivers warm, proactive, human-like interactions that generate genuine connection with students — not just functional answers
+**Depends on**: Phase 20 (LangChain Workflow must be complete — it is)
+**Requirements**: TBD (from discuss-phase)
+**Success Criteria** (what must be TRUE):
+  1. Students perceive the chatbot as helpful and personable (not robotic or cold)
+  2. Chatbot proactively suggests related actions and alerts about pending items
+  3. All hardcoded messages (idle, farewell, escalation, media) match the Alpha persona tone
+  4. Conversation starters and goodbyes feel natural and personalized
+  5. Knowledge base is expanded to cover all available academic topics
+**Plans**: TBD
+**Canonical refs:** `ai_service/prompts/system_prompt.txt`, `ai_service/agent.py`, `backend/src/features/webhook/background.py`, `backend/src/features/webhook/idle_monitor.py`, `ai_service/knowledge/`
+
 ---
 
 ## Progress
@@ -244,7 +259,8 @@ Plans:
 | 22. FCM Push Notifications | v3.0 | 4/4 | Complete    | 2026-05-09 |
 | 23. New Features | v3.0 | 0/TBD | Not started | - |
 | 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |
+| 25. Chatbot Interaction Polish | v3.0 | 0/TBD | Not started | - |
 
 ---
 
-**Total project:** 24 phases across 3 milestones.
+**Total project:** 25 phases across 3 milestones.
