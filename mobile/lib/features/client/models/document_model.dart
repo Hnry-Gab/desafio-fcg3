@@ -5,6 +5,12 @@ part 'document_model.g.dart';
 @JsonSerializable()
 class DocumentModel {
   final String id;
+  @JsonKey(name: 'student_id')
+  final String? studentId;
+  @JsonKey(name: 'student_name')
+  final String? studentName;
+  @JsonKey(name: 'student_email')
+  final String? studentEmail;
   final String type; // 'transcript', 'enrollment_proof', 'declaration', 'certificate'
   final String status; // 'requested', 'processing', 'ready', 'delivered'
   @JsonKey(name: 'file_url')
@@ -17,6 +23,9 @@ class DocumentModel {
 
   const DocumentModel({
     required this.id,
+    this.studentId,
+    this.studentName,
+    this.studentEmail,
     required this.type,
     required this.status,
     this.fileUrl,

@@ -56,13 +56,19 @@ async def create_document(
     user: UserContext = Depends(get_current_user_or_service),
     db: AsyncSession = Depends(get_db_session),
 ) -> DocumentResponse:
-    """Create document request with status=requested.
+    """Create document request.
 
-    T-03-26: student_id always from authenticated user context,
-    never from request body. Accepts X-Service-Token for MCP access.
+    Students: student_id always from authenticated user context (IDOR-safe).
+    Staff: can specify student_id in body to create on behalf of a student.
+    Accepts X-Service-Token for MCP access.
     """
+    # Staff can specify a target student_id; students always use their own
+    target_student_id = user.id
+    if user.role == "staff" and data.student_id is not None:
+        target_student_id = data.student_id
+
     document = await document_service.create_document_request(
-        db, student_id=user.id, data=data,
+        db, student_id=target_student_id, data=data,
     )
     await db.commit()
     return DocumentResponse.model_validate(document)
@@ -97,9 +103,18 @@ async def list_documents(
         student_id=effective_student_id,
         type=type,
         status=status,
+        include_student=(user.role == "staff"),
     )
 
-    data = [DocumentResponse.model_validate(item).model_dump() for item in items]
+    data = []
+    for item in items:
+        doc_dict = DocumentResponse.model_validate(item).model_dump()
+        # Enrich with student info for staff view
+        if user.role == "staff" and item.student:
+            doc_dict["student_name"] = item.student.name
+            doc_dict["student_email"] = item.student.email
+            doc_dict["student_id"] = str(item.student_id)
+        data.append(doc_dict)
     return paginated_response(data, total, params)
 
 

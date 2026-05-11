@@ -42,9 +42,11 @@ class _StaffShellState extends ConsumerState<StaffShell> {
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
     if (location.startsWith(RoutePaths.staffSchedule)) return 1;
-    if (location.startsWith(RoutePaths.staffIntervention)) return 2;
+    if (location.startsWith(RoutePaths.staffChats)) return 2;
     if (location.startsWith(RoutePaths.staffDocuments)) return 3;
     if (location.startsWith(RoutePaths.staffResources)) return 4;
+    if (location.startsWith(RoutePaths.staffGestao)) return 5;
+    if (location.startsWith(RoutePaths.staffCadastro)) return 5;
     return 0;
   }
 
@@ -55,20 +57,25 @@ class _StaffShellState extends ConsumerState<StaffShell> {
       case 1:
         context.go(RoutePaths.staffSchedule);
       case 2:
-        context.go(RoutePaths.staffIntervention);
+        context.go(RoutePaths.staffChats);
       case 3:
         context.go(RoutePaths.staffDocuments);
       case 4:
         context.go(RoutePaths.staffResources);
+      case 5:
+        context.go(RoutePaths.staffGestao);
+        context.go(RoutePaths.staffCadastro);
     }
   }
 
   static const _destinations = <_NavItem>[
     _NavItem(icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard, label: 'Painel'),
     _NavItem(icon: Icons.calendar_today_outlined, activeIcon: Icons.calendar_today, label: 'Agenda'),
-    _NavItem(icon: Icons.support_agent_outlined, activeIcon: Icons.support_agent, label: 'Intervenção'),
+    _NavItem(icon: Icons.chat_bubble_outline, activeIcon: Icons.chat_bubble, label: 'Chats'),
     _NavItem(icon: Icons.folder_outlined, activeIcon: Icons.folder, label: 'Docs'),
     _NavItem(icon: Icons.meeting_room_outlined, activeIcon: Icons.meeting_room, label: 'Recursos'),
+    _NavItem(icon: Icons.admin_panel_settings_outlined, activeIcon: Icons.admin_panel_settings, label: 'Gestão'),
+    _NavItem(icon: Icons.people_outline, activeIcon: Icons.people, label: 'Alunos'),
   ];
 
   static const _railDestinations = [
@@ -83,9 +90,9 @@ class _StaffShellState extends ConsumerState<StaffShell> {
       label: Text('Agenda'),
     ),
     NavigationRailDestination(
-      icon: Icon(Icons.support_agent_outlined),
-      selectedIcon: Icon(Icons.support_agent),
-      label: Text('Intervenção'),
+      icon: Icon(Icons.chat_bubble_outline),
+      selectedIcon: Icon(Icons.chat_bubble),
+      label: Text('Chats'),
     ),
     NavigationRailDestination(
       icon: Icon(Icons.folder_outlined),
@@ -96,6 +103,14 @@ class _StaffShellState extends ConsumerState<StaffShell> {
       icon: Icon(Icons.meeting_room_outlined),
       selectedIcon: Icon(Icons.meeting_room),
       label: Text('Recursos'),
+    ),
+    NavigationRailDestination(
+      icon: Icon(Icons.admin_panel_settings_outlined),
+      selectedIcon: Icon(Icons.admin_panel_settings),
+      label: Text('Gestão'),
+      icon: Icon(Icons.people_outline),
+      selectedIcon: Icon(Icons.people),
+      label: Text('Alunos'),
     ),
   ];
 

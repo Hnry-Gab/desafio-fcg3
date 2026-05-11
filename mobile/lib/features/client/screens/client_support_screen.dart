@@ -6,7 +6,7 @@ import '../../../shared/widgets/app_bar_actions.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/responsive_container.dart';
 
-const _supportEmail = 'suporte@universidade.edu';
+const _supportEmail = 'contato@alphaconnect-ed.xyz';
 const _supportPhone = '+55 71 9373-5873';
 const _officeHours = 'Segunda a Sexta, das 08h às 21h';
 const _whatsappUrl = 'https://wa.me/557193735873';

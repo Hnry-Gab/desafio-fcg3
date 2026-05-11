@@ -24,7 +24,7 @@ async def test_student_gets_portuguese_response_with_mcp_and_rag_tools_wired(
         calls["embeddings"] = settings.EMBEDDING_PROVIDER
         return SimpleNamespace(name="fake_embeddings")
 
-    def fake_create_rag_tool(db_pool, embeddings, similarity_threshold=0.45):
+    def fake_create_rag_tool(db_pool, embeddings, similarity_threshold=0.45, session_id=None):
         calls["rag"] = (db_pool, embeddings, similarity_threshold)
         return SimpleNamespace(name="search_knowledge_base")
 
@@ -75,6 +75,7 @@ async def test_student_gets_portuguese_response_with_mcp_and_rag_tools_wired(
         system_prompt="Sempre responda em portugues brasileiro.",
         session_id="session-pt",
         user_message="Qual é a minha situação acadêmica?",
+        verification_state="verified",
     )
 
     assert response == "Olá! Consultei seus dados e sua matrícula está ativa."

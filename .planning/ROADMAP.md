@@ -69,10 +69,13 @@ GROUP 4 — Polish (depends on all above):
 
 ## Phases
 
-- [ ] **Phase 18: Student UX Corrections** - Fix navigation, chat UX, documents, notifications on student screens
-- [ ] **Phase 19: Staff UX Corrections** - Fix dashboard, agendamentos, chats, intervenção, documentos, recursos, cadastro
-- [ ] **Phase 20: LangChain Workflow** - Complete agent lifecycle, RAG, MCP, defenses, logging
-- [ ] **Phase 21: Roles & Auth Expansion** - Add provider role with hierarchical CRUDs
+
+- [x] **Phase 18: Student UX Corrections** - Fix navigation, chat UX, documents, notifications on student screens (gap closure)
+ (completed 2026-05-09)
+- [x] **Phase 19: Staff UX Corrections** - Fix dashboard, agendamentos, chats, intervenção, documentos, recursos, cadastro (gap closure in progress)
+ (completed 2026-05-10)
+- [x] **Phase 20: LangChain Workflow** - Complete agent lifecycle, RAG, MCP, defenses, logging (gap closure in progress) (completed 2026-05-09)
+- [x] **Phase 21: Roles & Auth Expansion** - Add provider role with hierarchical CRUDs (completed 2026-05-09)
 - [x] **Phase 22: FCM Push Notifications** - End-to-end push infrastructure (backend + Flutter) (completed 2026-05-09)
 - [ ] **Phase 23: New Features** - Cardápio semanal, perfil do aluno, grade curricular
 - [ ] **Phase 24: UI Polish & Integration** - Splash screen, dashboard metrics, end-to-end coherence
@@ -90,7 +93,17 @@ GROUP 4 — Polish (depends on all above):
   3. Student can view full document details in a drawer, see type/date on each item, and add documents via drawer
   4. Student notifications show read/unread state, can be filtered, individually marked as read, and bulk-marked
   5. Student accesses support via header icon and views agendamento details via drawer
-**Plans**: TBD
+**Plans:** 7/7 plans complete
+
+Plans:
+- [x] 18-01-PLAN.md — Fix home quick actions + add support/notifications to header
+- [x] 18-02-PLAN.md — Chat rename, active/inactive filter, date ordering
+- [x] 18-03-PLAN.md — Documents type/date display + detail drawer
+- [x] 18-04-PLAN.md — Notifications read/unread state + filters + mark-as-read
+- [x] 18-05-PLAN.md — Appointment detail drawer + wiring
+- [x] 18-06-PLAN.md — GAP: Agendamentos quick action → navigate to resources tab + card onTap
+- [x] 18-07-PLAN.md — GAP: Chat rename backend endpoint + Flutter error handling
+
 **UI hint**: yes
 
 ### Phase 19: Staff UX Corrections
@@ -106,7 +119,19 @@ GROUP 4 — Polish (depends on all above):
   5. Staff documentos have state tabs, type filter, full data view, drawer pattern, and error on missing file
   6. Staff recursos toggle ativar/desativar works and delete option exists
   7. Staff cadastro de alunos is a full CRUD with cards, 3-dot menu, floating add button, expandable details, and search/filters
-**Plans**: TBD
+**Plans:** 9/9 plans complete
+
+Plans:
+- [x] 19-01-PLAN.md — Dashboard KPI navigation + nav rename + Ações Rápidas
+- [x] 19-02-PLAN.md — Agendamentos card redesign + search + confirm fix
+- [x] 19-03-PLAN.md — Unified Chats screen (AI + Intervention merged)
+- [x] 19-04-PLAN.md — Documents tabs + type filter + detail sheet
+- [x] 19-05-PLAN.md — Resources toggle + delete option
+- [x] 19-06-PLAN.md — Cadastro de Alunos full CRUD screen
+- [x] 19-07-PLAN.md — GAP: Appointment data + confirm endpoint (Tests 4, 5)
+- [x] 19-08-PLAN.md — GAP: Chat student data + intervention closed + resource delete (Tests 6, 7, 11)
+- [x] 19-09-PLAN.md — GAP: KPI filter nav + chat tab fix + cadastro field mapping (Tests 2, 6, 12, 13)
+
 **UI hint**: yes
 
 ### Phase 20: LangChain Workflow
@@ -120,7 +145,20 @@ GROUP 4 — Polish (depends on all above):
   3. Off-scope questions receive polite redirection; media messages receive creative rejection; failures trigger human intervention
   4. Prompt injection attempts are detected and neutralized without disrupting legitimate conversation
   5. Staff can see RAG debug info (chunks, scores) in chat logs; system logs capture full LangChain decision traceability
-**Plans**: TBD
+**Plans:** 11/11 plans complete
+
+Plans:
+- [x] 20-01-PLAN.md — System prompt + Alpha persona + off-scope + media enhancement
+- [x] 20-02-PLAN.md — RAG observability (rag_logs table) + LangSmith tracing
+- [x] 20-03-PLAN.md — RAG ingest on Docker bootstrap
+- [x] 20-04-PLAN.md — Lazy OTP strategy + webhook flow modification
+- [x] 20-05-PLAN.md — Prompt injection defense (4 layers)
+- [x] 20-06-PLAN.md — Session lifecycle (welcome/goodbye/idle timeout)
+- [x] 20-07-PLAN.md — Gap closure: stale OTP reset + farewell accent normalization
+- [x] 20-08-PLAN.md — Gap closure: plain-text formatting + personalized welcome name
+- [x] 20-09-PLAN.md — Gap closure: welcome name fix + farewell detection threshold
+- [x] 20-10-PLAN.md — Gap closure: stale OTP timezone crash fix + test repair
+- [x] 20-11-PLAN.md — Gap closure: MCP verification gate + system prompt lazy OTP + verification_state propagation
 
 ### Phase 21: Roles & Auth Expansion
 
@@ -132,7 +170,14 @@ GROUP 4 — Polish (depends on all above):
   2. Provider can CRUD staff members (cadastrar, editar, ativar/desativar, remover) with required fields
   3. Staff can CRUD students (cadastrar, editar, ativar/desativar, remover) with required fields
   4. Provider screen has 2 tabs (staff + aluno) with separate CRUD interfaces
-**Plans**: TBD
+**Plans:** 4/4 plans complete
+
+Plans:
+- [x] 21-01-PLAN.md — Backend migration + auth expansion (provider role, new columns, require_provider)
+- [x] 21-02-PLAN.md — Staff CRUD endpoints (5 routes, provider-only)
+- [x] 21-03-PLAN.md — Flutter navigation expansion (6th tab, UserModel, router guards)
+- [x] 21-04-PLAN.md — Flutter staff management UI (list, form, CRUD operations)
+
 **UI hint**: yes
 
 ### Phase 22: FCM Push Notifications
@@ -192,10 +237,10 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 18. Student UX Corrections | v3.0 | 0/TBD | Not started | - |
-| 19. Staff UX Corrections | v3.0 | 0/TBD | Not started | - |
-| 20. LangChain Workflow | v3.0 | 0/TBD | Not started | - |
-| 21. Roles & Auth Expansion | v3.0 | 0/TBD | Not started | - |
+| 18. Student UX Corrections | v3.0 | 7/7 | Complete    | 2026-05-09 |
+| 19. Staff UX Corrections | v3.0 | 9/9 | Complete    | 2026-05-10 |
+| 20. LangChain Workflow | v3.0 | 11/11 | Complete   | 2026-05-09 |
+| 21. Roles & Auth Expansion | v3.0 | 4/4 | Complete   | 2026-05-09 |
 | 22. FCM Push Notifications | v3.0 | 4/4 | Complete    | 2026-05-09 |
 | 23. New Features | v3.0 | 0/TBD | Not started | - |
 | 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |

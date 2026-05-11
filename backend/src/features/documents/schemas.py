@@ -21,10 +21,14 @@ class DocumentCreate(BaseModel):
 
     Per docs/api.md: type is one of transcript, enrollment_proof,
     declaration, certificate.  notes is optional free-text.
+    Staff can specify student_id to create on behalf of a student.
     """
 
     type: Literal["transcript", "enrollment_proof", "declaration", "certificate"]
     notes: str | None = Field(default=None, max_length=1000)
+    student_id: UUID | None = Field(default=None, description="Staff-only: target student ID")
+    status: Literal["requested", "processing", "ready"] | None = Field(default=None)
+    file_url: str | None = Field(default=None, max_length=500)
 
 
 class DocumentStatusUpdate(BaseModel):
@@ -46,6 +50,9 @@ class DocumentResponse(BaseModel):
     """Response for document list items and detail (DOCS-01, DOCS-02)."""
 
     id: UUID
+    student_id: UUID | None = None
+    student_name: str | None = None
+    student_email: str | None = None
     type: str
     status: str
     file_url: str | None = None

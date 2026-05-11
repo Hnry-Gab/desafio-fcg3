@@ -131,7 +131,13 @@ async def verify_code(
         qst = await db.execute(select(Staff).where(Staff.email == payload.email))
         staff = qst.scalar_one_or_none()
         if staff is not None:
-            user, role = staff, "staff"
+            # D-20: inactive staff cannot log in
+            if staff.status == "inactive":
+                await db.commit()
+                return _auth_error(401, "ACCOUNT_INACTIVE", "Conta desativada")
+            # D-03: Provider gets distinct JWT role; other staff.roles map to 'staff'
+            jwt_role = "provider" if staff.role == "provider" else "staff"
+            user, role = staff, jwt_role
 
     if user is None:
         # Should be unreachable if D-07 holds, but be defensive
@@ -139,7 +145,9 @@ async def verify_code(
         return _auth_error(401, "INVALID_CODE", "Invalid or expired code")
 
     pair = jwt_service.issue_token_pair(user.id, role, user.name, user.email)
-    await session_service.create_session_pair(db, user.id, pair, user_type=role)
+    # D-07: provider uses user_type='staff' in sessions table
+    session_user_type = "staff" if role == "provider" else role
+    await session_service.create_session_pair(db, user.id, pair, user_type=session_user_type)
     await db.commit()
     return TokenPair(
         access_token=pair.access.token,
@@ -161,13 +169,26 @@ async def logout(
 
 
 @router.get("/me", response_model=MeResponse, status_code=200)
-async def me(current_user: CurrentUser = Depends(get_current_user)) -> MeResponse:
-    """D-05: payload is rich enough that we don't query the DB — token IS the source."""
+async def me(
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+) -> MeResponse:
+    """D-05: Returns user info. Queries DB for student status to enforce inactive block."""
+    status = "active"
+    if current_user.role == "student":
+        result = await db.execute(
+            select(Student.status).where(Student.id == current_user.id)
+        )
+        row = result.scalar_one_or_none()
+        if row is not None:
+            status = row
+
     return MeResponse(
         id=str(current_user.id),
         email=current_user.email,
         name=current_user.name,
         role=current_user.role,
+        status=status,
     )
 
 

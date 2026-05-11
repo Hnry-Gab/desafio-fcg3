@@ -106,6 +106,9 @@ services:
       EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-openai}
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
       MCP_SERVER_URL: ${MCP_URL}
+      LANGCHAIN_TRACING_V2: ${LANGCHAIN_TRACING_V2:-false}
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:-}
+      LANGCHAIN_PROJECT: ${LANGCHAIN_PROJECT:-fcg3-ai-service}
     volumes:
       - ./ai_service:/app/ai_service
     depends_on:
@@ -120,7 +123,7 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
-    command: python -m ai_service.main
+    command: bash /app/entrypoint.sh
 
   mcp-server:
     build: ./mcp_server
