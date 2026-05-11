@@ -1,96 +1,233 @@
-# Requirements — Desafio FCG3
+# Requirements: Desafio FCG3 — v3.0
 
-**Version:** 2.0
-**Milestone:** M2 — Flutter Frontend
-**Date:** 2026-05-04
+**Defined:** 2026-05-08
+**Core Value:** Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação acadêmica — com ações concretas executadas em tempo real.
 
----
+## v3.0 Requirements
 
-## v2 Requirements
+Requirements for milestone v3.0. Each maps to roadmap phases.
 
-### Flutter Infrastructure & Auth
+### Student UX Corrections
 
-- [ ] **UI-INFRA-01**: App inicia com navegação baseada em perfil — Client e Provider/Staff veem rotas dedicadas
-- [x] **UI-INFRA-02**: Fluxo de autenticação (OTP email → JWT) integrado com backend FastAPI existente
-- [ ] **UI-INFRA-03**: JWT armazenado via flutter_secure_storage com detecção de expiração/revogação e redirecionamento para login
+- [x] **STUX-01**: Botão "Agendamentos" nas ações rápidas redireciona para o agendamento mais próximo do aluno
+- [x] **STUX-02**: Botão "Solicitar documentos" redireciona para tela de documentos com drawer de adicionar já aberto
+- [x] **STUX-03**: Ação rápida "Conversar com mentor" removida da tela principal
+- [x] **STUX-04**: Tab de suporte adicionada ao header da aplicação
+- [x] **STUX-05**: Chat permite renomear sessão (nome default gerado pela IA)
+- [x] **STUX-06**: Chat possui filtro entre sessões ativas e inativas
+- [x] **STUX-07**: Chat possui ordenação por data
+- [x] **STUX-08**: Documentos exibem tipo e data com hora em cada item
+- [x] **STUX-09**: Clique no documento abre drawer com informações completas
+- [x] **STUX-10**: Adicionar documento usa drawer (mesmo design da tela de recursos)
+- [x] **STUX-11**: Avisos possuem estado de visualizado/não visualizado com filtro
+- [x] **STUX-12**: Botão "visualizar todos" marca todas notificações como lidas
+- [x] **STUX-13**: Notificação só marca como visualizada ao clicar diretamente nela
+- [x] **STUX-14**: Tela de avisos reposicionada para botão no header (removida do menu inferior)
+- [x] **STUX-15**: Agendamentos do student mostram detalhes via drawer ao clicar
 
----
+### Staff UX Corrections
 
-### Client Screens
+- [x] **SFUX-01**: Dashboard — taxa de resolução automatizada com truncamento de casas decimais
+- [x] **SFUX-02**: Dashboard — "Docs pendentes" aplica filtro automaticamente ao navegar
+- [x] **SFUX-03**: Dashboard — "Chats hoje" aplica filtro de data automaticamente ao navegar
+- [x] **SFUX-04**: Agendamentos — detalhamento mostra Nome, RA, data emissão, recurso
+- [x] **SFUX-05**: Agendamentos — card exibe nome e recurso (não motivo)
+- [x] **SFUX-06**: Agendamentos — confirmar agendamento funciona corretamente
+- [x] **SFUX-07**: Agendamentos — search por RA ou nome de aluno
+- [x] **SFUX-08**: Chats — tab de navegação para tela de chats no menu
+- [x] **SFUX-09**: Chats — identificação mostra nome do aluno + número formatado
+- [x] **SFUX-10**: Chats — header ao entrar no chat com nome, RA e dados da sessão
+- [x] **SFUX-11**: Intervenção — acessível para teste após correção LangChain
+- [x] **SFUX-12**: Intervenção — widgets adequados ao padrão (drawer, search por Nome/RA/Telefone)
+- [x] **SFUX-13**: Intervenção — tab de concluídos adicionada
+- [x] **SFUX-14**: Documentos — tabs para "processando" e "prontos"
+- [x] **SFUX-15**: Documentos — filtro por tipo de documento
+- [x] **SFUX-16**: Documentos — visualização completa dos dados da solicitação ao clicar
+- [x] **SFUX-17**: Documentos — widget de adicionar/editar segue padrão drawer
+- [x] **SFUX-18**: Documentos — mensagem de erro clara ao finalizar sem arquivo anexado
+- [x] **SFUX-19**: Recursos — toggle ativar/desativar com feedback visual correto
+- [x] **SFUX-20**: Recursos — opção de deletar recurso
+- [x] **SFUX-21**: Cadastro — tela CRUD completa para alunos (cadastrar, visualizar, editar, remover, ativar/desativar)
+- [x] **SFUX-22**: Cadastro — lista de alunos como cards com menu 3 pontos (editar, excluir, ativar/desativar) e indicador de estado
+- [x] **SFUX-23**: Cadastro — botão flutuante "+" para adicionar aluno
+- [x] **SFUX-24**: Cadastro — expansão do card mostra informações pessoais
+- [x] **SFUX-25**: Cadastro — search por nome + filtro estado + filtro avançado (RA, número, nome)
 
-- [x] **UI-C01**: Cliente visualiza dashboard home com resumo das ações e agendamentos realizados via WhatsApp
-- [x] **UI-C02**: Cliente consulta histórico de chats/atendimentos com status das solicitações abertas
-- [x] **UI-C03**: Cliente solicita envio ou emissão de novos documentos pela interface
-- [x] **UI-C04**: Cliente acessa mural de documentos para visualização, download e gerenciamento de documentos emitidos ou recebidos
-- [x] **UI-C05**: Cliente recebe e consulta central de notificações com alertas, lembretes de agendamento e atualizações de status
-- [x] **UI-C06**: Cliente acessa canal direto de suporte e contato técnico/administrativo
+### LangChain Workflow
 
----
+- [ ] **LANG-01**: Agente detecta início de sessão e envia welcome message via template
+- [ ] **LANG-02**: Agente detecta fim de sessão (timeout ou despedida) e envia goodbye + atualiza status
+- [ ] **LANG-03**: RAG responde perguntas acadêmicas com base em knowledge base
+- [ ] **LANG-04**: MCP tool calling executa ações no backend via session context
+- [ ] **LANG-05**: Respostas fora de escopo são tratadas educadamente redirecionando ao acadêmico
+- [ ] **LANG-06**: Falha de atendimento ativa intervenção humana automaticamente
+- [ ] **LANG-07**: System prompt define persona, instruções operacionais e ações disponíveis
+- [ ] **LANG-08**: Mídia recebida (imagem/áudio) recebe rejeição educada e criativa
+- [ ] **LANG-09**: Prompt injection defense via hardening + sanitização + canary tokens
+- [ ] **LANG-10**: Logging estruturado para RAG (chunks recuperados, similarity score)
+- [ ] **LANG-11**: Logging estruturado para MCP (tool call, params, resultado, latência)
+- [ ] **LANG-12**: Debug tooling para fluxo geral do LangChain (traceability de decisões)
+- [ ] **LANG-13**: Log do RAG visível nos chats do staff (quantidade chunks, score)
+- [ ] **LANG-14**: Lazy loading do OTP na conversa do WhatsApp (sem bloqueio desnecessário)
 
-### Staff/Provider Screens
+### Roles & Auth
 
-- [x] **UI-F01**: Fornecedor consulta dashboard de gestão com métricas e visões gerais sobre o negócio, atendimentos e interações do bot
-- [x] **UI-F02**: Fornecedor gerencia, aprova, reagenda ou cancela compromissos gerados via WhatsApp
-- [x] **UI-F03**: Fornecedor visualiza dados estruturados, resumos e insights extraídos pela IA a partir das conversas
-- [x] **UI-F04**: Fornecedor envia documentos para o mural dos clientes e gerencia solicitações pendentes
+- [ ] **ROLE-01**: Role provider adicionada ao sistema JWT (student/staff/provider)
+- [ ] **ROLE-02**: Provider herda funcionalidades do staff
+- [ ] **ROLE-03**: Provider pode cadastrar, editar, ativar/desativar e remover staff
+- [ ] **ROLE-04**: Staff pode cadastrar, editar, ativar/desativar e remover students
+- [ ] **ROLE-05**: Tela de cadastro Provider com 2 tabs (staff + aluno) e CRUDs separados
+- [ ] **ROLE-06**: Staff cadastra aluno com: nome, email, celular, endereço, RA, período, campus
+- [ ] **ROLE-07**: Provider cadastra staff com: nome, email, celular, cargo/função, horário de trabalho
 
----
+### FCM Push Notifications
 
-### Non-Functional
+- [ ] **FCM-01**: Flutter registra FCM token no login e envia ao backend
+- [ ] **FCM-02**: Backend armazena/atualiza FCM tokens por dispositivo
+- [ ] **FCM-03**: Notificação push enviada quando documento fica pronto
+- [ ] **FCM-04**: Notificação push enviada quando matrícula é confirmada
+- [ ] **FCM-05**: Notificação push enviada quando agendamento é confirmado
+- [ ] **FCM-06**: Notificação push enviada para nova mensagem de chat
+- [ ] **FCM-07**: Notificação push exibida na barra de notificações do celular (foreground + background)
+- [ ] **FCM-08**: Tap na notificação navega para a tela relevante no app
 
-- [x] **UI-NFR-01**: Interface intuitiva priorizando clareza para o cliente
-- [x] **UI-NFR-02**: Aplicação Flutter adaptável a smartphones, tablets e web
-- [x] **UI-NFR-03**: Autenticação com separação rigorosa de permissões e rotas entre Cliente e Fornecedor
-- [x] **UI-NFR-04**: Sincronização eficiente dos dados do WhatsApp/IA com latência percebida < 2s para dados cacheados
+### Features Novas — Cardápio
 
----
+- [ ] **CARD-01**: Staff/provider pode cadastrar cardápio semanal (texto por dia)
+- [ ] **CARD-02**: Student visualiza cardápio da semana com navegação por dia
+- [ ] **CARD-03**: Exibição visual clara dos dias da semana com detalhes ao clicar
 
-## v1 Requirements (Previous Milestone — M1 Backend + AI + MCP)
+### Features Novas — Perfil
 
-> M1 requirements are preserved in git history. See `REQUIREMENTS.md` at any commit before 2026-05-04.
-> 69/69 M1 requirements were mapped. Key validated items are tracked in PROJECT.md Validated section.
+- [ ] **PERF-01**: Student visualiza e edita dados do app (foto, nome, preferências de notificação)
+- [ ] **PERF-02**: Student visualiza dados acadêmicos (RA, curso, período, campus, notas)
+- [ ] **PERF-03**: Tela de perfil integrada à navegação principal
 
----
+### Features Novas — Grade Curricular
 
-## Future Requirements (Deferred)
+- [ ] **GRAD-01**: Student visualiza grade curricular em formato de calendário semanal
+- [ ] **GRAD-02**: Cada aula exibe horário, professor e descrição da matéria
+- [ ] **GRAD-03**: Calendário mostra apenas aulas em que o aluno está inscrito
 
-- Push notifications via FCM (registro de token, envio por tipo de evento)
-- Transcrição de áudio via Whisper API
-- Análise de imagens via GPT-4o Vision
-- Cache de sessões em Redis
-- Sentry / monitoramento externo
+### UI & Polish
 
----
+- [ ] **UIPOL-01**: Splash screen customizada substitui splash padrão Flutter
+- [ ] **UIPOL-02**: Dashboard staff/provider exibe métricas adicionais relevantes
+- [ ] **UIPOL-03**: Navegação end-to-end coerente após todas correções aplicadas
+
+## Future Requirements
+
+### Deferred
+
+- **FUTURE-01**: Whisper API — transcrição de áudio
+- **FUTURE-02**: GPT-4o Vision — análise de imagens
+- **FUTURE-03**: Redis cache para sessões de conversa
+- **FUTURE-04**: pg_cron para limpeza automática
+- **FUTURE-05**: Sentry / monitoramento externo
+- **FUTURE-06**: Offline-first / local caching strategy
+- **FUTURE-07**: Templates aprovados WhatsApp Business para mensagens proativas
 
 ## Out of Scope
 
-- Backend API changes — all endpoints built in M1; frontend consumes as-is
-- WhatsApp bot features — complete in M1 Phase 6
-- Knowledge base administration via UI — ingest via script only
-- Offline-first / local caching strategy — pós-MVP
-
----
+| Feature | Reason |
+|---------|--------|
+| Google Calendar integration | Simplificado para calendário interno no app |
+| Transcrição de áudio (Whisper) | Pós-MVP, mídia recebe rejeição educada |
+| Análise de imagens (GPT-4o Vision) | Pós-MVP |
+| Real-time chat WebSocket | HTTP polling suficiente para MVP |
+| OAuth login | OTP email suficiente para todos os roles |
 
 ## Traceability
 
-*Mapeamento de requisitos para fases do roadmap — gerado em 2026-05-04.*
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| STUX-01 | Phase 18 | Complete |
+| STUX-02 | Phase 18 | Complete |
+| STUX-03 | Phase 18 | Complete |
+| STUX-04 | Phase 18 | Complete |
+| STUX-05 | Phase 18 | Complete |
+| STUX-06 | Phase 18 | Complete |
+| STUX-07 | Phase 18 | Complete |
+| STUX-08 | Phase 18 | Complete |
+| STUX-09 | Phase 18 | Complete |
+| STUX-10 | Phase 18 | Complete |
+| STUX-11 | Phase 18 | Complete |
+| STUX-12 | Phase 18 | Complete |
+| STUX-13 | Phase 18 | Complete |
+| STUX-14 | Phase 18 | Complete |
+| STUX-15 | Phase 18 | Complete |
+| SFUX-01 | Phase 19 | Complete |
+| SFUX-02 | Phase 19 | Complete |
+| SFUX-03 | Phase 19 | Complete |
+| SFUX-04 | Phase 19 | Complete |
+| SFUX-05 | Phase 19 | Complete |
+| SFUX-06 | Phase 19 | Complete |
+| SFUX-07 | Phase 19 | Complete |
+| SFUX-08 | Phase 19 | Complete |
+| SFUX-09 | Phase 19 | Complete |
+| SFUX-10 | Phase 19 | Complete |
+| SFUX-11 | Phase 19 | Complete |
+| SFUX-12 | Phase 19 | Complete |
+| SFUX-13 | Phase 19 | Complete |
+| SFUX-14 | Phase 19 | Complete |
+| SFUX-15 | Phase 19 | Complete |
+| SFUX-16 | Phase 19 | Complete |
+| SFUX-17 | Phase 19 | Complete |
+| SFUX-18 | Phase 19 | Complete |
+| SFUX-19 | Phase 19 | Complete |
+| SFUX-20 | Phase 19 | Complete |
+| SFUX-21 | Phase 19 | Complete |
+| SFUX-22 | Phase 19 | Complete |
+| SFUX-23 | Phase 19 | Complete |
+| SFUX-24 | Phase 19 | Complete |
+| SFUX-25 | Phase 19 | Complete |
+| LANG-01 | Phase 20 | Pending |
+| LANG-02 | Phase 20 | Pending |
+| LANG-03 | Phase 20 | Pending |
+| LANG-04 | Phase 20 | Pending |
+| LANG-05 | Phase 20 | Pending |
+| LANG-06 | Phase 20 | Pending |
+| LANG-07 | Phase 20 | Pending |
+| LANG-08 | Phase 20 | Pending |
+| LANG-09 | Phase 20 | Pending |
+| LANG-10 | Phase 20 | Pending |
+| LANG-11 | Phase 20 | Pending |
+| LANG-12 | Phase 20 | Pending |
+| LANG-13 | Phase 20 | Pending |
+| LANG-14 | Phase 20 | Pending |
+| ROLE-01 | Phase 21 | Pending |
+| ROLE-02 | Phase 21 | Pending |
+| ROLE-03 | Phase 21 | Pending |
+| ROLE-04 | Phase 21 | Pending |
+| ROLE-05 | Phase 21 | Pending |
+| ROLE-06 | Phase 21 | Pending |
+| ROLE-07 | Phase 21 | Pending |
+| FCM-01 | Phase 22 | Pending |
+| FCM-02 | Phase 22 | Pending |
+| FCM-03 | Phase 22 | Pending |
+| FCM-04 | Phase 22 | Pending |
+| FCM-05 | Phase 22 | Pending |
+| FCM-06 | Phase 22 | Pending |
+| FCM-07 | Phase 22 | Pending |
+| FCM-08 | Phase 22 | Pending |
+| CARD-01 | Phase 23 | Pending |
+| CARD-02 | Phase 23 | Pending |
+| CARD-03 | Phase 23 | Pending |
+| PERF-01 | Phase 23 | Pending |
+| PERF-02 | Phase 23 | Pending |
+| PERF-03 | Phase 23 | Pending |
+| GRAD-01 | Phase 23 | Pending |
+| GRAD-02 | Phase 23 | Pending |
+| GRAD-03 | Phase 23 | Pending |
+| UIPOL-01 | Phase 24 | Pending |
+| UIPOL-02 | Phase 24 | Pending |
+| UIPOL-03 | Phase 24 | Pending |
 
-| REQ-ID | Phase | Status |
-|--------|-------|--------|
-| UI-INFRA-01 | Phase 7: Flutter Scaffold & Auth | Pending |
-| UI-INFRA-02 | Phase 7: Flutter Scaffold & Auth | Complete |
-| UI-INFRA-03 | Phase 7: Flutter Scaffold & Auth | Pending |
-| UI-NFR-03 | Phase 7: Flutter Scaffold & Auth | Complete |
-| UI-C01 | Phase 8: Client Interface | Complete |
-| UI-C02 | Phase 8: Client Interface | Complete |
-| UI-C03 | Phase 8: Client Interface | Complete |
-| UI-C04 | Phase 8: Client Interface | Complete |
-| UI-C05 | Phase 8: Client Interface | Complete |
-| UI-C06 | Phase 8: Client Interface | Complete |
-| UI-NFR-01 | Phase 8: Client Interface | Complete |
-| UI-F01 | Phase 9: Staff Interface | Complete |
-| UI-F02 | Phase 9: Staff Interface | Complete |
-| UI-F03 | Phase 9: Staff Interface | Complete |
-| UI-F04 | Phase 9: Staff Interface | Complete |
-| UI-NFR-02 | Phase 10: Cross-Platform Polish | Complete |
-| UI-NFR-04 | Phase 10: Cross-Platform Polish | Complete |
+**Coverage:**
+- v3.0 requirements: 81 total (corrected from initial 68 estimate)
+- Mapped to phases: 81
+- Unmapped: 0 ✓
+
+---
+*Requirements defined: 2026-05-08*
+*Last updated: 2026-05-08 — traceability mapped by roadmapper*

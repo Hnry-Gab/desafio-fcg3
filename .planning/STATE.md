@@ -1,129 +1,54 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: verifying
-last_updated: "2026-05-11T01:32:01.952Z"
-last_activity: 2026-05-11
+milestone: v3.0
+milestone_name: Correções, Melhorias & Features
+status: completed
+last_updated: "2026-05-10T01:03:34.132Z"
+last_activity: 2026-05-10
 progress:
-  total_phases: 14
-  completed_phases: 10
-  total_plans: 39
-  completed_plans: 36
-  percent: 92
+  total_phases: 7
+  completed_phases: 2
+  total_plans: 16
+  completed_plans: 16
+  percent: 100
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 17
+Phase: 20
 Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-05-11
+Status: Phase complete
+Last activity: 2026-05-10
 
-Progress: [█████████▏] 92%
+## Project Reference
 
-## Phase Status
+See: .planning/PROJECT.md (updated 2026-05-08)
 
-| Phase | Name | Status |
-|-------|------|--------|
-| 7 | Flutter Scaffold & Auth | complete |
-| 8 | Client Interface | complete |
-| 9 | Staff Interface | complete |
-| 10 | Cross-Platform Polish | complete |
-| 11 | Alpha Connect Visual Refactoring | complete |
-| 12 | Frontend-Backend Integration | complete |
-| 13 | Resource Allocation | complete |
-| 14 | Human Intervention | complete |
-| 15 | Cyber-Academic Visual Redesign | complete |
-| 15.1 | Fix logo | complete |
-| 15.2 | Add Alpha Connect SVG logos | complete |
-| 16 | Micro-Animations & Transitions | complete |
+**Core value:** Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação acadêmica — com ações concretas executadas em tempo real.
+**Current focus:** Phase 19 — staff-ux-corrections
 
-## Current Focus
+## Milestones Shipped
 
-**All phases delivered (7-16). 12 phases, 36 plans executed.**
-Previous milestone (M1 Backend + AI + MCP) delivered 6 phases, 47 plans.
+| Milestone | Phases | Plans | Shipped |
+|-----------|--------|-------|---------|
+| v1.0 Backend + AI + MCP | 1-6 | 47 | 2026-05-04 |
+| v2.0 Flutter Frontend | 7-17 | 30 | 2026-05-07 |
 
-Branches:
+## v3.0 Phase Overview
 
-- `feat/resource-allocation` — Phase 13 (10 commits)
-- `feat/human-intervention` — Phase 13 + 14 (18 commits total)
+| Phase | Name | Group | Parallel With |
+|-------|------|-------|---------------|
+| 18 | Student UX Corrections | Corrections | Phase 19 |
+| 19 | Staff UX Corrections | Corrections | Phase 18 |
+| 20 | LangChain Workflow | Improvements | Phases 21, 22 |
+| 21 | Roles & Auth Expansion | Improvements | Phases 20, 22 |
+| 22 | FCM Push Notifications | Improvements | Phases 20, 21 |
+| 23 | New Features | Features | — |
+| 24 | UI Polish & Integration | Polish | — (depends on all) |
 
-Next action: Merge branches to main or start next milestone.
-
-## Accumulated Context
-
-### Decisions
-
-Recent decisions affecting current work:
-
-- [Phase 15]: JPEG logo replaced with CustomPainter vector widget (α mark + "ALPHA CONNECT" text)
-- [Phase 15.2]: Text-based logo (Playfair Display α) replaced with real Adobe Illustrator SVG assets via flutter_svg
-- [Phase 15.2]: Full logo (α mark + text) at size > 40, short logo (α mark only) at size <= 40
-- [Phase 15]: Cyber-Academic design system: Electric Teal #00E5FF primary, Obsidian #111317 dark surface
-- [Phase 15]: Typography switched to Montserrat + JetBrains Mono
-- [Phase 15]: GlassCard enhanced with 20px blur, 5% fill, neon outer glow, 3 elevation levels
-- [Phase 15]: Navigation shells use neonTeal glow accent for selected state
-- [Phase 14-polish]: Dark mode audit applied — 28 hardcoded color issues fixed across 15 screen files
-- [Phase 14-polish]: Responsive audit — 15 layout constraints fixed (bottom sheets max-width 500px, chat bubbles max 500px, desktop panels max 400px)
-- [Phase 14-polish]: All amber/green/red status colors now adapt to brightness (lighter shades in dark mode)
-- [Phase 14-polish]: Skeleton shimmer placeholders use colorScheme.surface instead of Colors.white
-- [Phase 14]: Escalation keywords checked BEFORE AI call to save AI service resources
-- [Phase 14]: Staff sees all 'human_needed' + only their own 'human_active' sessions (FIFO by escalated_at)
-- [Phase 14]: AI response escalation saves bot message before escalating — staff has full context
-- [Phase 11]: App renamed from "Desafio FCG3" to "Alpha Connect"
-- [Phase 11]: google_fonts added — Plus Jakarta Sans (headings) + Inter (body)
-- [Phase 11]: Color palette aligned to alpha-connect: primary #3B608F, secondary #6A548A, tertiary #676001
-- [Phase 11]: Explicit ColorScheme (not fromSeed) for precise color control in light + dark modes
-- [Phase 11]: GlassCard widget (BackdropFilter + soft shadow) replaces standard Material Card across all screens
-- [Phase 11]: PillButton widget (4 variants) replaces standard ElevatedButton style
-- [Phase 11]: Glassmorphism bottom nav on phone; NavigationRail preserved for tablet/desktop
-- [Phase 11]: Segmented filter controls replace FilterChip rows on Documents/Schedule screens
-- [Phase 11]: Shared AppBarActions widget ensures theme toggle + logout on every screen
-- [Phase 11]: Demo mode (setDemoUser) added for frontend preview without backend
-- [Phase 11]: Dark mode text legibility fixed with explicit onSurface color on all text inputs
-- [Phase 08]: Client data layer uses @JsonSerializable codegen + DioClient injection + @riverpod annotations for 3 domains (chat, documents, appointments)
-- [Phase 08]: url_launcher added for support screen external app actions (email, phone, WhatsApp)
-- [Phase 08]: Filter chips use toggle behavior — tapping active filter resets to null (Todos)
-- [Phase 08]: Used initialValue instead of deprecated value on DropdownButtonFormField (Flutter 3.41.6)
-- [Phase 08]: Chat detail uses ConsumerStatefulWidget with SingleTickerProviderStateMixin for TabController lifecycle
-- [Phase 08]: Replaced Documents and Chat placeholders in app_router.dart with real screens
-- [Phase 08]: All 5 client tabs wired to real screens; _PlaceholderScreen retained only for staff routes (Phase 9)
-- [Phase 08]: Derived notifications aggregate from documents (7d window) and appointments (48h window) — no backend endpoint needed
-- [Phase 09]: Reuse client models cross-feature for staff services — no duplication of AppointmentModel, DocumentModel, etc.
-- [Phase 09]: Staff-specific models only for staff-unique API responses (dashboard KPIs, scheduling slots, student summary)
-- [Phase 09]: Dashboard screen kept separate from staff_home_screen.dart; Plan 05 handles router swap
-- [Phase 09]: Confirmation dialogs use barrierDismissible: false for deliberate staff actions (threat T-09-04)
-- [Phase 09]: Staff chat detail reuses same layout pattern as ClientChatDetailScreen with staff-specific providers
-- [Phase 09]: Statistics tab shows numeric counters only (no charts) per D-12 to avoid extra dependencies
-- [Phase 09]: Backend upload uses local filesystem (uploads/documents/) with UUID prefix for MVP
-- [Phase 09]: Bulk send (D-18) deferred as TODO — individual send fully functional
-- [Phase 09]: Autocomplete uses direct service call in optionsBuilder for simplicity in bottom sheet context
-- [Phase 09]: All staff routes wired to real screens — _PlaceholderScreen removed from app_router.dart
-- [Phase 09]: StaffHomeScreen deprecated (kept for compatibility), StaffDashboardScreen is now the default /staff route
-- [Phase 10]: Shimmer uses colorScheme.surfaceContainerHighest/surface for M3 dark-mode compatibility
-- [Phase 12]: Integration tests use real seeded emails (ana.silva@usp.br, roberto@icmc.usp.br) with DEV_MASTER_OTP=000000 bypass
-- [Phase 16]: Timer replaces Future.delayed for lifecycle-safe stagger delays (H1 fix)
-- [Phase 16]: GlassBottomNav extracted as single shared widget from client and staff shells
-- [Phase 16]: AppAnimations static const class with getEntranceDelay() stagger formula (cap at index 5)
-- [Phase 16]: Explicit route-to-transition mapping: 12 tab routes = fade-through 300ms, 4 detail routes = slide 250ms, 2 system routes unchanged
-- [Phase 16]: easeOutBack curve on GlassBottomNav for springy glow transitions with icon scaling 24->28px
-- [Phase 16]: All 10 primary screens (5 client + 5 staff) wrapped with AnimatedEntrance staggered entrance animations
-- [Phase 16]: All stagger delays use AppAnimations.getEntranceDelay(index) exclusively — no inline computation
-- [Phase 17]: Replaced implicit animations (AnimatedContainer + TweenAnimationBuilder) with explicit AnimationController to survive GoRouter widget tree reconstruction
-- [Phase 17]: Single AnimationController per GlassBottomNav with _previousIndex tracking for incoming/outgoing item animation
-- [Phase 17]: Used AppColors.primaryContainer for light-mode neon glow (neonTealLight doesn't exist)
-- [Phase 17]: showTagline param fully removed from AlphaConnectLogo (never wired, SVG bakes tagline)
-- [Phase 17-ui-polish-nav-animations-glows-logo]: neonTealLight (#00838F) for light-mode glow contrast; GlassCard uses black overlay fill/border in light mode
-
-### Key Decisions Resolved
-
-- Merge `feat/resource-allocation` and `feat/human-intervention` branches into main
-- Decide next milestone scope (if any)
-
-### Architecture Constraints (non-negotiable)
+## Architecture Constraints (non-negotiable)
 
 - `student_id` is NEVER exposed to the LangChain agent — always injected by MCP Server
 - `MCP_SERVICE_TOKEN` only in environment variables, never in source code
@@ -132,53 +57,80 @@ Recent decisions affecting current work:
 - All API calls use `Authorization: Bearer {token}` header
 - Two separate PostgreSQL drivers: `asyncpg` for FastAPI + MCP; `psycopg3` for LangChain service
 
-### Roadmap Evolution
+## Accumulated Context
 
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 260427-h6x | adicionar opcao de escolher provedor e modelo do embedding via env | 2026-04-27 | 0aceac2 | [260427-h6x-adicionar-opcao-de-escolher-provedor-e-m](./quick/260427-h6x-adicionar-opcao-de-escolher-provedor-e-m/) |
-| 260504-i90 | Expandir a base de conhecimento do RAG | 2026-05-04 | e470f57 | [260504-i90-expandir-a-base-de-conhecimento-do-rag](./quick/260504-i90-expandir-a-base-de-conhecimento-do-rag/) |
-
-- Milestone v2.0 started: Flutter Frontend (Phases 7-10)
-- Phase 7 added: Flutter Scaffold & Auth
-- Phase 8 added: Client Interface
-- Phase 9 added: Staff Interface
-- Phase 10 added: Cross-Platform Polish
-- Phase 11 added: Alpha Connect Visual Refactoring (2026-05-06)
-- Phase 12 added: Frontend-Backend Integration (2026-05-06)
-- Phase 13 added: Resource Allocation (2026-05-06)
-- Phase 14 added: Human Intervention (2026-05-06)
-- Phase 15 added: Cyber-Academic Visual Redesign (2026-05-08)
-- Phase 15 executed: 4 plans, 3 waves — logo fix, design system, tests all pass (2026-05-08)
-- Phase 15.1 inserted after Phase 15: Fix logo — ugly, not as agreed, and tilted (URGENT)
-- Phase 15.2 inserted after Phase 15: Add Alpha Connect SVG logos to the app (URGENT)
-- Phase 15.3 inserted after Phase 15: change/create a copy of the current logos so that they match both the light and the dark mode of the app (URGENT)
-- Phase 16 added: Micro-Animations & Transitions (2026-05-10)
-- Phase 17 added: UI Polish — Fix bottom nav animations, light mode glow colors, and front page logo readability (2026-05-10)
-
-### Quick Tasks Completed
-
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 260505-jcm | Validar e corrigir base URL de autenticação do frontend e adicionar CORS no backend para Flutter web | 2026-05-05 | 4e1ca3d | [260505-jcm-validar-e-corrigir-base-url-de-autentica](./quick/260505-jcm-validar-e-corrigir-base-url-de-autentica/) |
-| 260505-jur | Corrigir crash no login OTP alinhando frontend ao TokenPair do backend | 2026-05-05 | 5fee628 | [260505-jur-corrigir-crash-no-login-otp-alinhando-o-](./quick/260505-jur-corrigir-crash-no-login-otp-alinhando-o-/) |
-| 260508-0z | Rebrand SIAC→Alpha Connect, implement logo, verify light/dark mode | 2026-05-08 | 4b16b62 | [260508-0z-rebrand-alpha-connect-themes-logo](./quick/260508-0z-rebrand-alpha-connect-themes-logo/) |
-
-### Hardening Session (2026-05-05)
-
-| Branch | Fix | Validated |
-|--------|-----|-----------|
-| `fix/db-credential-mismatch` | pg_hba custom + compose hba_file flag + mcp_server POSTGRES_* fallback | alembic upgrade head + seed: both pass |
-| `fix/auth-tests-url-prefix` | Add /api/v1 prefix to 7 auth integration test files (38 URLs) | 37/37 integration tests pass |
-
-Additional validations performed (no code fix needed):
-
-- AI/RAG ingest: 6 docs, 47 chunks via OpenRouter embeddings — success
-- AI/RAG chat E2E: LLM responds with correct knowledge base context — success
-- Flutter tests: 8/8 pass via Windows Flutter SDK
-- Phase 7 runtime bugs (CR-01/02/03): already fixed in codebase — confirmed
+- v1.0 + v2.0 shipped: 17 phases, 77 plans, ~35,907 LOC
+- Flutter uses Riverpod + GoRouter + Dio with QueuedInterceptor
+- Glassmorphism UI (Alpha Connect) with Plus Jakarta Sans + Inter
+- Docker 5-service stack (fastapi:8000, langchain:8001, mcp:8002, postgres:5432, flutter-web:3000)
+- DEV_MASTER_OTP bypass available for dev/testing
+- v3.0 phases designed for maximum parallel execution within groups
+- **18-01:** StateProvider pattern for cross-screen drawer auto-open (documentAutoOpenDrawerProvider)
+- **18-01:** AppBarActions contains support + notifications icons in header (support_agent_outlined, notifications_outlined)
+- **18-01:** Bottom nav reduced to 4 items (Início, Chat, Docs, Recursos) — Avisos moved to header
+- **18-02:** Chat sessions: rename via long-press, filter tabs (Todas/Ativas/Inativas), date ordering label
+- **18-02:** GlassCard now supports onLongPress for contextual actions
+- **18-02:** ChatFilterNotifier pattern for client-side filtering (no extra API call)
+- **18-03:** Document cards show date+time (DD/MM/YYYY HH:MM), tap opens detail bottom sheet
+- **18-03:** showDocumentDetailSheet pattern with _DetailRow for key-value display in sheets
+- **18-04:** Notifications: read/unread state via client-side Set<String> (ReadNotificationIds provider)
+- **18-04:** Filter tabs (Todas/Não lidas/Lidas) and "Visualizar todos" bulk mark-as-read
+- **18-04:** Individual notification marked as read only on direct tap (not on scroll/view)
+- **18-05:** showAppointmentDetailSheet: reusable appointment detail bottom sheet widget
+- **18-05:** Refactored home screen inline sheet to use shared widget (DRY)
+- **18-05:** onDetailTap pattern: combined mark-as-read + open detail on notification tap
+- **19-01:** Bottom nav tab "Intervenção" renamed to "Chats" (chat_bubble icon) at position 2
+- **19-01:** staffChats route temporarily points to StaffAiScreen (Plan 03 will replace)
+- **19-01:** staffCadastro route placeholder (Plan 06 will implement)
+- **19-01:** KPI cards use query params for pre-applied filters (?filter=hoje, ?filter=pendentes)
+- **19-01:** "Ações Rápidas" section on dashboard with Gerenciar Alunos button
+- **19-02:** StaffSearchBar reusable widget in shared/widgets for staff screens
+- **19-02:** Appointment cards redesigned: CircleAvatar + studentName (title) + resourceName (subtitle)
+- **19-02:** AppointmentModel extended with studentName, studentRa, resourceName nullable fields
+- **19-02:** StaffScheduleSearch provider for client-side filtering by name/RA
+- **19-02:** Detail screen shows Nome, RA, Data emissão, Recurso, Status badge, Motivo
+- **19-02:** Confirm/cancel actions with try/catch error handling and colored SnackBar
+- **19-03:** StaffChatsScreen: unified 4-tab screen (Todos/Pendentes/Em atendimento/Concluídos) merging AI + intervention
+- **19-03:** StaffChatsSearch provider for client-side search by name/RA/phone
+- **19-03:** Router /staff/chats now points to StaffChatsScreen (replaced StaffAiScreen placeholder)
+- **19-03:** Chat detail header shows studentName, RA, session date+status with surfaceContainerLow bg
+- **19-03:** ChatSessionModel extended with studentName, studentRa nullable fields
+- **19-04:** Document tabs corrected: Todos | Processando | Prontos (not Pendentes)
+- **19-04:** StaffDocumentTypeFilter provider for secondary type-based filtering pills
+- **19-04:** Detail bottom sheet on document card tap with action buttons
+- **19-04:** Query param ?filter=pendentes maps to 'processing' status
+- **19-04:** Error SnackBar (colorScheme.error) prevents finalization without file attached
+- **19-05:** _ResourceCard converted to ConsumerWidget for direct ref access (toggle/delete)
+- **19-05:** Switch widget replaces static availability dot for toggle ativar/desativar
+- **19-05:** PopupMenu has Editar + dynamic Ativar/Desativar + Deletar (with confirmation dialog)
+- **19-06:** StaffCadastroScreen: full CRUD with ExpansionTile cards, status dots (green/red), FAB + form sheet
+- **19-06:** StaffStudentModel + StaffCadastroService (5 CRUD methods) + provider with filter/search
+- **19-06:** Router updated: /staff/cadastro now points to StaffCadastroScreen (was placeholder)
+- **18-06:** Agendamentos quick action navigates to /client/resources?tab=1 (not modal)
+- **18-06:** _AppointmentCard GlassCard has onTap → showAppointmentDetailSheet
+- **18-06:** ClientResourcesScreen accepts initialTabIndex param from query param ?tab=N
+- **18-07:** PUT /chat-sessions/{id} rename endpoint with name column, IDOR ownership check, Alembic 014a migration
+- **18-07:** Flutter Salvar handler try/catch with red error SnackBar on rename failure
+- **19-07:** AppointmentListItem extended with student_name, student_ra, resource_name (Optional[str])
+- **19-07:** joinedload(Appointment.student) added to list_appointments query
+- **19-07:** PUT /appointments/{id}/confirm endpoint (staff-only, scheduled → completed)
+- **19-08:** ChatSessionResponse extended with student_name, student_ra (from joined Student via selectinload)
+- **19-08:** Intervention query includes closed sessions (for Concluídos tab)
+- **19-08:** Resource is_deleted column for true soft-delete (distinct from is_available toggle), DELETE returns 204
+- **19-08:** Alembic 015a migration adds is_deleted to resources table
+- **19-09:** initialFilter constructor param pattern replaces GoRouterState.of(context) async reads
+- **19-09:** Concluídos tab uses 'closed' only (phantom 'resolved' removed)
+- **19-09:** StaffStudentModel @JsonKey maps ra→registration_number, semester as int (not String)
+- **19-09:** Backend StudentListItem includes phone field
+- **19-09:** Cadastro form removes address/campus (don't exist in DB), sends registration_number/semester
 
 ## Session Continuity
 
-To resume work: read this file, then read `.planning/ROADMAP.md` to see current phase and plan status.
-All M2 code work is complete. Phase 16 (Micro-Animations & Transitions) delivered: animation foundation, nav bar glow + page transitions, and staggered screen entrance animations across all 10 primary screens.
+To resume work: read this file, then `.planning/ROADMAP.md` for phase details.
+
+**Parallel execution guidance:**
+
+- Group 1 (Phases 18-19): Start with `/gsd-plan-phase 18` or `/gsd-plan-phase 19` — both are independent
+- Group 2 (Phases 20-22): After Group 1, any of these can start in any order
+- Group 3 (Phase 23): After Group 2, plan and execute new features
+- Group 4 (Phase 24): Only after all above are complete

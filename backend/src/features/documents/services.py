@@ -11,7 +11,9 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID
 
+from sqlalchemy import asc, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from src.features.documents.models import Document
 from src.features.documents.schemas import DocumentCreate, DocumentStatusUpdate
@@ -41,21 +43,50 @@ class DocumentService(BaseService[Document]):
         student_id: UUID | None = None,
         type: str | None = None,
         status: str | None = None,
+        include_student: bool = False,
     ) -> tuple[list[Document], int]:
         """List documents with pagination and optional filters.
 
         If student_id is provided, filter by that student.
         Students are forced to their own ID in the controller (IDOR-safe).
+        If include_student is True, eagerly loads the student relationship.
         """
-        filters: dict[str, Any] = {}
-        if student_id is not None:
-            filters["student_id"] = student_id
-        if type is not None:
-            filters["type"] = type
-        if status is not None:
-            filters["status"] = status
+        if not include_student:
+            filters: dict[str, Any] = {}
+            if student_id is not None:
+                filters["student_id"] = student_id
+            if type is not None:
+                filters["type"] = type
+            if status is not None:
+                filters["status"] = status
+            return await self.list(db, params, filters=filters)
 
-        return await self.list(db, params, filters=filters)
+        # Custom query with eager-loaded student relationship
+        query = select(Document).options(selectinload(Document.student))
+        count_query = select(func.count()).select_from(Document)
+
+        if student_id is not None:
+            query = query.where(Document.student_id == student_id)
+            count_query = count_query.where(Document.student_id == student_id)
+        if type is not None:
+            query = query.where(Document.type == type)
+            count_query = count_query.where(Document.type == type)
+        if status is not None:
+            query = query.where(Document.status == status)
+            count_query = count_query.where(Document.status == status)
+
+        total_result = await db.execute(count_query)
+        total = total_result.scalar_one()
+
+        sort_column = self._get_sort_column(params.sort_by)
+        order_func = asc if params.order == "asc" else desc
+        query = query.order_by(order_func(sort_column))
+        query = query.offset(params.offset).limit(params.limit)
+
+        result = await db.execute(query)
+        items = list(result.scalars().all())
+
+        return items, total
 
     # ------------------------------------------------------------------
     # DOCS-02: Get document detail
@@ -82,17 +113,22 @@ class DocumentService(BaseService[Document]):
         student_id: UUID,
         data: DocumentCreate,
     ) -> Document:
-        """Create document request with status=requested.
+        """Create document request.
 
-        T-03-26: student_id always from authenticated user context,
-        never from request body.
+        T-03-26: student_id resolved in controller (from user context or staff override).
+        Staff can optionally set initial status and file_url.
         """
-        doc_data = {
+        status = data.status or "requested"
+        doc_data: dict[str, Any] = {
             "student_id": student_id,
             "type": data.type,
-            "status": "requested",
+            "status": status,
             "notes": data.notes,
         }
+        if data.file_url:
+            doc_data["file_url"] = data.file_url
+        if status == "ready":
+            doc_data["completed_at"] = datetime.now(timezone.utc)
         return await self.create(db, doc_data)
 
     # ------------------------------------------------------------------

@@ -122,7 +122,7 @@ class StaffDashboardScreen extends ConsumerWidget {
                                   value:
                                       dashboard.activeChatSessions.toString(),
                                   label: 'Chats Hoje',
-                                  onTap: () => context.go(RoutePaths.staffAI),
+                                  onTap: () => context.go('${RoutePaths.staffChats}?filter=hoje'),
                                 ),
                               ),
                               AnimatedEntrance(
@@ -135,7 +135,7 @@ class StaffDashboardScreen extends ConsumerWidget {
                                       dashboard.pendingDocuments.toString(),
                                   label: 'Docs Pendentes',
                                   onTap: () =>
-                                      context.go(RoutePaths.staffDocuments),
+                                      context.go('${RoutePaths.staffDocuments}?filter=pendentes'),
                                 ),
                               ),
                               AnimatedEntrance(
@@ -168,15 +168,19 @@ class StaffDashboardScreen extends ConsumerWidget {
                                     Icon(Icons.smart_toy,
                                         size: 20, color: colors.primary),
                                     const SizedBox(width: 8),
-                                    Text(
-                                      'Insights de Eficiência IA',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleSmall
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            color: colors.onSurface,
-                                          ),
+                                    Expanded(
+                                      child: Text(
+                                        'Insights de Eficiência IA',
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: colors.onSurface,
+                                            ),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -221,6 +225,66 @@ class StaffDashboardScreen extends ConsumerWidget {
                             ),
                           ),
                           ),
+                          const SizedBox(height: AppSpacing.lg),
+
+                          // Ações Rápidas section
+                          AnimatedEntrance(
+                            delay: AppAnimations.getEntranceDelay(6),
+                            child: Text(
+                              'Ações Rápidas',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: colors.onSurface,
+                                  ),
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          AnimatedEntrance(
+                            delay: AppAnimations.getEntranceDelay(7),
+                            child: GlassCard(
+                              onTap: () => context.go(RoutePaths.staffCadastro),
+                              padding: const EdgeInsets.all(AppSpacing.md),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.people_outlined,
+                                      color: colors.primary),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Gerenciar Alunos',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleSmall
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                        Text(
+                                          'Cadastrar, editar e gerenciar alunos',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                color:
+                                                    colors.onSurfaceVariant,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(Icons.chevron_right,
+                                      color: colors.onSurfaceVariant),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -237,7 +301,7 @@ class StaffDashboardScreen extends ConsumerWidget {
   double _calculateAiRate(StaffDashboardModel dashboard) {
     final total = dashboard.activeChatSessions + 10; // mock baseline
     if (total == 0) return 0;
-    return ((total - 1) / total * 100).clamp(0, 100);
+    return double.parse(((total - 1) / total * 100).clamp(0, 100).toStringAsFixed(1));
   }
 }
 
@@ -334,21 +398,29 @@ class _KpiCard extends StatelessWidget {
             child: Icon(icon, color: iconColor, size: 20),
           ),
           const Spacer(),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: iconColor,
-                ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: iconColor,
+                  ),
+            ),
           ),
           const SizedBox(height: 2),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                  color: colors.onSurfaceVariant,
-                ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                    color: colors.onSurfaceVariant,
+                  ),
+            ),
           ),
         ],
       ),

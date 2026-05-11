@@ -1,332 +1,220 @@
 # Roadmap — Desafio FCG3
 
-**Milestone:** M2 — Flutter Frontend
-**Granularity:** Standard
-**Coverage:** 17/17 requirements mapped
-**Last Updated:** 2026-05-08
-**Previous Milestone:** M1 — Backend + AI Service + MCP Server (Phases 1-6, complete)
+## Milestones
+
+- **v1.0 Backend + AI + MCP** — Phases 1-6 (shipped 2026-05-04)
+- **v2.0 Flutter Frontend** — Phases 7-17 (shipped 2026-05-07)
+- 🚧 **v3.0 Correções, Melhorias & Features** — Phases 18-24 (in progress)
 
 ---
+
+## Completed Milestones
+
+<details>
+<summary>v1.0 Backend + AI Service + MCP Server (Phases 1-6) — SHIPPED 2026-05-04</summary>
+
+- [x] Phase 1: Foundation & Infrastructure (6/6 plans) — completed 2026-04-09
+- [x] Phase 2: Authentication & Security (4/4 plans) — completed 2026-04-10
+- [x] Phase 3: Academic Feature Slices (7/7 plans) — completed 2026-04-12
+- [x] Phase 4: MCP Server (4/4 plans) — completed 2026-04-14
+- [x] Phase 5: AI Service & RAG (4/4 plans) — completed 2026-04-20
+- [x] Phase 6: WhatsApp Integration (3/3 plans) — completed 2026-05-04
+
+**Archive:** [v1.0 details in git history]
+
+</details>
+
+<details>
+<summary>v2.0 Flutter Frontend (Phases 7-17) — SHIPPED 2026-05-07</summary>
+
+- [x] Phase 7: Flutter Scaffold & Auth (3/3 plans) — completed 2026-05-05
+- [x] Phase 8: Client Interface (5/5 plans) — completed 2026-05-05
+- [x] Phase 9: Staff Interface (5/5 plans) — completed 2026-05-05
+- [x] Phase 10: Cross-Platform Polish (6/6 plans) — completed 2026-05-07
+- [x] Phase 11: Alpha Connect Visual Refactoring (1/1 plans) — completed 2026-05-06
+- [x] Phase 12: Frontend-Backend Integration (3/3 plans) — completed 2026-05-06
+- [x] Phase 13: Resource Allocation (3/3 plans) — completed 2026-05-06
+- [x] Phase 14: Human Intervention (2/2 plans) — completed 2026-05-06
+- [x] Phase 15: Requirements Traceability Sync (1/1 plans) — completed 2026-05-07
+- [x] Phase 16: Auth & Router Tech Debt (1/1 plans) — completed 2026-05-07
+- [x] Phase 17: Loading State Polish (1/1 plans) — completed 2026-05-07
+
+**Archive:** [v2.0-ROADMAP.md](./milestones/v2.0-ROADMAP.md)
+
+</details>
+
+---
+
+## 🚧 v3.0 Correções, Melhorias & Features (Active)
+
+**Milestone Goal:** Corrigir navegação e UX quebrados em ambas as visões, completar workflow LangChain, expandir roles para provider, implementar FCM push notifications, e adicionar features novas (cardápio, perfil, grade curricular).
+
+**Parallelization Strategy:**
+```
+GROUP 1 — Corrections (parallel):
+  Phase 18 ──┐
+  Phase 19 ──┘── can execute simultaneously
+
+GROUP 2 — Improvements (parallel):
+  Phase 20 ──┐
+  Phase 21 ──├── can execute simultaneously
+  Phase 22 ──┘
+
+GROUP 3 — New Features:
+  Phase 23 ──── independent screens (internal parallelism)
+
+GROUP 4 — Polish (depends on all above):
+  Phase 24 ──── final integration validation
+```
 
 ## Phases
 
-- [x] **Phase 7: Flutter Scaffold & Auth** — App boots with role-based navigation, OTP authentication, secure JWT storage
- (completed 2026-05-05)
-- [x] **Phase 8: Client Interface** — All 6 client screens consuming the REST API (dashboard, chat history, documents, notifications, support)
- (completed 2026-05-05)
-- [x] **Phase 9: Staff Interface** — All 4 staff/provider management screens (dashboard, schedule, AI data, document management)
- (completed 2026-05-05)
-- [x] **Phase 10: Cross-Platform Polish** — Responsiveness on all form factors, performance optimization, data sync efficiency
- (completed 2026-05-05)
-- [x] **Phase 11: Alpha Connect Visual Refactoring** — Align Flutter app visual identity with alpha-connect prototype (glassmorphism, new palette, fonts, layout restructure)
- (completed 2026-05-06)
-- [x] **Phase 12: Frontend-Backend Integration** — Validate API contracts, Docker Compose full stack, OTP bypass for dev, E2E automated tests with real data flowing
- (completed 2026-05-06)
-- [x] **Phase 13: Resource Allocation** — CRUD de recursos (gestor), agendamento com upload de autorização (aluno), novos tipos de recurso, flag requires_authorization
- (completed 2026-05-06)
-- [x] **Phase 14: Human Intervention** — Tela de intervenção humana (gestor assume chats não resolvidos pelo bot, responde via WhatsApp)
- (completed 2026-05-06)
-- [x] **Phase 15: Cyber-Academic Visual Redesign** — Apply Cyber-Academic design system (obsidian palette, neon accents, Montserrat typography, glassmorphism) to make the app more attractive and modern
- (completed 2026-05-08)
-- [x] **Phase 16: Micro-Animations & Transitions** — Staggered entrance animations for cards/sections, enhanced nav bar glow transitions, and smooth page transitions
- (completed 2026-05-10)
-- [x] **Phase 17: UI Polish — Fix bottom nav animations, light mode glow colors, and front page logo readability** — Fix non-functional bottom navbar animations, improve light mode glow colors, and fix unreadable logo on front page (use large or short logo variant) (completed 2026-05-11)
-
----
-
-### Phase 14: Human Intervention
-
-**Goal:** Complete human intervention system — bot escalates conversations when unable to resolve, staff sees pending sessions, assumes conversations, replies directly to students via WhatsApp, and marks sessions resolved.
-**Depends on:** Phase 13
-**Requirements:** HI-01, HI-02, HI-03, HI-04, HI-05, HI-06, HI-07, HI-08, HI-09, HI-10, HI-11, HI-12, HI-13, HI-14, HI-15, HI-16
-
-### Success Criteria
-1. Chat sessions support 4 status values (active, closed, human_needed, human_active) with assigned_staff_id tracking.
-2. Bot detects escalation keywords ("atendente", "humano", etc.) and AI responses containing "procurar a secretaria" — triggers escalation automatically.
-3. Student receives acknowledgment message on escalation; AI stops processing their messages until resolved.
-4. Staff can list pending interventions, assume a conversation, send replies (delivered via WhatsApp), and resolve sessions.
-5. Flutter staff app has "Intervenção" tab with session cards (student name, RA, status badge, elapsed time) and chat interface.
-
-**Plans:** 2 plans
-
-Plans:
-- [x] 14-01-PLAN.md — Backend: migration, escalation detection, AI skip, assign/reply/resolve endpoints
-- [x] 14-02-PLAN.md — Frontend staff: intervention screen, chat detail, navigation wiring
-
----
-
-### Phase 15: Cyber-Academic Visual Redesign
-
-**Goal:** Apply the Cyber-Academic design system — deep obsidian palette (#111317), Electric Teal (#00E5FF) primary, Cyber Violet (#7209B7) secondary, Montserrat + JetBrains Mono typography, glassmorphism cards with backdrop blur, neon glow elevation, and pill-shaped buttons — to make the app visually striking and modern. No changes to functionality, application logic, or responsive breakpoint behavior.
-**Depends on:** Phase 14
-**Requirements:** UI-NFR-02 (visual consistency), UI-NFR-04 (dark mode support)
-
-### Success Criteria
-1. Color palette replaced with Cyber-Academic tokens: primary Electric Teal, secondary Cyber Violet, tertiary Magenta, obsidian surfaces — in both light/dark modes.
-2. Typography switched to Montserrat (headlines Black/ExtraBold, body Regular) + JetBrains Mono (technical/AI data), with tracking and weight hierarchy per design spec.
-3. All cards use glassmorphism treatment (backdrop blur 20px, 5% white fill, 1px 12% white border, neon outer glow on Layer 2 elements).
-4. Buttons use pill-shaped style (full-round radius); primary solid Electric Teal with black text, secondary ghost with teal border.
-5. Spacing system migrated to 8px base unit with defined xs/sm/md/lg/xl tokens.
-6. Existing functionality, API integrations, and responsive breakpoints remain fully intact (no behavioral regressions).
-
-**Plans:** 4 plans
-
-Plans:
-- [ ] 15-01-PLAN.md — Theme foundation: Cyber-Academic color palette, Montserrat + JetBrains Mono typography, enhanced GlassCard with neon glow
-- [ ] 15-02-PLAN.md — Screen-level updates: replace old font refs, update branding, neon nav accents
-- [ ] 15-03-PLAN.md — Verification: update widget tests, full flutter analyze + test pass
-- [ ] 15-04-PLAN.md — Logo fix: replace JPEG with theme-adaptive CustomPainter vector widget
-
----
-
-### Phase 15.3: change/create a copy of the current logos so that they match both the light and the dark mode of the app (INSERTED)
-
-**Goal:** Create light-mode and dark-mode SVG logo variants with appropriate fill colors, and update AlphaConnectLogo widget to select the correct variant based on theme brightness — removing the single-color tint approach.
-**Requirements**: UI-NFR-02
-**Depends on:** Phase 15.2
-**Plans:** 1/1 plans complete
-
-Plans:
-- [x] 15.3-01-PLAN.md — Light/dark SVG variants + brightness-aware AlphaConnectLogo widget
-
-### Phase 15.2: Add Alpha Connect SVG logos to the app (INSERTED)
-
-**Goal:** Replace text-based logo (Greek α via Google Fonts) with real Adobe Illustrator SVG logos — full logo (α + ALPHA CONNECT text) and short logo (α mark only) — rendered via flutter_svg with theme-adaptive color tinting.
-**Requirements**: UI-NFR-02
-**Depends on:** Phase 15
-**Plans:** 1/1 plans complete
-
-Plans:
-- [x] 15.2-01-PLAN.md — Add flutter_svg + SVG assets, rewrite AlphaConnectLogo widget, verify tests
-
-### Phase 15.1: Fix logo — ugly, not as agreed, and tilted (INSERTED)
-
-**Goal:** Rewrite the CustomPainter α mark to accurately match the reference JPEG (circular O-body + X-tail) and remove the unwanted Transform.rotate tilt from the login screen.
-**Requirements**: UI-NFR-02
-**Depends on:** Phase 15
-**Plans:** 1/1 plans complete
-
-Plans:
-- [x] 15.1-01-PLAN.md — Rewrite α mark geometry (stroke-based arc + X-tail) and remove rotation from login
-
-### Phase 13: Resource Allocation
-
-**Goal:** Complete resource allocation system — staff manages resources with authorization flags, students browse/book resources with file upload for restricted ones, expanded resource types and seed data.
-**Depends on:** Phase 12
-**Requirements:** RES-01, RES-02, RES-03, RES-04, RES-05, RES-06, RES-07, RES-08, RES-09, RES-10, RES-11, RES-12, RES-13, RES-14
-
-### Success Criteria
-1. Backend supports 6 resource types with description and requires_authorization fields.
-2. Staff can CRUD resources via API and dedicated "Recursos" screen (5th tab).
-3. Students can browse available resources filtered by type, with clear authorization badge.
-4. Booking flow enforces file upload (PDF/JPG/PNG, 5MB) for authorization-required resources.
-5. Students can view and cancel their appointments from "Meus Agendamentos" section.
-6. Seed data includes diverse resources across all 6 types.
-
-**Plans:** 3 plans
-
-Plans:
-- [x] 13-01-PLAN.md — Backend: migration, resources CRUD endpoints, upload endpoint, seed expansion
-- [x] 13-02-PLAN.md — Frontend staff: resources screen with CRUD + navigation wiring
-- [x] 13-03-PLAN.md — Frontend client: resource booking flow with upload + my appointments
-
-### Phase 16: Micro-Animations & Transitions
-
-**Goal:** Add polished micro-animations inspired by design reference (`design ideas/animations.md`) — reusable `AnimatedEntrance` widget (fade + slide-up with staggered delays) for card/section loading rhythm, enhanced bottom nav glow transitions (scale + glow on selection using `easeOutBack`), and custom page transitions (fade-through for tab switches, slide for push navigation). No changes to functionality or API integrations.
-**Depends on:** Phase 15
-**Requirements:** UI-NFR-02 (visual consistency), UI-NFR-04 (dark mode support)
-
-### Success Criteria
-1. Reusable `AnimatedEntrance` widget (fade + slide-up, configurable delay/duration/curve) lives in `shared/widgets/` and is applied to dashboard cards, stat cards, list items across client and staff screens with staggered delays.
-2. Bottom nav bar selection uses `easeOutBack` curve with neon glow scaling (shadow spread animates alongside icon size change), matching Cyber-Academic design tokens.
-3. GoRouter page transitions use `CustomTransitionPage` — fade-through (300ms) for same-level tab navigation, horizontal slide (250ms) for push routes.
-4. Animation constants (durations, curves, offsets) are centralized in a shared `app_animations.dart` file for consistency.
-5. All 38+ existing widget tests continue to pass; `flutter analyze` reports no new issues.
-6. Animations respect `MediaQuery.disableAnimations` / reduced-motion accessibility setting.
-
-**Plans:** 3/3 plans complete
-
-Plans:
-- [x] 16-01-PLAN.md — Animation foundation: app_animations.dart constants + AnimatedEntrance widget + tests
-- [x] 16-02-PLAN.md — Nav bar glow transitions (easeOutBack) + GoRouter CustomTransitionPage
-- [x] 16-03-PLAN.md — Screen integration: apply AnimatedEntrance to all client + staff screens
-
-### Phase 17: UI Polish — Fix bottom nav animations, light mode glow colors, and front page logo readability
-
-**Goal:** Fix three UI regressions/issues discovered after Phase 16 delivery: (1) bottom navbar animations implemented in Phase 16 are not working correctly, (2) glow effect colors in light mode look poor and need retuning to work with the lighter palette, and (3) the logo on the front/login page is at an unreadable size — switch to either the full large logo or the short α mark at an appropriate size.
-**Depends on:** Phase 16
-**Requirements:** UI-NFR-02 (visual consistency), UI-NFR-04 (dark mode support)
-
-### Success Criteria
-1. Bottom navigation bar animations (easeOutBack glow scaling, icon size transitions) function correctly on both client and staff shells — visually verified on phone and web.
-2. Light mode glow colors retuned — neon glow effects use light-appropriate tones (no dark-mode-only colors bleeding into light theme).
-3. Front page / login screen logo uses either the full large logo (α + ALPHA CONNECT text) at readable size or the short logo (α mark only) at appropriate scale — no in-between unreadable size.
-4. All existing widget tests continue to pass; `flutter analyze` reports no new issues.
-5. Both light and dark modes visually coherent after changes.
-
-**Plans:** 3/3 plans complete
-
-Plans:
-- [x] 17-01-PLAN.md — Fix bottom nav animations (StatefulWidget + AnimationController) + add 6th Support tab
-- [x] 17-02-PLAN.md — Light mode glow palette (neon color variants + glassmorphism fill/border adaptation)
-- [x] 17-03-PLAN.md — Login logo fix (large size 180px + neon glow + remove dead showTagline param)
-
----
+- [x] **Phase 18: Student UX Corrections** - Fix navigation, chat UX, documents, notifications on student screens (gap closure) (completed 2026-05-09)
+- [x] **Phase 19: Staff UX Corrections** - Fix dashboard, agendamentos, chats, intervenção, documentos, recursos, cadastro (gap closure in progress) (completed 2026-05-10)
+- [ ] **Phase 20: LangChain Workflow** - Complete agent lifecycle, RAG, MCP, defenses, logging
+- [ ] **Phase 21: Roles & Auth Expansion** - Add provider role with hierarchical CRUDs
+- [ ] **Phase 22: FCM Push Notifications** - End-to-end push infrastructure (backend + Flutter)
+- [ ] **Phase 23: New Features** - Cardápio semanal, perfil do aluno, grade curricular
+- [ ] **Phase 24: UI Polish & Integration** - Splash screen, dashboard metrics, end-to-end coherence
 
 ## Phase Details
 
-### Phase 7: Flutter Scaffold & Auth
+### Phase 18: Student UX Corrections
 
-**Goal:** The Flutter app boots, detects authentication state, authenticates students and staff via the existing FastAPI OTP flow, stores JWT securely, and routes users to role-appropriate home screens.
-**Depends on:** M1 Phase 2 (Authentication endpoints), M1 Phase 1 (Docker stack running)
-**Requirements:** UI-INFRA-01, UI-INFRA-02, UI-INFRA-03, UI-NFR-03
-
-### Success Criteria
-1. App launches and detects no saved token → navigates to login screen; saved valid token → navigates directly to role-appropriate home.
-2. User enters email → receives OTP → enters 6-digit code → receives JWT → app navigates to Client home (student) or Staff dashboard (staff).
-3. JWT is persisted in flutter_secure_storage and survives app restart; expired or revoked token is detected and routes back to login.
-4. Role-based navigation: student sees only Client routes (Dashboard, Chat, Documents, Notifications, Support); staff sees only Provider routes (Dashboard, Schedule, AI Data, Documents).
-5. Invalid OTP entry shows clear error; 3 failed attempts shows "new code sent" message matching backend behavior.
-
-**Plans:** 3/3 plans complete
+**Goal**: Student can navigate all screens correctly with proper actions, drawers, and notification management
+**Depends on**: Nothing (correction of existing code)
+**Requirements**: STUX-01, STUX-02, STUX-03, STUX-04, STUX-05, STUX-06, STUX-07, STUX-08, STUX-09, STUX-10, STUX-11, STUX-12, STUX-13, STUX-14, STUX-15
+**Success Criteria** (what must be TRUE):
+  1. Student taps quick actions and arrives at the correct destination (agendamentos detail, documents with drawer open)
+  2. Student can rename chat sessions, filter by active/inactive, and see them ordered by date
+  3. Student can view full document details in a drawer, see type/date on each item, and add documents via drawer
+  4. Student notifications show read/unread state, can be filtered, individually marked as read, and bulk-marked
+  5. Student accesses support via header icon and views agendamento details via drawer
+**Plans:** 7/7 plans complete
 
 Plans:
-- [x] 07-01-PLAN.md — Project infrastructure (dependencies, folder structure, Dio, theme, models, AuthService)
-- [x] 07-02-PLAN.md — Auth feature (Riverpod providers, auth state, login screen with OTP flow)
-- [x] 07-03-PLAN.md — Navigation & splash (GoRouter, route guards, ShellRoute, BottomNav shells, placeholder homes)
+- [x] 18-01-PLAN.md — Fix home quick actions + add support/notifications to header
+- [x] 18-02-PLAN.md — Chat rename, active/inactive filter, date ordering
+- [x] 18-03-PLAN.md — Documents type/date display + detail drawer
+- [x] 18-04-PLAN.md — Notifications read/unread state + filters + mark-as-read
+- [x] 18-05-PLAN.md — Appointment detail drawer + wiring
+- [x] 18-06-PLAN.md — GAP: Agendamentos quick action → navigate to resources tab + card onTap
+- [x] 18-07-PLAN.md — GAP: Chat rename backend endpoint + Flutter error handling
 
----
+**UI hint**: yes
 
-### Phase 8: Client Interface
+### Phase 19: Staff UX Corrections
 
-**Goal:** All 6 client-facing screens are functional, consuming data from the FastAPI REST API — the student can view their academic situation, chat history, documents, and notifications from the app.
-**Depends on:** Phase 7
-**Requirements:** UI-C01, UI-C02, UI-C03, UI-C04, UI-C05, UI-C06, UI-NFR-01
-
-### Success Criteria
-1. Client Dashboard displays a summary of recent WhatsApp actions and upcoming appointments fetched from `/students/{id}/summary`.
-2. Chat History screen lists chat sessions and allows viewing messages per session, with status indicators for open requests.
-3. Document Board shows issued/received documents with download capability; Document Request screen triggers new document issuance via `POST /documents`.
-4. Notification Center displays alerts, appointment reminders, and status updates — with unread indicators.
-5. Support & Contact screen provides a direct channel for the client to reach administrative support.
-
-**Plans:** 5/5 plans complete
-
-Plans:
-- [x] 08-01-PLAN.md — Data layer: models, services, and Riverpod providers for all client domains
-- [x] 08-02-PLAN.md — Dashboard (Home) with 3 summary cards + Support & Contact screen
-- [x] 08-03-PLAN.md — Documents screen with filter chips, status cards, and request bottom sheet
-- [x] 08-04-PLAN.md — Chat History screen (session list + detail with messages/actions tabs)
-- [x] 08-05-PLAN.md — Notifications (derived) screen + final router wiring
-
----
-
-### Phase 9: Staff Interface
-
-**Goal:** All 4 staff/provider management screens are functional with admin-level data access — the provider can manage appointments, view AI insights, and handle documents from the app.
-**Depends on:** Phase 7
-**Requirements:** UI-F01, UI-F02, UI-F03, UI-F04
-
-### Success Criteria
-1. Staff Dashboard displays business KPIs: total students, active enrollments, pending documents, upcoming appointments, active chat sessions — fetched from `/staff/dashboard`.
-2. Schedule Control screen lists appointments with approve/reschedule/cancel actions calling the appointments API.
-3. AI Data Interaction screen shows structured information, summaries, and insights extracted from WhatsApp conversations (via chat sessions and MCP action logs endpoints).
-4. Document Management screen allows sending documents to client boards and managing pending document requests with status updates.
-
-**Plans:** 5/5 plans complete
+**Goal**: Staff can manage all operational screens with correct data display, filters, search, and CRUD operations
+**Depends on**: Nothing (correction of existing code)
+**Requirements**: SFUX-01, SFUX-02, SFUX-03, SFUX-04, SFUX-05, SFUX-06, SFUX-07, SFUX-08, SFUX-09, SFUX-10, SFUX-11, SFUX-12, SFUX-13, SFUX-14, SFUX-15, SFUX-16, SFUX-17, SFUX-18, SFUX-19, SFUX-20, SFUX-21, SFUX-22, SFUX-23, SFUX-24, SFUX-25
+**Success Criteria** (what must be TRUE):
+  1. Staff dashboard shows truncated metrics and navigates to filtered views (docs pendentes, chats hoje)
+  2. Staff agendamentos display correct card info (nome + recurso), support search by RA/nome, and confirm works
+  3. Staff chats show tab navigation, student identification (nome + número), and informative header in conversation
+  4. Staff intervenção follows visual patterns (drawer, search), shows concluídos tab
+  5. Staff documentos have state tabs, type filter, full data view, drawer pattern, and error on missing file
+  6. Staff recursos toggle ativar/desativar works and delete option exists
+  7. Staff cadastro de alunos is a full CRUD with cards, 3-dot menu, floating add button, expandable details, and search/filters
+**Plans:** 9/9 plans complete
 
 Plans:
-- [x] 09-01-PLAN.md — Staff data layer (models, services, Riverpod providers + file_picker dep)
-- [x] 09-02-PLAN.md — Dashboard screen (KPI grid) + Schedule screen (appointments + create slot)
-- [x] 09-03-PLAN.md — AI Data screen (sessions list + statistics tabs + chat detail)
-- [x] 09-04-PLAN.md — Document Management screen (filter + status update + send doc) + backend upload endpoint
-- [x] 09-05-PLAN.md — Router wiring (replace placeholders, add sub-routes for detail screens)
+- [x] 19-01-PLAN.md — Dashboard KPI navigation + nav rename + Ações Rápidas
+- [x] 19-02-PLAN.md — Agendamentos card redesign + search + confirm fix
+- [x] 19-03-PLAN.md — Unified Chats screen (AI + Intervention merged)
+- [x] 19-04-PLAN.md — Documents tabs + type filter + detail sheet
+- [x] 19-05-PLAN.md — Resources toggle + delete option
+- [x] 19-06-PLAN.md — Cadastro de Alunos full CRUD screen
+- [x] 19-07-PLAN.md — GAP: Appointment data + confirm endpoint (Tests 4, 5)
+- [x] 19-08-PLAN.md — GAP: Chat student data + intervention closed + resource delete (Tests 6, 7, 11)
+- [x] 19-09-PLAN.md — GAP: KPI filter nav + chat tab fix + cadastro field mapping (Tests 2, 6, 12, 13)
 
----
+**UI hint**: yes
 
-### Phase 10: Cross-Platform Polish
+### Phase 20: LangChain Workflow
 
-**Goal:** The Flutter app renders correctly on smartphones, tablets, and web; data synchronization is efficient; the user experience is polished across all form factors.
-**Depends on:** Phase 8, Phase 9
-**Requirements:** UI-NFR-02, UI-NFR-04
+**Goal**: WhatsApp chatbot handles complete conversation lifecycle with RAG, MCP tools, security defenses, and structured logging
+**Depends on**: Nothing (backend/AI service, independent of Flutter)
+**Requirements**: LANG-01, LANG-02, LANG-03, LANG-04, LANG-05, LANG-06, LANG-07, LANG-08, LANG-09, LANG-10, LANG-11, LANG-12, LANG-13, LANG-14
+**Success Criteria** (what must be TRUE):
+  1. Student receives welcome message when starting WhatsApp conversation and goodbye message when session ends (timeout or farewell)
+  2. Agent answers academic questions from knowledge base (RAG) and executes actions via MCP tools with correct student context
+  3. Off-scope questions receive polite redirection; media messages receive creative rejection; failures trigger human intervention
+  4. Prompt injection attempts are detected and neutralized without disrupting legitimate conversation
+  5. Staff can see RAG debug info (chunks, scores) in chat logs; system logs capture full LangChain decision traceability
+**Plans**: TBD
 
-### Success Criteria
-1. All screens render correctly and are usable on phone (360dp width), tablet (768dp width), and web (1280dp+ width).
-2. Consistent loading states, error handling, and empty states across all screens.
-3. Data fetches complete in < 2s for cached data and < 5s for fresh API calls, with visual feedback during loading.
-4. UI passes basic accessibility checks: sufficient contrast ratio, minimum 48dp touch targets, text scales with system font size.
+### Phase 21: Roles & Auth Expansion
 
-**Plans:** 5/5 plans complete
+**Goal**: Provider role exists with hierarchical management — provider manages staff, staff manages students — with dedicated Flutter screens
+**Depends on**: Nothing (auth layer extension, independent)
+**Requirements**: ROLE-01, ROLE-02, ROLE-03, ROLE-04, ROLE-05, ROLE-06, ROLE-07
+**Success Criteria** (what must be TRUE):
+  1. JWT token includes provider role; provider can log in and see provider-specific navigation
+  2. Provider can CRUD staff members (cadastrar, editar, ativar/desativar, remover) with required fields
+  3. Staff can CRUD students (cadastrar, editar, ativar/desativar, remover) with required fields
+  4. Provider screen has 2 tabs (staff + aluno) with separate CRUD interfaces
+**Plans**: TBD
+**UI hint**: yes
 
-Plans:
-- [x] 10-01-PLAN.md — Theme foundation (dark mode, spacing tokens, breakpoints, responsive typography)
-- [x] 10-02-PLAN.md — Shared UX widgets (skeleton, empty, error, offline banner, responsive container)
-- [x] 10-03-PLAN.md — Adaptive navigation shells + master-detail split view
-- [x] 10-04-PLAN.md — Data cache TTL + prefetch strategy
-- [x] 10-05-PLAN.md — Screen integration (all screens → shared widgets, responsive grid, theme toggle, a11y)
+### Phase 22: FCM Push Notifications
 
----
+**Goal**: Students receive push notifications on their phone for key academic events, with tap-to-navigate functionality
+**Depends on**: Nothing (can begin infrastructure in parallel; event triggers wire into existing services)
+**Requirements**: FCM-01, FCM-02, FCM-03, FCM-04, FCM-05, FCM-06, FCM-07, FCM-08
+**Success Criteria** (what must be TRUE):
+  1. Flutter app registers FCM token on login and refreshes it automatically; backend stores tokens per device
+  2. Push notification appears in phone notification bar when document is ready, enrollment confirmed, appointment confirmed, or new chat message received
+  3. Notifications display correctly in both foreground and background states
+  4. Tapping a notification navigates the user to the relevant screen in the app
+**Plans**: TBD
+**UI hint**: yes
 
-### Phase 11: Alpha Connect Visual Refactoring
+### Phase 23: New Features
 
-**Goal:** Align the Flutter app's visual identity with the alpha-connect React prototype — new color palette, typography (Plus Jakarta Sans + Inter), glassmorphism components, pill-shaped CTAs, and restructured screen layouts — while preserving all existing features, API integrations, and responsive behaviors.
-**Depends on:** Phase 10
-**Requirements:** UI-NFR-02 (visual consistency), UI-NFR-04 (dark mode support)
+**Goal**: Students can view weekly meal menu, their academic profile, and class schedule calendar
+**Depends on**: Nothing (independent screens with new backend endpoints)
+**Requirements**: CARD-01, CARD-02, CARD-03, PERF-01, PERF-02, PERF-03, GRAD-01, GRAD-02, GRAD-03
+**Success Criteria** (what must be TRUE):
+  1. Staff/provider can create and edit the weekly meal menu (text per day); students see it with day-by-day navigation
+  2. Student can view and edit app profile data (photo, name, notification preferences) and see academic data (RA, curso, período, campus, notas)
+  3. Student sees weekly calendar with enrolled classes showing time, professor, and subject description
+  4. All three new features are accessible from the main navigation
+**Plans**: TBD
+**UI hint**: yes
 
-### Success Criteria
-1. App renamed to "Alpha Connect" with matching branding (icon badge + uppercase title).
-2. Color palette matches alpha-connect prototype: primary #3B608F, secondary #6A548A, tertiary #676001 with full dark mode variants.
-3. Typography uses Plus Jakarta Sans (headings) + Inter (body) via google_fonts.
-4. Navigation uses glassmorphism bottom bar (phone) with pill-shaped active items; NavigationRail preserved for tablet/desktop.
-5. All screens restructured to match alpha-connect card layouts (glass cards, segmented filters, KPI grids, quick-action grids).
-6. Theme toggle + logout accessible from every screen via shared AppBarActions widget.
-7. Dark mode fully legible — input text, OTP digits, search bars all use explicit onSurface colors.
-8. 38 tests passing (8 existing auth + 30 new: theme tokens, GlassCard, PillButton).
+### Phase 24: UI Polish & Integration
 
-**Plans:** Executed as single refactoring pass (no sub-plans)
-
-Branch: `feat/alpha-connect-visual-refactoring`
-Commits:
-- [x] `69c392f` — feat(mobile): align visual identity with alpha-connect prototype
-- [x] `eb4b91f` — fix(mobile): add theme toggle + logout to all screens, fix dark mode text legibility
-
-### Phase 12: Frontend-Backend Integration
-
-**Goal:** The Flutter app connects to the real FastAPI backend — Docker Compose orchestrates the full stack locally, API contracts are validated and corrected, OTP bypass enables dev login, and E2E tests prove data flows end-to-end.
-**Depends on:** Phase 11
-**Requirements:** UI-INFRA-02, UI-NFR-03
-
-### Success Criteria
-1. `docker compose up` starts all 5 services (fastapi-app, langchain-service, mcp-server, postgres, flutter-web) with healthchecks passing.
-2. Flutter web app at `:3000` authenticates against backend at `:8000` using DEV_MASTER_OTP=000000 bypass.
-3. All Dart models parse real API responses without exceptions — contract mismatches fixed.
-4. Seed data populates on first boot; subsequent boots skip seeding (conditional seed).
-5. Flutter integration tests pass against the running stack: auth flow, documents, chat, staff dashboard.
-
-**Plans:** 3/3 plans complete
-
-Plans:
-- [x] 12-01-PLAN.md — Docker Compose full stack (flutter-web service, conditional seed, .env docs)
-- [x] 12-02-PLAN.md — API contract validation and Dart model corrections
-- [x] 12-03-PLAN.md — E2E integration tests (auth, documents, chat, staff)
+**Goal**: Application presents a polished, cohesive experience with custom splash screen and consistent navigation after all corrections
+**Depends on**: Phases 18, 19, 20, 21, 22, 23 (final validation layer)
+**Requirements**: UIPOL-01, UIPOL-02, UIPOL-03
+**Success Criteria** (what must be TRUE):
+  1. App launches with custom Alpha Connect splash screen (not default Flutter splash)
+  2. Staff/provider dashboard displays additional relevant metrics
+  3. End-to-end navigation is coherent — every screen reachable, every action completes, no dead ends
+**Plans**: TBD
+**UI hint**: yes
 
 ---
 
 ## Progress
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 7. Flutter Scaffold & Auth | 3/3 | Complete | 2026-05-05 |
-| 8. Client Interface | 5/5 | Complete | 2026-05-05 |
-| 9. Staff Interface | 5/5 | Complete | 2026-05-05 |
-| 10. Cross-Platform Polish | 5/5 | Complete | 2026-05-05 |
-| 11. Alpha Connect Visual Refactoring | 1/1 | Complete | 2026-05-06 |
-| 12. Frontend-Backend Integration | 3/3 | Complete | 2026-05-06 |
-| 13. Resource Allocation | 3/3 | Complete | 2026-05-06 |
-| 14. Human Intervention | 2/2 | Complete | 2026-05-06 |
-| 15. Cyber-Academic Visual Redesign | 0/3 | Planned | — |
-| 15.1. Fix logo | 1/1 | Complete | 2026-05-10 |
-| 15.2. Add Alpha Connect SVG logos | 1/1 | Complete | 2026-05-10 |
-| 15.3. Logo light/dark mode variants | 1/1 | Complete    | 2026-05-10 |
-| 16. Micro-Animations & Transitions | 3/3 | Complete    | 2026-05-10 |
-| 17. UI Polish — Nav animations, glows, logo | 3/3 | Complete    | 2026-05-11 |
+**Execution Order:**
+- Group 1 (Corrections): Phase 18 ∥ Phase 19 (parallel)
+- Group 2 (Improvements): Phase 20 ∥ Phase 21 ∥ Phase 22 (parallel)
+- Group 3 (New Features): Phase 23 (internal parallelism across 3 sub-features)
+- Group 4 (Polish): Phase 24 (after all above)
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 18. Student UX Corrections | v3.0 | 7/7 | Complete    | 2026-05-09 |
+| 19. Staff UX Corrections | v3.0 | 9/9 | Complete    | 2026-05-10 |
+| 20. LangChain Workflow | v3.0 | 0/TBD | Not started | - |
+| 21. Roles & Auth Expansion | v3.0 | 0/TBD | Not started | - |
+| 22. FCM Push Notifications | v3.0 | 0/TBD | Not started | - |
+| 23. New Features | v3.0 | 0/TBD | Not started | - |
+| 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |
+
+---
+
+**Total project:** 24 phases across 3 milestones.

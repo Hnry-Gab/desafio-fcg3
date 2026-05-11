@@ -14,18 +14,50 @@ import '../providers/staff_document_provider.dart';
 import 'widgets/send_document_sheet.dart';
 import 'widgets/update_status_sheet.dart';
 
-class StaffDocumentsScreen extends ConsumerWidget {
-  const StaffDocumentsScreen({super.key});
+class StaffDocumentsScreen extends ConsumerStatefulWidget {
+  final String? initialFilter;
+  const StaffDocumentsScreen({super.key, this.initialFilter});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<StaffDocumentsScreen> createState() =>
+      _StaffDocumentsScreenState();
+}
+
+class _StaffDocumentsScreenState extends ConsumerState<StaffDocumentsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Apply filter synchronously from constructor param — no GoRouterState race condition
+    if (widget.initialFilter == 'pendentes') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(staffDocumentFilterProvider.notifier).setFilter('processing');
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final filter = ref.watch(staffDocumentFilterProvider);
+    final typeFilter = ref.watch(staffDocumentTypeFilterProvider);
     final documentsAsync = ref.watch(staffDocumentsProvider);
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Documentos'),
+        title: widget.initialFilter == 'pendentes'
+            ? Row(mainAxisSize: MainAxisSize.min, children: [
+                const Text('Documentos'),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: colors.primaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text('Pendentes', style: TextStyle(fontSize: 12, color: colors.primary)),
+                ),
+              ])
+            : const Text('Documentos'),
         actions: const [AppBarActions()],
       ),
       floatingActionButton: FloatingActionButton(
@@ -35,7 +67,7 @@ class StaffDocumentsScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          // Segmented filter
+          // Status filter tabs
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 20,
@@ -47,34 +79,122 @@ class StaffDocumentsScreen extends ConsumerWidget {
                 color: colors.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
               ),
-              child: Row(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _FilterTab(
+                      label: 'Todos',
+                      isSelected: filter == null,
+                      onTap: () => ref
+                          .read(staffDocumentFilterProvider.notifier)
+                          .setFilter(null),
+                    ),
+                    _FilterTab(
+                      label: 'Solicitado',
+                      isSelected: filter == 'requested',
+                      onTap: () => ref
+                          .read(staffDocumentFilterProvider.notifier)
+                          .setFilter(
+                              filter == 'requested' ? null : 'requested'),
+                    ),
+                    _FilterTab(
+                      label: 'Processando',
+                      isSelected: filter == 'processing',
+                      onTap: () => ref
+                          .read(staffDocumentFilterProvider.notifier)
+                          .setFilter(
+                              filter == 'processing' ? null : 'processing'),
+                    ),
+                    _FilterTab(
+                      label: 'Prontos',
+                      isSelected: filter == 'ready',
+                      onTap: () => ref
+                          .read(staffDocumentFilterProvider.notifier)
+                          .setFilter(filter == 'ready' ? null : 'ready'),
+                    ),
+                    _FilterTab(
+                      label: 'Entregue',
+                      isSelected: filter == 'delivered',
+                      onTap: () => ref
+                          .read(staffDocumentFilterProvider.notifier)
+                          .setFilter(
+                              filter == 'delivered' ? null : 'delivered'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Type filter pills
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SizedBox(
+              height: 36,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
                 children: [
-                  _FilterTab(
+                  _TypePill(
                     label: 'Todos',
-                    isSelected: filter == null,
+                    isSelected: typeFilter == null,
                     onTap: () => ref
-                        .read(staffDocumentFilterProvider.notifier)
+                        .read(staffDocumentTypeFilterProvider.notifier)
                         .setFilter(null),
                   ),
-                  _FilterTab(
-                    label: 'Pendentes',
-                    isSelected: filter == 'requested',
+                  const SizedBox(width: 8),
+                  _TypePill(
+                    label: 'Histórico',
+                    isSelected: typeFilter == 'transcript',
                     onTap: () => ref
-                        .read(staffDocumentFilterProvider.notifier)
-                        .setFilter(
-                            filter == 'requested' ? null : 'requested'),
+                        .read(staffDocumentTypeFilterProvider.notifier)
+                        .setFilter(typeFilter == 'transcript'
+                            ? null
+                            : 'transcript'),
                   ),
-                  _FilterTab(
-                    label: 'Prontos',
-                    isSelected: filter == 'ready',
+                  const SizedBox(width: 8),
+                  _TypePill(
+                    label: 'Declaração',
+                    isSelected: typeFilter == 'declaration',
                     onTap: () => ref
-                        .read(staffDocumentFilterProvider.notifier)
-                        .setFilter(filter == 'ready' ? null : 'ready'),
+                        .read(staffDocumentTypeFilterProvider.notifier)
+                        .setFilter(typeFilter == 'declaration'
+                            ? null
+                            : 'declaration'),
+                  ),
+                  const SizedBox(width: 8),
+                  _TypePill(
+                    label: 'Atestado',
+                    isSelected: typeFilter == 'enrollment_proof',
+                    onTap: () => ref
+                        .read(staffDocumentTypeFilterProvider.notifier)
+                        .setFilter(typeFilter == 'enrollment_proof'
+                            ? null
+                            : 'enrollment_proof'),
+                  ),
+                  const SizedBox(width: 8),
+                  _TypePill(
+                    label: 'Diploma',
+                    isSelected: typeFilter == 'certificate',
+                    onTap: () => ref
+                        .read(staffDocumentTypeFilterProvider.notifier)
+                        .setFilter(typeFilter == 'certificate'
+                            ? null
+                            : 'certificate'),
+                  ),
+                  const SizedBox(width: 8),
+                  _TypePill(
+                    label: 'Outros',
+                    isSelected: typeFilter == 'other',
+                    onTap: () => ref
+                        .read(staffDocumentTypeFilterProvider.notifier)
+                        .setFilter(
+                            typeFilter == 'other' ? null : 'other'),
                   ),
                 ],
               ),
             ),
           ),
+          const SizedBox(height: AppSpacing.sm),
           Expanded(
             child: documentsAsync.when(
               loading: () => const ResponsiveContainer(
@@ -88,7 +208,7 @@ class StaffDocumentsScreen extends ConsumerWidget {
                 ),
               ),
               data: (documents) {
-                final filtered = _applyFilter(documents, filter);
+                final filtered = _applyFilter(documents, filter, typeFilter);
                 if (filtered.isEmpty) {
                   return const AppEmptyState(
                     icon: Icons.folder_open,
@@ -119,7 +239,7 @@ class StaffDocumentsScreen extends ConsumerWidget {
                               delay: AppAnimations.getEntranceDelay(index),
                               child: _StaffDocumentCard(
                                 document: filtered[index],
-                                onTap: () => showUpdateStatusSheet(
+                                onTap: () => _showStaffDocumentDetailSheet(
                                     context, ref, filtered[index]),
                               ),
                             ),
@@ -139,10 +259,224 @@ class StaffDocumentsScreen extends ConsumerWidget {
 
   List<DocumentModel> _applyFilter(
     List<DocumentModel> documents,
-    String? filter,
+    String? statusFilter,
+    String? typeFilter,
   ) {
-    if (filter == null) return documents;
-    return documents.where((d) => d.status == filter).toList();
+    var result = documents;
+    if (statusFilter != null) {
+      result = result.where((d) => d.status == statusFilter).toList();
+    }
+    if (typeFilter != null) {
+      if (typeFilter == 'other') {
+        final knownTypes = [
+          'transcript',
+          'enrollment_proof',
+          'declaration',
+          'certificate'
+        ];
+        result = result.where((d) => !knownTypes.contains(d.type)).toList();
+      } else {
+        result = result.where((d) => d.type == typeFilter).toList();
+      }
+    }
+    // Sort by request date descending (most recent first)
+    result.sort((a, b) => b.requestedAt.compareTo(a.requestedAt));
+    return result;
+  }
+}
+
+/// Shows full document detail in a bottom sheet for staff.
+void _showStaffDocumentDetailSheet(
+    BuildContext context, WidgetRef ref, DocumentModel document) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (ctx) => _StaffDocumentDetailContent(document: document, ref: ref),
+  );
+}
+
+class _StaffDocumentDetailContent extends StatelessWidget {
+  final DocumentModel document;
+  final WidgetRef ref;
+
+  const _StaffDocumentDetailContent({
+    required this.document,
+    required this.ref,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        24,
+        24,
+        24,
+        MediaQuery.of(context).viewInsets.bottom + 40,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: colors.primaryContainer.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                ),
+                child:
+                    Icon(Icons.description, color: colors.primary, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  _typeLabel(document.type),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // Detail rows
+          if (document.studentName != null)
+            _DetailRow(label: 'Aluno', value: document.studentName!),
+          if (document.studentEmail != null)
+            _DetailRow(label: 'Email', value: document.studentEmail!),
+          _DetailRow(label: 'Tipo', value: _typeLabel(document.type)),
+          _DetailRow(
+            label: 'Status',
+            value: _statusLabel(document.status),
+          ),
+          _DetailRow(
+            label: 'Data solicitação',
+            value: _formatDateTime(document.requestedAt),
+          ),
+          if (document.completedAt != null)
+            _DetailRow(
+              label: 'Concluído em',
+              value: _formatDateTime(document.completedAt!),
+            ),
+          if (document.notes != null && document.notes!.isNotEmpty)
+            _DetailRow(label: 'Observações', value: document.notes!),
+
+          const SizedBox(height: 24),
+
+          // Action button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.edit),
+              label: const Text('Atualizar Status'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                showUpdateStatusSheet(context, ref, document);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDateTime(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final year = date.year;
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    return '$day/$month/$year $hour:$minute';
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _DetailRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 130,
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colors.onSurface,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TypePill extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _TypePill({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? colors.primary.withValues(alpha: 0.12)
+              : colors.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          border: Border.all(
+            color: isSelected
+                ? colors.primary.withValues(alpha: 0.3)
+                : colors.outlineVariant.withValues(alpha: 0.5),
+          ),
+        ),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: isSelected ? colors.primary : colors.onSurfaceVariant,
+              ),
+        ),
+      ),
+    );
   }
 }
 
@@ -161,36 +495,34 @@ class _FilterTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? colors.surfaceContainerLowest
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: colors.primary.withValues(alpha: 0.06),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color:
-                      isSelected ? colors.primary : colors.onSurfaceVariant,
-                ),
-          ),
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? colors.surfaceContainerLowest
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: colors.primary.withValues(alpha: 0.06),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color:
+                    isSelected ? colors.primary : colors.onSurfaceVariant,
+              ),
         ),
       ),
     );
@@ -253,13 +585,22 @@ class _StaffDocumentCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _typeLabel(document.type),
+                  document.studentName ?? document.studentEmail ?? 'Aluno',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: colors.onSurface,
                       ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
+                Text(
+                  _typeLabel(document.type),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
                 Text(
                   'Solicitado em ${_formatDate(document.requestedAt)}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -288,6 +629,8 @@ class _StaffDocumentCard extends StatelessWidget {
             ),
             child: Text(
               _statusLabel(document.status),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,

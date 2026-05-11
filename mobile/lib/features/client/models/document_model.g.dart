@@ -9,6 +9,9 @@ part of 'document_model.dart';
 DocumentModel _$DocumentModelFromJson(Map<String, dynamic> json) =>
     DocumentModel(
       id: json['id'] as String,
+      studentId: json['student_id'] as String?,
+      studentName: json['student_name'] as String?,
+      studentEmail: json['student_email'] as String?,
       type: json['type'] as String,
       status: json['status'] as String,
       fileUrl: json['file_url'] as String?,
@@ -22,6 +25,9 @@ DocumentModel _$DocumentModelFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$DocumentModelToJson(DocumentModel instance) =>
     <String, dynamic>{
       'id': instance.id,
+      'student_id': instance.studentId,
+      'student_name': instance.studentName,
+      'student_email': instance.studentEmail,
       'type': instance.type,
       'status': instance.status,
       'file_url': instance.fileUrl,

@@ -210,6 +210,8 @@ class _InterventionCard extends ConsumerWidget {
                     if (session.displayIdentifier.isNotEmpty)
                       Text(
                         session.displayIdentifier,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -376,6 +378,8 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.bold,
