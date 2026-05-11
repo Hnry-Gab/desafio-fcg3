@@ -17,17 +17,17 @@ progress:
 
 ## Current Position
 
-Phase: 20 (langchain-workflow) — EXECUTING
-Plan: 4 of 11
-Status: Ready to execute
-Last activity: 2026-05-09
+Phase: 21 (roles-auth-expansion) — EXECUTING
+Plan: 1 of 4
+Status: Executing Phase 21
+Last activity: 2026-05-09 -- Phase 21 execution started
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação acadêmica — com ações concretas executadas em tempo real.
-**Current focus:** Phase 20 — langchain-workflow
+**Current focus:** Phase 21 — roles-auth-expansion
 
 ## Milestones Shipped
 
@@ -129,7 +129,6 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 To resume work: read this file, then `.planning/ROADMAP.md` for phase details.
 
 **Parallel execution guidance:**
-
 
 - Group 1 (Phases 18-19): Start with `/gsd-plan-phase 18` or `/gsd-plan-phase 19` — both are independent
 - Group 2 (Phases 20-22): After Group 1, any of these can start in any order

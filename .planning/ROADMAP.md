@@ -74,7 +74,7 @@ GROUP 4 — Polish (depends on all above):
 - [x] **Phase 19: Staff UX Corrections** - Fix dashboard, agendamentos, chats, intervenção, documentos, recursos, cadastro (gap closure in progress)
  (completed 2026-05-10)
 - [x] **Phase 20: LangChain Workflow** - Complete agent lifecycle, RAG, MCP, defenses, logging (gap closure in progress) (completed 2026-05-09)
-- [ ] **Phase 21: Roles & Auth Expansion** - Add provider role with hierarchical CRUDs
+- [x] **Phase 21: Roles & Auth Expansion** - Add provider role with hierarchical CRUDs (completed 2026-05-09)
 - [ ] **Phase 22: FCM Push Notifications** - End-to-end push infrastructure (backend + Flutter)
 - [ ] **Phase 23: New Features** - Cardápio semanal, perfil do aluno, grade curricular
 - [ ] **Phase 24: UI Polish & Integration** - Splash screen, dashboard metrics, end-to-end coherence
@@ -169,7 +169,14 @@ Plans:
   2. Provider can CRUD staff members (cadastrar, editar, ativar/desativar, remover) with required fields
   3. Staff can CRUD students (cadastrar, editar, ativar/desativar, remover) with required fields
   4. Provider screen has 2 tabs (staff + aluno) with separate CRUD interfaces
-**Plans**: TBD
+**Plans:** 4/4 plans complete
+
+Plans:
+- [x] 21-01-PLAN.md — Backend migration + auth expansion (provider role, new columns, require_provider)
+- [x] 21-02-PLAN.md — Staff CRUD endpoints (5 routes, provider-only)
+- [x] 21-03-PLAN.md — Flutter navigation expansion (6th tab, UserModel, router guards)
+- [x] 21-04-PLAN.md — Flutter staff management UI (list, form, CRUD operations)
+
 **UI hint**: yes
 
 ### Phase 22: FCM Push Notifications
@@ -225,7 +232,7 @@ Plans:
 | 18. Student UX Corrections | v3.0 | 7/7 | Complete    | 2026-05-09 |
 | 19. Staff UX Corrections | v3.0 | 9/9 | Complete    | 2026-05-10 |
 | 20. LangChain Workflow | v3.0 | 11/11 | Complete   | 2026-05-09 |
-| 21. Roles & Auth Expansion | v3.0 | 0/TBD | Not started | - |
+| 21. Roles & Auth Expansion | v3.0 | 4/4 | Complete   | 2026-05-09 |
 | 22. FCM Push Notifications | v3.0 | 0/TBD | Not started | - |
 | 23. New Features | v3.0 | 0/TBD | Not started | - |
 | 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |
