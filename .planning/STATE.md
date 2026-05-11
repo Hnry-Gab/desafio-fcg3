@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
 status: executing
-last_updated: "2026-05-11T15:40:49.792Z"
+last_updated: "2026-05-11T16:12:34.892Z"
 last_activity: 2026-05-11
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 20
-  completed_plans: 18
-  percent: 90
+  completed_plans: 19
+  percent: 95
 ---
 
 # Project State
@@ -18,9 +18,9 @@ progress:
 ## Current Position
 
 Phase: 25 (melhorias-frontend) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
-Last activity: 2026-05-11 -- Completed 25-02 (favicon & web branding with α mark)
+Last activity: 2026-05-11 -- Completed 25-03 (shared date_utils.dart refactoring)
 
 ## Project Reference
 
@@ -137,6 +137,10 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **25-02:** Maskable icons: 80% inner content on #111317 dark background for safe-zone compliance
 - **25-02:** manifest.json: theme_color/background_color → #111317, description → "Plataforma Acadêmica - Ciência da Computação"
 - **25-02:** index.html meta description → "Alpha Connect - Plataforma Acadêmica"
+- **25-03:** Shared date_utils.dart with formatDate/formatDateTime/formatRelativeTime — no external package (D-06)
+- **25-03:** Year-aware display: DD/MM current year, DD/MM/YYYY otherwise (D-07)
+- **25-03:** Short-form relative time: agora/Xm/Xh/Xd with 7-day threshold (D-08, D-09)
+- **25-03:** 12+ inline date functions eliminated from 13 screen files (D-10)
 
 ## Session Continuity
 
