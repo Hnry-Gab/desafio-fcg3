@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 /// Light and dark variants provided for full theme support.
 class AppColors {
   // === Light Theme ===
-  static const Color primary = Color(0xFF00E5FF);
+  static const Color primary = Color(0xFF00695C);
   static const Color onPrimary = Color(0xFF000000);
   static const Color primaryContainer = Color(0xFF004D57);
   static const Color onPrimaryContainer = Color(0xFF97F0FF);
