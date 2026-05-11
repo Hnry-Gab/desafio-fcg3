@@ -209,11 +209,11 @@ Plans:
   5. Formato de data explícito (sem ambiguidade com contagem de fase)
   6. Erros gramaticais corrigidos; textos atualizados ("Requer Aprovação")
   7. Ícone de Suporte removido da navbar no modo desktop
-**Plans:** 1/4 plans executed
+**Plans:** 2/4 plans executed
 
 Plans:
 - [x] 25-01-PLAN.md — Light mode contrast fix + support icon removal + logo verification
-- [ ] 25-02-PLAN.md — Favicon & web branding (icons, manifest, meta)
+- [x] 25-02-PLAN.md — Favicon & web branding (icons, manifest, meta)
 - [ ] 25-03-PLAN.md — Date formatting utility + refactor 13 screens
 - [ ] 25-04-PLAN.md — Pixel overflow fixes + font sizes + grammar corrections
 
@@ -238,7 +238,7 @@ Plans:
 | 22. FCM Push Notifications | v3.0 | 0/TBD | Not started | - |
 | 23. New Features | v3.0 | 0/TBD | Not started | - |
 | 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |
-| 25. Melhorias FrontEnd | v3.0 | 1/4 | In Progress|  |
+| 25. Melhorias FrontEnd | v3.0 | 2/4 | In Progress|  |
 
 ---
 

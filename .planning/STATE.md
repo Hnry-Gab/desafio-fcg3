@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
 status: executing
-last_updated: "2026-05-11T15:28:05.720Z"
+last_updated: "2026-05-11T15:40:49.792Z"
 last_activity: 2026-05-11
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 20
-  completed_plans: 17
-  percent: 85
+  completed_plans: 18
+  percent: 90
 ---
 
 # Project State
@@ -18,9 +18,9 @@ progress:
 ## Current Position
 
 Phase: 25 (melhorias-frontend) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
-Last activity: 2026-05-11 -- Completed 25-01 (light mode contrast + desktop nav cleanup)
+Last activity: 2026-05-11 -- Completed 25-02 (favicon & web branding with α mark)
 
 ## Project Reference
 
@@ -133,6 +133,10 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **25-01:** Light primary changed from #00E5FF to #00695C for WCAG AA compliance (~5.6:1 contrast)
 - **25-01:** Desktop NavigationRail ghost Suporte destination removed (4 items now match mobile nav)
 - **25-01:** Logo brightness-adaptive behavior verified — no changes needed (Phase 17 implementation correct)
+- **25-02:** Custom α mark favicon/PWA icons from alpha_connect_shortlogo_dark.svg via cairosvg+Pillow
+- **25-02:** Maskable icons: 80% inner content on #111317 dark background for safe-zone compliance
+- **25-02:** manifest.json: theme_color/background_color → #111317, description → "Plataforma Acadêmica - Ciência da Computação"
+- **25-02:** index.html meta description → "Alpha Connect - Plataforma Acadêmica"
 
 ## Session Continuity
 
