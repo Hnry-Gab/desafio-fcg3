@@ -262,8 +262,9 @@ async def list_enrollments(
     Staff can view all or filter by student_id.
     """
     # IDOR-safe: force student to see only their own enrollments
+    # D-04: Provider inherits staff permissions
     effective_student_id = student_id
-    if user.role != "staff":
+    if user.role not in ("staff", "provider"):
         effective_student_id = user.id
 
     items, total = await enrollment_service.list_enrollments(

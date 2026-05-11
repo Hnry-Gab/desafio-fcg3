@@ -74,6 +74,8 @@ services:
       # repo so D-11 enrollment locking is verified against the right schema.
       - ./backend/alembic:/app/alembic
       - ./backend/alembic.ini:/app/alembic.ini
+      # FCM service account credentials (Phase 22)
+      - ./${FCM_CREDENTIALS_PATH:-fcm-credentials.json}:/app/${FCM_CREDENTIALS_PATH:-fcm-credentials.json}:ro
     depends_on:
       postgres:
         condition: service_healthy

@@ -84,10 +84,18 @@ async def get_current_user(
 
 
 def require_role(role: str):
-    """Usage: current_user: CurrentUser = Depends(require_role('staff'))"""
+    """Usage: current_user: CurrentUser = Depends(require_role('staff'))
+
+    Provider inherits all staff permissions (D-04): if role='staff',
+    both 'staff' and 'provider' roles pass the check.
+    """
 
     async def _dep(current_user: CurrentUser = Depends(get_current_user)) -> CurrentUser:
-        if current_user.role != role:
+        allowed_roles = {role}
+        # D-04: Provider inherits staff permissions
+        if role == "staff":
+            allowed_roles.add("provider")
+        if current_user.role not in allowed_roles:
             raise HTTPException(
                 status_code=403,
                 detail={"error": {"code": "forbidden",

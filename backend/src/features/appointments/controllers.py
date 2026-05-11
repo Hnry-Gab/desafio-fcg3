@@ -172,8 +172,9 @@ async def list_appointments(
     Staff can view all or filter by student_id.
     """
     # IDOR-safe: force students/service to see only their own appointments
+    # D-04: Provider inherits staff permissions
     effective_student_id = student_id
-    if user.role != "staff":
+    if user.role not in ("staff", "provider"):
         effective_student_id = user.id
 
     items, total = await appointment_service.list_appointments(
@@ -293,7 +294,8 @@ async def upload_authorization(
         raise NotFoundException("appointment", appointment_id)
 
     # IDOR check: student can only upload to own appointment
-    if user.role != "staff" and result.student_id != user.id:
+    # D-04: Provider inherits staff permissions
+    if user.role not in ("staff", "provider") and result.student_id != user.id:
         raise ForbiddenException(
             "Voce nao tem permissao para enviar arquivos para este agendamento",
         )

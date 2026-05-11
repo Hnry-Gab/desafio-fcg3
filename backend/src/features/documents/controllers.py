@@ -62,9 +62,9 @@ async def create_document(
     Staff: can specify student_id in body to create on behalf of a student.
     Accepts X-Service-Token for MCP access.
     """
-    # Staff can specify a target student_id; students always use their own
+    # Staff/provider can specify a target student_id; students always use their own
     target_student_id = user.id
-    if user.role == "staff" and data.student_id is not None:
+    if user.role in ("staff", "provider") and data.student_id is not None:
         target_student_id = data.student_id
 
     document = await document_service.create_document_request(
@@ -93,8 +93,10 @@ async def list_documents(
     Staff can view all or filter by student_id.
     """
     # IDOR-safe: force student/service to see only their own documents
+    # D-04: Provider inherits staff permissions
+    is_staff_or_provider = user.role in ("staff", "provider")
     effective_student_id = student_id
-    if user.role != "staff":
+    if not is_staff_or_provider:
         effective_student_id = user.id
 
     items, total = await document_service.list_documents(
@@ -103,14 +105,14 @@ async def list_documents(
         student_id=effective_student_id,
         type=type,
         status=status,
-        include_student=(user.role == "staff"),
+        include_student=is_staff_or_provider,
     )
 
     data = []
     for item in items:
         doc_dict = DocumentResponse.model_validate(item).model_dump()
-        # Enrich with student info for staff view
-        if user.role == "staff" and item.student:
+        # Enrich with student info for staff/provider view
+        if is_staff_or_provider and item.student:
             doc_dict["student_name"] = item.student.name
             doc_dict["student_email"] = item.student.email
             doc_dict["student_id"] = str(item.student_id)
