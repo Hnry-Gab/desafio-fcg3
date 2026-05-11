@@ -423,7 +423,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(6, (index) {
-            return SizedBox(
+            return Flexible(
+              child: SizedBox(
               width: 44,
               height: 52,
               child: KeyboardListener(
@@ -474,6 +475,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   onChanged: (value) => _onCodeDigitChanged(index, value),
                 ),
               ),
+            ),
             );
           }),
         ),

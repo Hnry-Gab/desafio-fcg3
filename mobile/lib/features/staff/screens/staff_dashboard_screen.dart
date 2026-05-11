@@ -189,15 +189,19 @@ class StaffDashboardScreen extends ConsumerWidget {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      'Taxa de Resolução Automatizada',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                            color: colors.onSurface,
-                                          ),
+                                    Expanded(
+                                      child: Text(
+                                        'Taxa de Resolução Automatizada',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: colors.onSurface,
+                                            ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
+                                    const SizedBox(width: 8),
                                     Text(
                                       '${_calculateAiRate(dashboard)}%',
                                       style: Theme.of(context)
