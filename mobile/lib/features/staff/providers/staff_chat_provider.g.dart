@@ -328,5 +328,21 @@ final staffChatStatisticsProvider =
 // ignore: unused_element
 typedef StaffChatStatisticsRef =
     AutoDisposeFutureProviderRef<Map<String, dynamic>>;
+String _$staffChatsSearchHash() => r'ccfbf436c50da0b1a1e07f9b2fb9f9720e79208e';
+
+/// See also [StaffChatsSearch].
+@ProviderFor(StaffChatsSearch)
+final staffChatsSearchProvider =
+    AutoDisposeNotifierProvider<StaffChatsSearch, String>.internal(
+      StaffChatsSearch.new,
+      name: r'staffChatsSearchProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$staffChatsSearchHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$StaffChatsSearch = AutoDisposeNotifier<String>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

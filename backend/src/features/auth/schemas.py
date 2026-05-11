@@ -32,3 +32,4 @@ class MeResponse(BaseModel):
     email: EmailStr
     name: str
     role: str  # 'student' | 'staff'
+    status: str = "active"  # 'active' | 'inactive' | 'graduated' | 'locked'

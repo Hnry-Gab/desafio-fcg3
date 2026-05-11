@@ -20,11 +20,13 @@ import '../../features/staff/screens/staff_dashboard_screen.dart';
 import '../../features/staff/screens/staff_schedule_screen.dart';
 import '../../features/staff/screens/staff_appointment_detail_screen.dart';
 import '../../features/staff/screens/staff_ai_screen.dart';
+import '../../features/staff/screens/staff_chats_screen.dart';
 import '../../features/staff/screens/staff_chat_detail_screen.dart';
 import '../../features/staff/screens/staff_documents_screen.dart';
 import '../../features/staff/screens/staff_resources_screen.dart';
 import '../../features/staff/screens/staff_intervention_screen.dart';
 import '../../features/staff/screens/staff_intervention_chat_screen.dart';
+import '../../features/staff/screens/staff_cadastro_screen.dart';
 import '../../features/client/models/appointment_model.dart';
 import 'route_names.dart';
 
@@ -147,8 +149,12 @@ GoRouter appRouter(Ref ref) {
           GoRoute(
             path: RoutePaths.clientResources,
             name: RouteNames.clientResources,
-            builder: (context, state) =>
-                const ClientResourcesScreen(),
+            builder: (context, state) {
+              final tab = int.tryParse(
+                      state.uri.queryParameters['tab'] ?? '') ??
+                  0;
+              return ClientResourcesScreen(initialTabIndex: tab);
+            },
           ),
         ],
       ),
@@ -194,9 +200,35 @@ GoRouter appRouter(Ref ref) {
             ],
           ),
           GoRoute(
+            path: RoutePaths.staffChats,
+            name: RouteNames.staffChats,
+            builder: (context, state) {
+              final filter = state.uri.queryParameters['filter'];
+              return StaffChatsScreen(initialFilter: filter);
+            },
+            routes: [
+              GoRoute(
+                path: ':sessionId',
+                name: 'staff-chats-detail',
+                builder: (context, state) {
+                  final sessionId = state.pathParameters['sessionId']!;
+                  return StaffChatDetailScreen(sessionId: sessionId);
+                },
+              ),
+            ],
+          ),
+          GoRoute(
+            path: RoutePaths.staffCadastro,
+            name: RouteNames.staffCadastro,
+            builder: (context, state) => const StaffCadastroScreen(),
+          ),
+          GoRoute(
             path: RoutePaths.staffDocuments,
             name: RouteNames.staffDocuments,
-            builder: (context, state) => const StaffDocumentsScreen(),
+            builder: (context, state) {
+              final filter = state.uri.queryParameters['filter'];
+              return StaffDocumentsScreen(initialFilter: filter);
+            },
           ),
           GoRoute(
             path: RoutePaths.staffResources,

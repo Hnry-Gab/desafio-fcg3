@@ -1,5 +1,7 @@
 // TODO: Bulk send (D-18) - add "Enviar para Turma" mode toggle
+import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/student_summary_model.dart';
@@ -30,12 +32,14 @@ class _SendDocumentSheetState extends ConsumerState<_SendDocumentSheet> {
   String? _selectedType;
   String? _pickedFilePath;
   String? _pickedFileName;
+  Uint8List? _pickedFileBytes;
   bool _isLoading = false;
 
   Future<void> _pickFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'png', 'jpg'],
+      withData: kIsWeb, // On web, load bytes since path is unavailable
     );
     if (result != null && result.files.isNotEmpty) {
       final file = result.files.first;
@@ -53,6 +57,7 @@ class _SendDocumentSheetState extends ConsumerState<_SendDocumentSheet> {
       setState(() {
         _pickedFilePath = file.path;
         _pickedFileName = file.name;
+        _pickedFileBytes = file.bytes;
       });
     }
   }
@@ -78,8 +83,13 @@ class _SendDocumentSheetState extends ConsumerState<_SendDocumentSheet> {
       final service = ref.read(staffDocumentServiceProvider);
       String? uploadedUrl;
 
-      // Upload file if picked
-      if (_pickedFilePath != null) {
+      // Upload file if picked (supports both web bytes and native path)
+      if (_pickedFileBytes != null && kIsWeb) {
+        uploadedUrl = await service.uploadFileBytes(
+          _pickedFileBytes!,
+          _pickedFileName!,
+        );
+      } else if (_pickedFilePath != null) {
         uploadedUrl = await service.uploadFile(
           _pickedFilePath!,
           _pickedFileName!,
