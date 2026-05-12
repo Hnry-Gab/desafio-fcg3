@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/models/user_model.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/theme_provider.dart';
@@ -140,17 +139,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         .requestCode(_emailController.text.trim());
     setState(() => _isSubmitting = false);
     _startResendCountdown();
-  }
-
-  /// Enter demo mode with a fake user (no backend needed).
-  void _enterDemoMode(String role) {
-    final demoUser = UserModel(
-      id: 'demo-${role}-001',
-      name: role == 'student' ? 'João Demo' : 'Admin Demo',
-      email: role == 'student' ? 'joao@universidade.edu' : 'admin@universidade.edu',
-      role: role,
-    );
-    ref.read(authProvider.notifier).setDemoUser(demoUser);
   }
 
   void _onCodeDigitChanged(int index, String value) {
@@ -342,36 +330,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-
-          // Demo mode buttons (for preview without backend)
-          Divider(color: colors.outlineVariant.withValues(alpha: 0.3)),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'MODO DEMONSTRAÇÃO',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                  letterSpacing: 1.5,
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => _enterDemoMode('student'),
-                  child: const Text('Aluno', style: TextStyle(fontSize: 13)),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => _enterDemoMode('staff'),
-                  child: const Text('Gestor', style: TextStyle(fontSize: 13)),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
