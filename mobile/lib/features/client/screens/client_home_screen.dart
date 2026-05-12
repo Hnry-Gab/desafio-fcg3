@@ -216,7 +216,7 @@ class ClientHomeScreen extends ConsumerWidget {
         subtitle: 'Próximos Eventos',
         bottomLabel: 'Próximo:',
         bottomValue: 'Erro ao carregar',
-        onTap: () => context.go(RoutePaths.clientNotifications),
+        onTap: () => context.go('${RoutePaths.clientResources}?tab=1'),
       ),
       data: (appointments) {
         final upcoming = appointments.where((a) => a.isUpcoming).toList();
@@ -236,7 +236,7 @@ class ClientHomeScreen extends ConsumerWidget {
           subtitle: 'Próximos Eventos',
           bottomLabel: 'Próximo:',
           bottomValue: nextTime,
-          onTap: () => context.go(RoutePaths.clientNotifications),
+          onTap: () => context.go('${RoutePaths.clientResources}?tab=1'),
         );
       },
     );

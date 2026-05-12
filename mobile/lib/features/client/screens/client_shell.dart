@@ -84,11 +84,6 @@ class _ClientShellState extends ConsumerState<ClientShell> {
       selectedIcon: Icon(Icons.meeting_room),
       label: Text('Recursos'),
     ),
-    NavigationRailDestination(
-      icon: Icon(Icons.headset_mic_outlined),
-      selectedIcon: Icon(Icons.headset_mic),
-      label: Text('Suporte'),
-    ),
   ];
 
   @override
