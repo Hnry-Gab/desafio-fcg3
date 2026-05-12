@@ -54,7 +54,11 @@ async def _tolerate_tool_errors(request, handler):
             type(exc).__name__,
         )
         return ToolMessage(
-            content=f"Tool error: {exc}",
+            content=(
+                f"ERRO na ferramenta '{request.tool_call.get('name', '?')}': {exc}\n"
+                "INSTRUCAO: NAO tente chamar esta ferramenta novamente com os mesmos parametros. "
+                "Explique o erro ao aluno de forma clara e amigavel, e sugira alternativas."
+            ),
             tool_call_id=request.tool_call["id"],
         )
 
