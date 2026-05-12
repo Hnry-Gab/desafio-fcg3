@@ -417,9 +417,27 @@ class WebhookService:
 
         await wa_client.send_text_message(
             phone,
-            f"Identidade verificada! ✅ Agora pode continuar, {student.name}. "
-            "Repita o que você gostaria de fazer que eu prossigo.",
+            f"Identidade verificada! ✅ Pode continuar de onde parou, {student.name}.",
         )
+
+        # Phase 25: Auto-continue — re-dispatch to AI agent so it picks up
+        # where it left off. The agent has full chat history and is now verified,
+        # so it can execute the pending mutating action automatically.
+        import asyncio
+        from src.features.webhook.background import process_message
+
+        task = asyncio.create_task(
+            process_message(
+                session_id=session.id,
+                message_text="Minha identidade foi verificada. Continue de onde paramos e execute a ação que eu pedi.",
+                phone=phone,
+                wa_client=wa_client,
+                is_new_session=False,
+                student_name=student.name,
+                verification_state="verified",
+            )
+        )
+        task.add_done_callback(lambda t: t.exception() if not t.cancelled() else None)
 
     def get_media_response(self, media_type: str) -> str:
         """Return exact Portuguese response for media type per docs/chatbot.md.
