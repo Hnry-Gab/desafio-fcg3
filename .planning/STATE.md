@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
 status: executing
-last_updated: "2026-05-11T22:46:20.616Z"
-last_activity: 2026-05-11 -- Phase 25 planning complete
+last_updated: "2026-05-12T04:10:00.000Z"
+last_activity: 2026-05-12 -- Phase 25 complete
 progress:
   total_phases: 8
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 38
-  completed_plans: 35
-  percent: 92
+  completed_plans: 38
+  percent: 100
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 Phase: 23
 Plan: Not started
 Status: Ready to execute
-Last activity: 2026-05-11 -- Phase 25 planning complete
+Last activity: 2026-05-12 -- Phase 25 Chatbot Interaction Polish complete
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação acadêmica — com ações concretas executadas em tempo real.
-**Current focus:** Phase 22 — fcm-push-notifications
+**Current focus:** Phase 23 — New Features (next unstarted phase)
 
 ## Milestones Shipped
 
@@ -47,6 +47,7 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 | 22 | FCM Push Notifications | Improvements | Phases 20, 21 |
 | 23 | New Features | Features | — |
 | 24 | UI Polish & Integration | Polish | — (depends on all) |
+| 25 | Chatbot Interaction Polish | Improvements | Phase 20 (done) |
 
 ## Architecture Constraints (non-negotiable)
 
@@ -123,6 +124,15 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **19-09:** StaffStudentModel @JsonKey maps ra→registration_number, semester as int (not String)
 - **19-09:** Backend StudentListItem includes phone field
 - **19-09:** Cadastro form removes address/campus (don't exist in DB), sends registration_number/semester
+- **25-01:** System prompt rewritten: warm Alpha persona, emoji set (👋✅📚📄🙏📅 only), WhatsApp formatting (*bold*, _italic_), adaptive response length, proactivity, frustration empathy
+- **25-01:** LLM temperature=0.7 injected in all 3 providers (OpenAI, Gemini, OpenRouter), default model gpt-4o-mini
+- **25-02:** Welcome injection differentiates first-time vs returning students, both call get_student_info proactively
+- **25-02:** All hardcoded messages rewritten: idle follow-up contextual, goodbye warm with 📚, escalation empathetic with 🙏, session close personalized
+- **25-02:** Verification flow auto-transitions to awaiting_email when agent requests it; post-OTP auto-dispatches to agent to resume pending action
+- **25-03:** CATEGORY_MAP expanded 6→18 files; Alembic 016a migration expands category CHECK constraint
+- **25-fix:** MCP api_client wraps list responses as {"items": [...]}, tool errors instruct LLM not to retry
+- **25-fix:** Session locks dict uses timestamps + periodic stale cleanup (WR-01), load_chat_history wrapped in asyncio.to_thread (WR-04)
+- **25-review:** Code review: 9 findings (1 critical, 5 warning, 3 info). 4 fixed, 2 deferred. Automated tests: 46/49 (94%)
 
 ### Quick Tasks Completed
 

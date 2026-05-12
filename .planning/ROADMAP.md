@@ -79,7 +79,7 @@ GROUP 4 — Polish (depends on all above):
 - [x] **Phase 22: FCM Push Notifications** - End-to-end push infrastructure (backend + Flutter) (completed 2026-05-09)
 - [ ] **Phase 23: New Features** - Cardápio semanal, perfil do aluno, grade curricular
 - [ ] **Phase 24: UI Polish & Integration** - Splash screen, dashboard metrics, end-to-end coherence
-- [ ] **Phase 25: Chatbot Interaction Polish** - System prompt rewrite, proactive behavior, tone calibration, hardcoded messages
+- [x] **Phase 25: Chatbot Interaction Polish** - System prompt rewrite, proactive behavior, tone calibration, hardcoded messages (completed 2026-05-12)
 
 ## Phase Details
 
@@ -237,12 +237,12 @@ Plans:
   3. All hardcoded messages (idle, farewell, escalation, media) match the Alpha persona tone
   4. Conversation starters and goodbyes feel natural and personalized
   5. Knowledge base is expanded to cover all available academic topics
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 25-01-PLAN.md — System prompt rewrite + LLM temperature/model config
-- [ ] 25-02-PLAN.md — Hardcoded messages + welcome injection polish
-- [ ] 25-03-PLAN.md — Knowledge base expansion (CATEGORY_MAP)
+- [x] 25-01-PLAN.md — System prompt rewrite + LLM temperature/model config
+- [x] 25-02-PLAN.md — Hardcoded messages + welcome injection polish
+- [x] 25-03-PLAN.md — Knowledge base expansion (CATEGORY_MAP)
 
 **Canonical refs:** `ai_service/prompts/system_prompt.txt`, `ai_service/agent.py`, `backend/src/features/webhook/background.py`, `backend/src/features/webhook/idle_monitor.py`, `ai_service/knowledge/`
 
@@ -265,7 +265,7 @@ Plans:
 | 22. FCM Push Notifications | v3.0 | 4/4 | Complete    | 2026-05-09 |
 | 23. New Features | v3.0 | 0/TBD | Not started | - |
 | 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |
-| 25. Chatbot Interaction Polish | v3.0 | 0/3 | Planned | - |
+| 25. Chatbot Interaction Polish | v3.0 | 3/3 | Complete | 2026-05-12 |
 
 ---
 
