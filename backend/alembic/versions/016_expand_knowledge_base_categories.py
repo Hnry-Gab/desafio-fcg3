@@ -6,12 +6,15 @@ Create Date: 2026-05-12 00:00:01
 """
 
 from alembic import op
+import re
 
 revision = "016a"
 down_revision = "015a"
 branch_labels = None
 depends_on = None
 
+# SECURITY: These MUST remain hardcoded string literals — never dynamic input.
+# DDL CHECK constraints cannot use parameterized queries.
 NEW_CATEGORIES = (
     "'regras_matricula', 'faq', 'curriculo', 'documentos', 'agendamento', 'regulamento', "
     "'atividades_complementares', 'bolsas_auxilios', 'canais_atendimento', 'corpo_docente', "
@@ -23,6 +26,9 @@ NEW_CATEGORIES = (
 OLD_CATEGORIES = (
     "'regras_matricula', 'faq', 'curriculo', 'documentos', 'agendamento', 'regulamento'"
 )
+
+assert re.match(r"^['\w\s,_]+$", NEW_CATEGORIES), "Categories must be static literals"
+assert re.match(r"^['\w\s,_]+$", OLD_CATEGORIES), "Categories must be static literals"
 
 
 def upgrade() -> None:
