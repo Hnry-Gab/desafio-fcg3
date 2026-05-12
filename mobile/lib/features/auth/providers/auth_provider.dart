@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../../core/models/user_model.dart';
 import '../../../core/providers/fcm_provider.dart';
 import '../../../core/providers/notification_handler_provider.dart';
 import '../../../core/providers/storage_provider.dart';
@@ -42,7 +41,8 @@ class Auth extends _$Auth {
         await storage.delete(key: _accessTokenKey);
         await storage.delete(key: _refreshTokenKey);
         state = const AuthError(
-            message: 'Sua conta está inativa. Entre em contato com a secretaria.');
+          message: 'Sua conta está inativa. Entre em contato com a secretaria.',
+        );
         return;
       }
       state = AuthAuthenticated(user: user);
@@ -87,7 +87,9 @@ class Auth extends _$Auth {
           await storage.delete(key: _accessTokenKey);
           await storage.delete(key: _refreshTokenKey);
           state = const AuthError(
-              message: 'Sua conta está inativa. Entre em contato com a secretaria.');
+            message:
+                'Sua conta está inativa. Entre em contato com a secretaria.',
+          );
           return AuthVerifyResult.networkError;
         }
         state = AuthAuthenticated(user: user);
@@ -128,7 +130,8 @@ class Auth extends _$Auth {
               final firstDetail = details[0];
               if (firstDetail is Map<String, dynamic>) {
                 remaining = int.tryParse(
-                    firstDetail['message']?.toString() ?? '');
+                  firstDetail['message']?.toString() ?? '',
+                );
               }
             }
           } catch (_) {
@@ -173,16 +176,6 @@ class Auth extends _$Auth {
     await storage.delete(key: _refreshTokenKey);
     state = const AuthUnauthenticated();
   }
-
-  /// Set a demo user for previewing screens without backend.
-  void setDemoUser(UserModel user) {
-    state = AuthAuthenticated(user: user);
-  }
 }
 
-enum AuthVerifyResult {
-  success,
-  invalidCode,
-  maxAttempts,
-  networkError,
-}
+enum AuthVerifyResult { success, invalidCode, maxAttempts, networkError }

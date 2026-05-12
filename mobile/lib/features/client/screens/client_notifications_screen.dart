@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_animations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/widgets/animated_entrance.dart';
 import '../../../shared/widgets/app_bar_actions.dart';
 import '../../../shared/widgets/app_skeleton_list.dart';
 import '../../../shared/widgets/app_empty_state.dart';
@@ -179,31 +181,34 @@ class ClientNotificationsScreen extends ConsumerWidget {
                                 const SizedBox(height: AppSpacing.md),
                             itemBuilder: (context, index) {
                               final notification = filtered[index];
-                              return _NotificationCard(
-                                notification: notification,
-                                isRead: readIds.contains(notification.id),
-                                onTap: () => ref
-                                    .read(readNotificationIdsProvider
-                                        .notifier)
-                                    .markAsRead(notification.id),
-                                onDetailTap: notification.type ==
-                                        NotificationType.appointmentReminder
-                                    ? () {
-                                        final appointments = ref
-                                                .read(appointmentsProvider)
-                                                .valueOrNull ??
-                                            [];
-                                        final aptId = notification.id
-                                            .replaceFirst('apt-', '');
-                                        final apt = appointments
-                                            .where((a) => a.id == aptId)
-                                            .firstOrNull;
-                                        if (apt != null) {
-                                          showAppointmentDetailSheet(
-                                              context, apt);
+                              return AnimatedEntrance(
+                                delay: AppAnimations.getEntranceDelay(index),
+                                child: _NotificationCard(
+                                  notification: notification,
+                                  isRead: readIds.contains(notification.id),
+                                  onTap: () => ref
+                                      .read(readNotificationIdsProvider
+                                          .notifier)
+                                      .markAsRead(notification.id),
+                                  onDetailTap: notification.type ==
+                                          NotificationType.appointmentReminder
+                                      ? () {
+                                          final appointments = ref
+                                                  .read(appointmentsProvider)
+                                                  .valueOrNull ??
+                                              [];
+                                          final aptId = notification.id
+                                              .replaceFirst('apt-', '');
+                                          final apt = appointments
+                                              .where((a) => a.id == aptId)
+                                              .firstOrNull;
+                                          if (apt != null) {
+                                            showAppointmentDetailSheet(
+                                                context, apt);
+                                          }
                                         }
-                                      }
-                                    : null,
+                                      : null,
+                                ),
                               );
                             },
                           ),

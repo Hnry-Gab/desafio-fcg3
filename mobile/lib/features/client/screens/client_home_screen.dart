@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/router/route_names.dart';
+import '../../../core/theme/app_animations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/widgets/alpha_connect_logo.dart';
+import '../../../shared/widgets/animated_entrance.dart';
 import '../../../shared/widgets/app_bar_actions.dart';
 import '../../../shared/widgets/app_skeleton_card.dart';
 import '../../../shared/widgets/glass_card.dart';
@@ -52,13 +55,7 @@ class ClientHomeScreen extends ConsumerWidget {
         title: const Text('Alpha Connect'),
         leading: Padding(
           padding: const EdgeInsets.all(8),
-          child: Container(
-            decoration: BoxDecoration(
-              color: colors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-            ),
-            child: Icon(Icons.school_rounded, color: colors.primary),
-          ),
+          child: const AlphaConnectLogo(size: 36),
         ),
         actions: const [AppBarActions()],
       ),
@@ -75,20 +72,28 @@ class ClientHomeScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Greeting
-                Text(
-                  'Olá, $userName!',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colors.onSurface,
+                AnimatedEntrance(
+                  delay: AppAnimations.getEntranceDelay(0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Olá, $userName!',
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: colors.onSurface,
+                            ),
                       ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Pronto para mais um dia de aprendizado?',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colors.onSurfaceVariant,
-                        fontWeight: FontWeight.w500,
+                      const SizedBox(height: 4),
+                      Text(
+                        'Pronto para mais um dia de aprendizado?',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: colors.onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
+                            ),
                       ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
 
@@ -101,24 +106,36 @@ class ClientHomeScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: _buildChatSummaryCard(
-                                context, chatSessionsAsync, colors),
+                            child: AnimatedEntrance(
+                              delay: AppAnimations.getEntranceDelay(1),
+                              child: _buildChatSummaryCard(
+                                  context, chatSessionsAsync, colors),
+                            ),
                           ),
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
-                            child: _buildAppointmentSummaryCard(
-                                context, appointmentsAsync, colors),
+                            child: AnimatedEntrance(
+                              delay: AppAnimations.getEntranceDelay(2),
+                              child: _buildAppointmentSummaryCard(
+                                  context, appointmentsAsync, colors),
+                            ),
                           ),
                         ],
                       );
                     }
                     return Column(
                       children: [
-                        _buildChatSummaryCard(
-                            context, chatSessionsAsync, colors),
+                        AnimatedEntrance(
+                          delay: AppAnimations.getEntranceDelay(1),
+                          child: _buildChatSummaryCard(
+                              context, chatSessionsAsync, colors),
+                        ),
                         const SizedBox(height: AppSpacing.md),
-                        _buildAppointmentSummaryCard(
-                            context, appointmentsAsync, colors),
+                        AnimatedEntrance(
+                          delay: AppAnimations.getEntranceDelay(2),
+                          child: _buildAppointmentSummaryCard(
+                              context, appointmentsAsync, colors),
+                        ),
                       ],
                     );
                   },
@@ -126,12 +143,15 @@ class ClientHomeScreen extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.xl),
 
                 // Quick Actions
-                Text(
-                  'Ações Rápidas',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colors.onSurface,
-                      ),
+                AnimatedEntrance(
+                  delay: AppAnimations.getEntranceDelay(3),
+                  child: Text(
+                    'Ações Rápidas',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colors.onSurface,
+                        ),
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _buildQuickActions(context, ref, appointmentsAsync),
@@ -196,7 +216,7 @@ class ClientHomeScreen extends ConsumerWidget {
         subtitle: 'Próximos Eventos',
         bottomLabel: 'Próximo:',
         bottomValue: 'Erro ao carregar',
-        onTap: () => context.go(RoutePaths.clientNotifications),
+        onTap: () => context.go('${RoutePaths.clientResources}?tab=1'),
       ),
       data: (appointments) {
         final upcoming = appointments.where((a) => a.isUpcoming).toList();
@@ -216,7 +236,7 @@ class ClientHomeScreen extends ConsumerWidget {
           subtitle: 'Próximos Eventos',
           bottomLabel: 'Próximo:',
           bottomValue: nextTime,
-          onTap: () => context.go(RoutePaths.clientNotifications),
+          onTap: () => context.go('${RoutePaths.clientResources}?tab=1'),
         );
       },
     );
@@ -248,33 +268,38 @@ class ClientHomeScreen extends ConsumerWidget {
       mainAxisSpacing: AppSpacing.sm,
       crossAxisSpacing: AppSpacing.sm,
       childAspectRatio: 2.2,
-      children: actions.map((action) {
-        return GlassCard(
-          onTap: action.onTap,
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: action.color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      children: actions.asMap().entries.map((entry) {
+        final index = entry.key;
+        final action = entry.value;
+        return AnimatedEntrance(
+          delay: AppAnimations.getEntranceDelay(4 + index),
+          child: GlassCard(
+            onTap: action.onTap,
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: action.color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  ),
+                  child: Icon(action.icon, size: 20, color: action.color),
                 ),
-                child: Icon(action.icon, size: 20, color: action.color),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  action.label,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colors.onSurface,
-                      ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    action.label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colors.onSurface,
+                        ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       }).toList(),

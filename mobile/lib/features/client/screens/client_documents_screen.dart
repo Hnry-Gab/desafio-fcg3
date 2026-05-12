@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/config/env_config.dart';
+import '../../../core/theme/app_animations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/widgets/animated_entrance.dart';
 import '../../../shared/widgets/app_bar_actions.dart';
 import '../../../shared/widgets/app_skeleton_list.dart';
 import '../../../shared/widgets/app_empty_state.dart';
@@ -145,14 +147,17 @@ class _ClientDocumentsScreenState extends ConsumerState<ClientDocumentsScreen> {
                             itemCount: filtered.length,
                             separatorBuilder: (_, __) =>
                                 const SizedBox(height: AppSpacing.md),
-                            itemBuilder: (context, index) => _DocumentCard(
-                              document: filtered[index],
-                              onDownload:
-                                  filtered[index].isDownloadable &&
-                                          filtered[index].fileUrl != null
-                                      ? () =>
-                                          _launchDownload(filtered[index].fileUrl!)
-                                      : null,
+                            itemBuilder: (context, index) => AnimatedEntrance(
+                              delay: AppAnimations.getEntranceDelay(index),
+                              child: _DocumentCard(
+                                document: filtered[index],
+                                onDownload:
+                                    filtered[index].isDownloadable &&
+                                            filtered[index].fileUrl != null
+                                        ? () =>
+                                            _launchDownload(filtered[index].fileUrl!)
+                                        : null,
+                              ),
                             ),
                           ),
                         ),

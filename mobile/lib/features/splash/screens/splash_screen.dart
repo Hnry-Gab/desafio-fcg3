@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/widgets/alpha_connect_logo.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -31,26 +31,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: colors.primaryContainer,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                boxShadow: [
+                  BoxShadow(
+                    color: colors.primary.withValues(alpha: 0.3),
+                    blurRadius: 24,
+                    spreadRadius: 2,
+                  ),
+                ],
               ),
-              child: Icon(
-                Icons.school_rounded,
-                size: 64,
-                color: colors.onPrimaryContainer,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              'ALPHA CONNECT',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: colors.primary,
-                letterSpacing: 4,
-              ),
+              child: const AlphaConnectLogo(size: 100),
             ),
             const SizedBox(height: AppSpacing.xl),
             SizedBox(

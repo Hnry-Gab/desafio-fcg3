@@ -734,8 +734,11 @@ class _StudentFormSheetState extends State<_StudentFormSheet> {
                         const SizedBox(height: AppSpacing.md),
                         _buildField(
                           controller: _phoneCtrl,
-                          label: 'Celular',
+                          label: 'Celular *',
                           keyboardType: TextInputType.phone,
+                          validator: (v) => v == null || v.trim().isEmpty
+                              ? 'Celular é obrigatório'
+                              : null,
                         ),
                         const SizedBox(height: AppSpacing.md),
                         if (isEdit)
