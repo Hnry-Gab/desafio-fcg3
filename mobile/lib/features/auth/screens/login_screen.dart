@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -179,7 +178,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: colors.surfaceContainerLow,
+      backgroundColor: colors.surfaceContainerLowest,
       floatingActionButton: FloatingActionButton.small(
         onPressed: () {
           final next = isDark ? ThemeMode.light : ThemeMode.dark;
@@ -194,37 +193,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xl,
+            vertical: AppSpacing.lg,
+          ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 400),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.xl),
-                  decoration: BoxDecoration(
-                    color: colors.surfaceContainerLowest.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-                    border: Border.all(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white.withValues(alpha: 0.1)
-                          : Colors.white.withValues(alpha: 0.4),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: colors.primary.withValues(alpha: 0.08),
-                        blurRadius: 32,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: _isOtpStep ? _buildOtpStep() : _buildEmailStep(),
-                  ),
-                ),
-              ),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _isOtpStep ? _buildOtpStep() : _buildEmailStep(),
             ),
           ),
         ),
