@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
 status: executing
-last_updated: "2026-05-12T04:10:00.000Z"
-last_activity: 2026-05-12 -- Phase 25 complete
+last_updated: "2026-05-12T15:30:00.000Z"
+last_activity: 2026-05-12 -- Consolidated branch (fix/frontend + chatbot UX merged)
 progress:
   total_phases: 8
   completed_phases: 6
@@ -20,7 +20,7 @@ progress:
 Phase: 23
 Plan: Not started
 Status: Ready to execute
-Last activity: 2026-05-12 -- Phase 25 Chatbot Interaction Polish complete
+Last activity: 2026-05-12 -- Branch gsd/v3.0-group1-corrections-2 created (consolidated fix/frontend visual redesign + Phase 25 chatbot interaction polish)
 
 ## Project Reference
 
@@ -28,6 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação acadêmica — com ações concretas executadas em tempo real.
 **Current focus:** Phase 23 — New Features (next unstarted phase)
+**Branch:** `gsd/v3.0-group1-corrections-2` (stable baseline with all corrections + visual redesign + chatbot polish)
 
 ## Milestones Shipped
 
@@ -139,6 +140,14 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 | #   | Description | Date | Commit | Directory |
 | --- | ----------- | ---- | ------ | --------- |
 | 260511-92x | Reorganizar navegacao staff/provider: remover placeholder, tabs provider, seed provider | 2026-05-11 | 912f013 | [260511-92x-reorganizar-navegacao-staff-provider-rem](./quick/260511-92x-reorganizar-navegacao-staff-provider-rem/) |
+
+### Branch Consolidation Log
+
+| Date | Source Branch | Target Branch | PR | Description |
+| ---- | ------------- | ------------- | -- | ----------- |
+| 2026-05-12 | fix/frontend | gsd/v3.0-group1-corrections | #14 | Cyber-Academic visual redesign (Phases 15-17), navegacao, logo, animacoes, tema light/dark |
+| 2026-05-12 | feature/improve-chatbot-ux | gsd/v3.0-group1-corrections | #15 | Phase 25 chatbot interaction polish, persona rewrite, WhatsApp formatting, knowledge base expansion |
+| 2026-05-12 | gsd/v3.0-group1-corrections | gsd/v3.0-group1-corrections-2 | — | New stable baseline branch for continued development |
 
 ## Session Continuity
 

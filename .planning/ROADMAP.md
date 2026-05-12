@@ -4,7 +4,8 @@
 
 - **v1.0 Backend + AI + MCP** — Phases 1-6 (shipped 2026-05-04)
 - **v2.0 Flutter Frontend** — Phases 7-17 (shipped 2026-05-07)
-- 🚧 **v3.0 Correções, Melhorias & Features** — Phases 18-24 (in progress)
+- 🚧 **v3.0 Correções, Melhorias & Features** — Phases 18-25 (in progress)
+  - **Branch:** `gsd/v3.0-group1-corrections-2` (stable baseline, 2026-05-12)
 
 ---
 
@@ -270,3 +271,10 @@ Plans:
 ---
 
 **Total project:** 25 phases across 3 milestones.
+
+### Branch History
+
+| Branch | Base | Created | Purpose |
+|--------|------|---------|---------|
+| `gsd/v3.0-group1-corrections` | `development` | — | Group 1-2 corrections + improvements execution |
+| `gsd/v3.0-group1-corrections-2` | `gsd/v3.0-group1-corrections` | 2026-05-12 | Stable baseline with visual redesign + chatbot polish merged |
