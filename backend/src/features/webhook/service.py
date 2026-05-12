@@ -417,7 +417,8 @@ class WebhookService:
 
         await wa_client.send_text_message(
             phone,
-            f"Identidade verificada! Ola, {student.name}. Como posso ajudar?",
+            f"Identidade verificada! ✅ Agora pode continuar, {student.name}. "
+            "Repita o que você gostaria de fazer que eu prossigo.",
         )
 
     def get_media_response(self, media_type: str) -> str:
