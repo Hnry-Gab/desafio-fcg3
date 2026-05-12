@@ -147,7 +147,8 @@ async def invoke_agent(
     )
     agent = create_chat_agent(settings, [*mcp_tools, rag_tool], system_prompt)
 
-    history_messages = load_chat_history(
+    history_messages = await asyncio.to_thread(
+        load_chat_history,
         db_pool,
         session_id,
         k=settings.CHAT_HISTORY_K,
