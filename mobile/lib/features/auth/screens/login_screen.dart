@@ -2,11 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/theme_provider.dart';
-import '../../../shared/widgets/alpha_connect_logo.dart';
 import '../providers/auth_provider.dart';
 import '../providers/auth_state.dart';
 
@@ -219,22 +218,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         key: const ValueKey('email_step'),
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Full logo with neon glow — readable at 180px (D-09, D-12)
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-              boxShadow: [
-                BoxShadow(
-                  color: (isDark
-                          ? AppColors.neonTeal
-                          : AppColors.primaryContainer)
-                      .withValues(alpha: 0.3),
-                  blurRadius: 40,
-                  spreadRadius: 8,
-                ),
-              ],
+          // Full logo — new branded SVG with theme-conditional color
+          SvgPicture.asset(
+            'assets/logos/logo_light_editado.svg',
+            height: 180,
+            colorFilter: ColorFilter.mode(
+              isDark
+                  ? const Color(0xFF1ED7E1) // Bright cyan for dark mode
+                  : const Color(0xFF0D4B5C), // Deep teal for light mode
+              BlendMode.srcIn,
             ),
-            child: const AlphaConnectLogo(size: 180),
+            semanticsLabel: 'Alpha Connect Logo',
           ),
           const SizedBox(height: AppSpacing.md),
           const SizedBox(height: AppSpacing.xl),
