@@ -14,6 +14,7 @@ Staff:
 
 from __future__ import annotations
 
+import asyncio
 import os
 import uuid as uuid_mod
 from uuid import UUID
@@ -22,6 +23,7 @@ from fastapi import APIRouter, Depends, Query, UploadFile, File, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.infrastructure.database import get_db_session
+from src.features.notifications.services import notification_service
 from src.shared.dependencies import (
     UserContext,
     check_ownership,
@@ -60,9 +62,9 @@ async def create_document(
     Staff: can specify student_id in body to create on behalf of a student.
     Accepts X-Service-Token for MCP access.
     """
-    # Staff can specify a target student_id; students always use their own
+    # Staff/provider can specify a target student_id; students always use their own
     target_student_id = user.id
-    if user.role == "staff" and data.student_id is not None:
+    if user.role in ("staff", "provider") and data.student_id is not None:
         target_student_id = data.student_id
 
     document = await document_service.create_document_request(
@@ -91,8 +93,10 @@ async def list_documents(
     Staff can view all or filter by student_id.
     """
     # IDOR-safe: force student/service to see only their own documents
+    # D-04: Provider inherits staff permissions
+    is_staff_or_provider = user.role in ("staff", "provider")
     effective_student_id = student_id
-    if user.role != "staff":
+    if not is_staff_or_provider:
         effective_student_id = user.id
 
     items, total = await document_service.list_documents(
@@ -101,14 +105,14 @@ async def list_documents(
         student_id=effective_student_id,
         type=type,
         status=status,
-        include_student=(user.role == "staff"),
+        include_student=is_staff_or_provider,
     )
 
     data = []
     for item in items:
         doc_dict = DocumentResponse.model_validate(item).model_dump()
-        # Enrich with student info for staff view
-        if user.role == "staff" and item.student:
+        # Enrich with student info for staff/provider view
+        if is_staff_or_provider and item.student:
             doc_dict["student_name"] = item.student.name
             doc_dict["student_email"] = item.student.email
             doc_dict["student_id"] = str(item.student_id)
@@ -158,6 +162,23 @@ async def update_document_status(
         db, document_id=document_id, data=data,
     )
     await db.commit()
+
+    # FCM: Notify student when document status becomes "ready"
+    if data.status == "ready":
+        async def _send_notification():
+            async for fresh_db in get_db_session():
+                try:
+                    await notification_service.notify_document_ready(
+                        fresh_db, document.student_id, document.type, document.id
+                    )
+                except Exception as exc:
+                    import logging
+                    logging.getLogger(__name__).error(
+                        "FCM notification failed in background task: %s", exc
+                    )
+
+        asyncio.create_task(_send_notification())
+
     return DocumentResponse.model_validate(document)
 
 

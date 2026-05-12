@@ -2,14 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
-status: completed
-last_updated: "2026-05-10T01:03:34.132Z"
-last_activity: 2026-05-10
+status: executing
+
+last_updated: "2026-05-09T04:04:36.756Z"
+last_activity: 2026-05-09
 progress:
   total_phases: 7
-  completed_phases: 2
-  total_plans: 16
-  completed_plans: 16
+  completed_phases: 4
+  total_plans: 35
+  completed_plans: 35
   percent: 100
 ---
 
@@ -17,17 +18,17 @@ progress:
 
 ## Current Position
 
-Phase: 20
+Phase: 23
 Plan: Not started
-Status: Phase complete
-Last activity: 2026-05-10
+Status: Executing Phase 22
+Last activity: 2026-05-11 - Completed quick task 260511-92x: Reorganizar navegacao staff/provider
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação acadêmica — com ações concretas executadas em tempo real.
-**Current focus:** Phase 19 — staff-ux-corrections
+**Current focus:** Phase 22 — fcm-push-notifications
 
 ## Milestones Shipped
 
@@ -123,6 +124,12 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **19-09:** StaffStudentModel @JsonKey maps ra→registration_number, semester as int (not String)
 - **19-09:** Backend StudentListItem includes phone field
 - **19-09:** Cadastro form removes address/campus (don't exist in DB), sends registration_number/semester
+
+### Quick Tasks Completed
+
+| #   | Description | Date | Commit | Directory |
+| --- | ----------- | ---- | ------ | --------- |
+| 260511-92x | Reorganizar navegacao staff/provider: remover placeholder, tabs provider, seed provider | 2026-05-11 | 912f013 | [260511-92x-reorganizar-navegacao-staff-provider-rem](./quick/260511-92x-reorganizar-navegacao-staff-provider-rem/) |
 
 ## Session Continuity
 

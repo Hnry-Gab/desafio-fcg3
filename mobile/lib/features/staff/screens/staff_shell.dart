@@ -66,12 +66,36 @@ class _StaffShellState extends ConsumerState<StaffShell> {
   }
 
   static const _destinations = <NavItem>[
-    NavItem(icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard, label: 'Painel'),
-    NavItem(icon: Icons.calendar_today_outlined, activeIcon: Icons.calendar_today, label: 'Agenda'),
-    NavItem(icon: Icons.chat_bubble_outline, activeIcon: Icons.chat_bubble, label: 'Chats'),
-    NavItem(icon: Icons.folder_outlined, activeIcon: Icons.folder, label: 'Docs'),
-    NavItem(icon: Icons.meeting_room_outlined, activeIcon: Icons.meeting_room, label: 'Recursos'),
-    NavItem(icon: Icons.people_outline, activeIcon: Icons.people, label: 'Alunos'),
+    NavItem(
+      icon: Icons.dashboard_outlined,
+      activeIcon: Icons.dashboard,
+      label: 'Painel',
+    ),
+    NavItem(
+      icon: Icons.calendar_today_outlined,
+      activeIcon: Icons.calendar_today,
+      label: 'Agenda',
+    ),
+    NavItem(
+      icon: Icons.chat_bubble_outline,
+      activeIcon: Icons.chat_bubble,
+      label: 'Chats',
+    ),
+    NavItem(
+      icon: Icons.folder_outlined,
+      activeIcon: Icons.folder,
+      label: 'Docs',
+    ),
+    NavItem(
+      icon: Icons.meeting_room_outlined,
+      activeIcon: Icons.meeting_room,
+      label: 'Recursos',
+    ),
+    NavItem(
+      icon: Icons.people_outline,
+      activeIcon: Icons.people,
+      label: 'Cadastro',
+    ),
   ];
 
   static const _railDestinations = [
@@ -103,7 +127,7 @@ class _StaffShellState extends ConsumerState<StaffShell> {
     NavigationRailDestination(
       icon: Icon(Icons.people_outline),
       selectedIcon: Icon(Icons.people),
-      label: Text('Alunos'),
+      label: Text('Cadastro'),
     ),
   ];
 
@@ -140,14 +164,14 @@ class _StaffShellState extends ConsumerState<StaffShell> {
                   children: [
                     NavigationRail(
                       selectedIndex: _currentIndex(context),
-                      onDestinationSelected: (index) =>
-                          _onTap(context, index),
+                      onDestinationSelected: (index) => _onTap(context, index),
                       extended: extended,
                       minWidth: 72,
                       minExtendedWidth: 180,
                       destinations: _railDestinations,
-                      backgroundColor:
-                          Theme.of(context).colorScheme.surfaceContainerLow,
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerLow,
                     ),
                     const VerticalDivider(width: 1, thickness: 1),
                     Expanded(child: widget.child),
@@ -161,4 +185,3 @@ class _StaffShellState extends ConsumerState<StaffShell> {
     );
   }
 }
-

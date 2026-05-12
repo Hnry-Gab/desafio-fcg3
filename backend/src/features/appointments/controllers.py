@@ -16,6 +16,7 @@ Appointments (dual-auth for MCP access):
 
 from __future__ import annotations
 
+import asyncio
 import os
 import uuid as uuid_mod
 from datetime import date
@@ -25,6 +26,7 @@ from fastapi import APIRouter, Depends, Query, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.infrastructure.database import get_db_session
+from src.features.notifications.services import notification_service
 from src.shared.dependencies import (
     UserContext,
     get_current_user_or_service,
@@ -133,6 +135,22 @@ async def book_appointment(
         db, student_id=user.id, data=data,
     )
     await db.commit()
+
+    # FCM: Notify student that appointment was confirmed/booked
+    async def _send_notification():
+        async for fresh_db in get_db_session():
+            try:
+                await notification_service.notify_appointment_confirmed(
+                    fresh_db, user.id, result.id
+                )
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).error(
+                    "FCM notification failed in background task: %s", exc
+                )
+
+    asyncio.create_task(_send_notification())
+
     return result
 
 
@@ -154,8 +172,9 @@ async def list_appointments(
     Staff can view all or filter by student_id.
     """
     # IDOR-safe: force students/service to see only their own appointments
+    # D-04: Provider inherits staff permissions
     effective_student_id = student_id
-    if user.role != "staff":
+    if user.role not in ("staff", "provider"):
         effective_student_id = user.id
 
     items, total = await appointment_service.list_appointments(
@@ -275,7 +294,8 @@ async def upload_authorization(
         raise NotFoundException("appointment", appointment_id)
 
     # IDOR check: student can only upload to own appointment
-    if user.role != "staff" and result.student_id != user.id:
+    # D-04: Provider inherits staff permissions
+    if user.role not in ("staff", "provider") and result.student_id != user.id:
         raise ForbiddenException(
             "Voce nao tem permissao para enviar arquivos para este agendamento",
         )

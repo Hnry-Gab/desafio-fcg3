@@ -69,11 +69,14 @@ GROUP 4 — Polish (depends on all above):
 
 ## Phases
 
-- [x] **Phase 18: Student UX Corrections** - Fix navigation, chat UX, documents, notifications on student screens (gap closure) (completed 2026-05-09)
-- [x] **Phase 19: Staff UX Corrections** - Fix dashboard, agendamentos, chats, intervenção, documentos, recursos, cadastro (gap closure in progress) (completed 2026-05-10)
-- [ ] **Phase 20: LangChain Workflow** - Complete agent lifecycle, RAG, MCP, defenses, logging
-- [ ] **Phase 21: Roles & Auth Expansion** - Add provider role with hierarchical CRUDs
-- [ ] **Phase 22: FCM Push Notifications** - End-to-end push infrastructure (backend + Flutter)
+
+- [x] **Phase 18: Student UX Corrections** - Fix navigation, chat UX, documents, notifications on student screens (gap closure)
+ (completed 2026-05-09)
+- [x] **Phase 19: Staff UX Corrections** - Fix dashboard, agendamentos, chats, intervenção, documentos, recursos, cadastro (gap closure in progress)
+ (completed 2026-05-10)
+- [x] **Phase 20: LangChain Workflow** - Complete agent lifecycle, RAG, MCP, defenses, logging (gap closure in progress) (completed 2026-05-09)
+- [x] **Phase 21: Roles & Auth Expansion** - Add provider role with hierarchical CRUDs (completed 2026-05-09)
+- [x] **Phase 22: FCM Push Notifications** - End-to-end push infrastructure (backend + Flutter) (completed 2026-05-09)
 - [ ] **Phase 23: New Features** - Cardápio semanal, perfil do aluno, grade curricular
 - [ ] **Phase 24: UI Polish & Integration** - Splash screen, dashboard metrics, end-to-end coherence
 
@@ -142,7 +145,20 @@ Plans:
   3. Off-scope questions receive polite redirection; media messages receive creative rejection; failures trigger human intervention
   4. Prompt injection attempts are detected and neutralized without disrupting legitimate conversation
   5. Staff can see RAG debug info (chunks, scores) in chat logs; system logs capture full LangChain decision traceability
-**Plans**: TBD
+**Plans:** 11/11 plans complete
+
+Plans:
+- [x] 20-01-PLAN.md — System prompt + Alpha persona + off-scope + media enhancement
+- [x] 20-02-PLAN.md — RAG observability (rag_logs table) + LangSmith tracing
+- [x] 20-03-PLAN.md — RAG ingest on Docker bootstrap
+- [x] 20-04-PLAN.md — Lazy OTP strategy + webhook flow modification
+- [x] 20-05-PLAN.md — Prompt injection defense (4 layers)
+- [x] 20-06-PLAN.md — Session lifecycle (welcome/goodbye/idle timeout)
+- [x] 20-07-PLAN.md — Gap closure: stale OTP reset + farewell accent normalization
+- [x] 20-08-PLAN.md — Gap closure: plain-text formatting + personalized welcome name
+- [x] 20-09-PLAN.md — Gap closure: welcome name fix + farewell detection threshold
+- [x] 20-10-PLAN.md — Gap closure: stale OTP timezone crash fix + test repair
+- [x] 20-11-PLAN.md — Gap closure: MCP verification gate + system prompt lazy OTP + verification_state propagation
 
 ### Phase 21: Roles & Auth Expansion
 
@@ -154,7 +170,14 @@ Plans:
   2. Provider can CRUD staff members (cadastrar, editar, ativar/desativar, remover) with required fields
   3. Staff can CRUD students (cadastrar, editar, ativar/desativar, remover) with required fields
   4. Provider screen has 2 tabs (staff + aluno) with separate CRUD interfaces
-**Plans**: TBD
+**Plans:** 4/4 plans complete
+
+Plans:
+- [x] 21-01-PLAN.md — Backend migration + auth expansion (provider role, new columns, require_provider)
+- [x] 21-02-PLAN.md — Staff CRUD endpoints (5 routes, provider-only)
+- [x] 21-03-PLAN.md — Flutter navigation expansion (6th tab, UserModel, router guards)
+- [x] 21-04-PLAN.md — Flutter staff management UI (list, form, CRUD operations)
+
 **UI hint**: yes
 
 ### Phase 22: FCM Push Notifications
@@ -167,7 +190,14 @@ Plans:
   2. Push notification appears in phone notification bar when document is ready, enrollment confirmed, appointment confirmed, or new chat message received
   3. Notifications display correctly in both foreground and background states
   4. Tapping a notification navigates the user to the relevant screen in the app
-**Plans**: TBD
+**Plans:** 4/4 plans complete
+
+Plans:
+- [x] 22-01-PLAN.md — Backend FCM infrastructure (token CRUD + notification service)
+- [x] 22-02-PLAN.md — Flutter Firebase setup + FCM token lifecycle management
+- [x] 22-03-PLAN.md — Backend event triggers + unit tests
+- [x] 22-04-PLAN.md — Flutter notification handlers + deep-link navigation
+
 **UI hint**: yes
 
 ### Phase 23: New Features
@@ -209,9 +239,9 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 18. Student UX Corrections | v3.0 | 7/7 | Complete    | 2026-05-09 |
 | 19. Staff UX Corrections | v3.0 | 9/9 | Complete    | 2026-05-10 |
-| 20. LangChain Workflow | v3.0 | 0/TBD | Not started | - |
-| 21. Roles & Auth Expansion | v3.0 | 0/TBD | Not started | - |
-| 22. FCM Push Notifications | v3.0 | 0/TBD | Not started | - |
+| 20. LangChain Workflow | v3.0 | 11/11 | Complete   | 2026-05-09 |
+| 21. Roles & Auth Expansion | v3.0 | 4/4 | Complete   | 2026-05-09 |
+| 22. FCM Push Notifications | v3.0 | 4/4 | Complete    | 2026-05-09 |
 | 23. New Features | v3.0 | 0/TBD | Not started | - |
 | 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |
 

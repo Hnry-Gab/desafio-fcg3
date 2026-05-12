@@ -348,9 +348,9 @@ STUDENTS_DATA: tuple[StudentSeed, ...] = (
 
 STAFF_DATA = (
     {
-        "name": "Henry (Staff)",
+        "name": "Henry (Provider)",
         "email": "universalblackout1@gmail.com",
-        "role": "secretary",
+        "role": "provider",
     },
 )
 

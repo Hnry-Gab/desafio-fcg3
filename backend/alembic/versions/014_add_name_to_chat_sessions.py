@@ -1,7 +1,7 @@
 """add name column to chat_sessions
 
-Revision ID: 014a
-Revises: 013a
+Revision ID: 014c
+Revises: 014b
 Create Date: 2026-05-09 12:00:00
 
 Adds nullable name column to chat_sessions for user-defined session labels.
@@ -13,8 +13,8 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = "014a"
-down_revision = "013a"
+revision = "014c"
+down_revision = "014b"
 branch_labels = None
 depends_on = None
 
