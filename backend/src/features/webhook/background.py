@@ -73,27 +73,32 @@ def _strip_accents(text: str) -> str:
 
 
 def _strip_markdown(text: str) -> str:
-    """Remove common markdown formatting for WhatsApp plain-text delivery.
+    """Convert standard markdown to WhatsApp-compatible formatting.
 
-    Strips: bold (**), italic (*_), headers (##), code blocks (```),
-    inline code (`), and converts markdown lists to plain lines.
-    Preserves the actual content and readability.
+    WhatsApp supports: *bold*, _italic_, ~strikethrough~, ```monospace```,
+    and lists with bullet/numbered format.
+
+    Converts:
+    - **bold** or __bold__ -> *bold* (WhatsApp bold)
+    - ## Headers -> *Header* (bold, no header syntax)
+    - ``` code blocks ``` -> preserved (WhatsApp supports)
+    - `inline code` -> preserved (WhatsApp supports)
+    - Markdown lists (- item) -> • item
+    - Numbered lists -> preserved
+
+    Does NOT strip: *text*, _text_, ~text~ (already WhatsApp-native)
     """
-    # Remove code blocks (``` ... ```)
-    text = re.sub(r"```[\s\S]*?```", lambda m: m.group(0).strip("`").strip(), text)
-    # Remove inline code backticks
-    text = re.sub(r"`([^`]+)`", r"\1", text)
-    # Remove headers (## Header -> Header)
-    text = re.sub(r"^#{1,6}\s+", "", text, flags=re.MULTILINE)
-    # Remove bold (**text** or __text__)
-    text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)
-    text = re.sub(r"__(.+?)__", r"\1", text)
-    # Remove italic (*text* or _text_) — careful not to strip underscores in words
-    text = re.sub(r"(?<!\w)\*(.+?)\*(?!\w)", r"\1", text)
-    text = re.sub(r"(?<!\w)_(.+?)_(?!\w)", r"\1", text)
-    # Convert markdown list items to plain text with bullet
-    text = re.sub(r"^\s*[-*+]\s+", "• ", text, flags=re.MULTILINE)
-    # Convert numbered markdown lists (1. item) — keep the number
+    # Remove code blocks markers but keep content readable
+    text = re.sub(r"```(\w*)\n?([\s\S]*?)```", r"```\2```", text)
+    # Remove headers — convert to WhatsApp bold
+    text = re.sub(r"^#{1,6}\s+(.+)$", r"*\1*", text, flags=re.MULTILINE)
+    # Convert double-asterisk bold (**text**) to single-asterisk (*text*) for WhatsApp
+    text = re.sub(r"\*\*(.+?)\*\*", r"*\1*", text)
+    # Convert double-underscore bold (__text__) to WhatsApp bold
+    text = re.sub(r"__(.+?)__", r"*\1*", text)
+    # Convert markdown list items to bullet character
+    text = re.sub(r"^\s*[-+]\s+", "• ", text, flags=re.MULTILINE)
+    # Keep numbered lists as-is (WhatsApp renders them fine)
     text = re.sub(r"^\s*(\d+)\.\s+", r"\1. ", text, flags=re.MULTILINE)
     return text.strip()
 
