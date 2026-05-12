@@ -417,7 +417,8 @@ class WebhookService:
 
         await wa_client.send_text_message(
             phone,
-            f"Identidade verificada! ✅ Pode continuar de onde parou, {student.name}.",
+            f"Identidade verificada com sucesso, {student.name}! ✅ "
+            "Vou prosseguir com o que você pediu...",
         )
 
         # Phase 25: Auto-continue — re-dispatch to AI agent so it picks up
@@ -429,7 +430,7 @@ class WebhookService:
         task = asyncio.create_task(
             process_message(
                 session_id=session.id,
-                message_text="Minha identidade foi verificada. Continue de onde paramos e execute a ação que eu pedi.",
+                message_text="O aluno acabou de verificar sua identidade com sucesso. Olhe o historico da conversa, identifique a ultima acao que ele pediu antes da verificacao (ex: matricula, documento, agendamento) e execute automaticamente. Nao peca para ele repetir.",
                 phone=phone,
                 wa_client=wa_client,
                 is_new_session=False,
