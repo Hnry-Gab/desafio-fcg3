@@ -28,7 +28,9 @@ from src.infrastructure.whatsapp_client import WhatsAppClient
 logger = logging.getLogger(__name__)
 
 # Per-session locks to prevent concurrent processing (D-09, MINOR-3)
-_session_locks: dict[str, asyncio.Lock] = {}
+# WR-01: Uses timestamps for periodic cleanup of stale locks.
+_session_locks: dict[str, tuple[asyncio.Lock, float]] = {}
+_LOCK_STALE_SECONDS = 600  # 10 minutes
 
 FALLBACK_MESSAGE = (
     "Opa, tive um probleminha tecnico agora. "
@@ -254,7 +256,24 @@ async def process_message(
 
     settings = get_settings()
     lock_key = str(session_id)
-    lock = _session_locks.setdefault(lock_key, asyncio.Lock())
+
+    import time as _time
+
+    entry = _session_locks.get(lock_key)
+    if entry is None:
+        entry = (asyncio.Lock(), _time.monotonic())
+        _session_locks[lock_key] = entry
+    lock, _ = entry
+    _session_locks[lock_key] = (lock, _time.monotonic())
+
+    # WR-01: Periodic cleanup of stale session locks
+    now = _time.monotonic()
+    stale = [
+        k for k, (lk, ts) in _session_locks.items()
+        if now - ts > _LOCK_STALE_SECONDS and not lk.locked()
+    ]
+    for k in stale:
+        _session_locks.pop(k, None)
 
     async with lock:
         agent_response: str | None = None
