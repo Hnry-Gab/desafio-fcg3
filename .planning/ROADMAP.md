@@ -79,6 +79,7 @@ GROUP 4 — Polish (depends on all above):
 - [x] **Phase 22: FCM Push Notifications** - End-to-end push infrastructure (backend + Flutter) (completed 2026-05-09)
 - [ ] **Phase 23: New Features** - Cardápio semanal, perfil do aluno, grade curricular
 - [ ] **Phase 24: UI Polish & Integration** - Splash screen, dashboard metrics, end-to-end coherence
+- [x] **Phase 25: Chatbot Interaction Polish** - System prompt rewrite, proactive behavior, tone calibration, hardcoded messages (completed 2026-05-12)
 
 ## Phase Details
 
@@ -225,6 +226,26 @@ Plans:
 **Plans**: TBD
 **UI hint**: yes
 
+### Phase 25: Chatbot Interaction Polish
+
+**Goal**: Alpha chatbot delivers warm, proactive, human-like interactions that generate genuine connection with students — not just functional answers
+**Depends on**: Phase 20 (LangChain Workflow must be complete — it is)
+**Requirements**: CHAT-01, CHAT-02, CHAT-03, CHAT-04, CHAT-05, CHAT-06, CHAT-07, CHAT-08, CHAT-09, CHAT-10, CHAT-11, CHAT-12, CHAT-13, CHAT-14, CHAT-15, CHAT-16, CHAT-17, CHAT-18, CHAT-19, CHAT-20, CHAT-21, CHAT-22, CHAT-23
+**Success Criteria** (what must be TRUE):
+  1. Students perceive the chatbot as helpful and personable (not robotic or cold)
+  2. Chatbot proactively suggests related actions and alerts about pending items
+  3. All hardcoded messages (idle, farewell, escalation, media) match the Alpha persona tone
+  4. Conversation starters and goodbyes feel natural and personalized
+  5. Knowledge base is expanded to cover all available academic topics
+**Plans:** 3/3 plans complete
+
+Plans:
+- [x] 25-01-PLAN.md — System prompt rewrite + LLM temperature/model config
+- [x] 25-02-PLAN.md — Hardcoded messages + welcome injection polish
+- [x] 25-03-PLAN.md — Knowledge base expansion (CATEGORY_MAP)
+
+**Canonical refs:** `ai_service/prompts/system_prompt.txt`, `ai_service/agent.py`, `backend/src/features/webhook/background.py`, `backend/src/features/webhook/idle_monitor.py`, `ai_service/knowledge/`
+
 ---
 
 ## Progress
@@ -244,7 +265,8 @@ Plans:
 | 22. FCM Push Notifications | v3.0 | 4/4 | Complete    | 2026-05-09 |
 | 23. New Features | v3.0 | 0/TBD | Not started | - |
 | 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |
+| 25. Chatbot Interaction Polish | v3.0 | 3/3 | Complete | 2026-05-12 |
 
 ---
 
-**Total project:** 24 phases across 3 milestones.
+**Total project:** 25 phases across 3 milestones.

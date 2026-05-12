@@ -28,11 +28,14 @@ from src.infrastructure.whatsapp_client import WhatsAppClient
 logger = logging.getLogger(__name__)
 
 # Per-session locks to prevent concurrent processing (D-09, MINOR-3)
-_session_locks: dict[str, asyncio.Lock] = {}
+# WR-01: Uses timestamps for periodic cleanup of stale locks.
+_session_locks: dict[str, tuple[asyncio.Lock, float]] = {}
+_LOCK_STALE_SECONDS = 600  # 10 minutes
 
 FALLBACK_MESSAGE = (
-    "Desculpe, estou com dificuldades tecnicas. "
-    "Tente novamente em alguns minutos."
+    "Opa, tive um probleminha tecnico agora. "
+    "Tente novamente em alguns minutos ou procure a secretaria. "
+    "Desculpe pelo inconveniente!"
 )
 
 # Escalation constants (HI-01)
@@ -45,7 +48,10 @@ ESCALATION_BOT_PHRASES = [
     "secretaria presencialmente",
     "entrar em contato com a secretaria",
 ]
-ESCALATION_ACK_MESSAGE = "Vou transferir voce para um atendente. Aguarde um momento."
+ESCALATION_ACK_MESSAGE = (
+    "Entendo! Vou te conectar com um atendente da secretaria "
+    "que vai poder te ajudar melhor com isso. Aguarde um momento! 🙏"
+)
 
 # Farewell detection indicators (D-02 Layer 1, D-04)
 # Uses tiered strong/weak indicators for farewell detection.
@@ -69,27 +75,32 @@ def _strip_accents(text: str) -> str:
 
 
 def _strip_markdown(text: str) -> str:
-    """Remove common markdown formatting for WhatsApp plain-text delivery.
+    """Convert standard markdown to WhatsApp-compatible formatting.
 
-    Strips: bold (**), italic (*_), headers (##), code blocks (```),
-    inline code (`), and converts markdown lists to plain lines.
-    Preserves the actual content and readability.
+    WhatsApp supports: *bold*, _italic_, ~strikethrough~, ```monospace```,
+    and lists with bullet/numbered format.
+
+    Converts:
+    - **bold** or __bold__ -> *bold* (WhatsApp bold)
+    - ## Headers -> *Header* (bold, no header syntax)
+    - ``` code blocks ``` -> preserved (WhatsApp supports)
+    - `inline code` -> preserved (WhatsApp supports)
+    - Markdown lists (- item) -> • item
+    - Numbered lists -> preserved
+
+    Does NOT strip: *text*, _text_, ~text~ (already WhatsApp-native)
     """
-    # Remove code blocks (``` ... ```)
-    text = re.sub(r"```[\s\S]*?```", lambda m: m.group(0).strip("`").strip(), text)
-    # Remove inline code backticks
-    text = re.sub(r"`([^`]+)`", r"\1", text)
-    # Remove headers (## Header -> Header)
-    text = re.sub(r"^#{1,6}\s+", "", text, flags=re.MULTILINE)
-    # Remove bold (**text** or __text__)
-    text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)
-    text = re.sub(r"__(.+?)__", r"\1", text)
-    # Remove italic (*text* or _text_) — careful not to strip underscores in words
-    text = re.sub(r"(?<!\w)\*(.+?)\*(?!\w)", r"\1", text)
-    text = re.sub(r"(?<!\w)_(.+?)_(?!\w)", r"\1", text)
-    # Convert markdown list items to plain text with bullet
-    text = re.sub(r"^\s*[-*+]\s+", "• ", text, flags=re.MULTILINE)
-    # Convert numbered markdown lists (1. item) — keep the number
+    # Remove code blocks markers but keep content readable
+    text = re.sub(r"```(\w*)\n?([\s\S]*?)```", r"```\2```", text)
+    # Remove headers — convert to WhatsApp bold
+    text = re.sub(r"^#{1,6}\s+(.+)$", r"*\1*", text, flags=re.MULTILINE)
+    # Convert double-asterisk bold (**text**) to single-asterisk (*text*) for WhatsApp
+    text = re.sub(r"\*\*(.+?)\*\*", r"*\1*", text)
+    # Convert double-underscore bold (__text__) to WhatsApp bold
+    text = re.sub(r"__(.+?)__", r"*\1*", text)
+    # Convert markdown list items to bullet character
+    text = re.sub(r"^\s*[-+]\s+", "• ", text, flags=re.MULTILINE)
+    # Keep numbered lists as-is (WhatsApp renders them fine)
     text = re.sub(r"^\s*(\d+)\.\s+", r"\1. ", text, flags=re.MULTILINE)
     return text.strip()
 
@@ -107,6 +118,25 @@ def _is_farewell_response(response: str) -> bool:
     if any(phrase in normalized for phrase in STRONG_FAREWELL_INDICATORS):
         return True
     return sum(1 for phrase in WEAK_FAREWELL_INDICATORS if phrase in normalized) >= 2
+
+
+# Phase 25: Verification request detection phrases.
+# When the agent asks for the student's email to verify identity,
+# we transition the session to awaiting_email so the webhook handles OTP.
+VERIFICATION_REQUEST_PHRASES = [
+    "email institucional",
+    "email cadastrado",
+    "codigo de verificacao",
+    "verificar sua identidade",
+    "enviar um codigo",
+    "enviar o codigo",
+]
+
+
+def _is_verification_request(response: str) -> bool:
+    """Detect if the agent response is asking the student for email verification."""
+    normalized = _strip_accents(response.lower())
+    return any(phrase in normalized for phrase in VERIFICATION_REQUEST_PHRASES)
 
 
 def _handle_task_result(task: asyncio.Task) -> None:
@@ -226,7 +256,24 @@ async def process_message(
 
     settings = get_settings()
     lock_key = str(session_id)
-    lock = _session_locks.setdefault(lock_key, asyncio.Lock())
+
+    import time as _time
+
+    entry = _session_locks.get(lock_key)
+    if entry is None:
+        entry = (asyncio.Lock(), _time.monotonic())
+        _session_locks[lock_key] = entry
+    lock, _ = entry
+    _session_locks[lock_key] = (lock, _time.monotonic())
+
+    # WR-01: Periodic cleanup of stale session locks
+    now = _time.monotonic()
+    stale = [
+        k for k, (lk, ts) in _session_locks.items()
+        if now - ts > _LOCK_STALE_SECONDS and not lk.locked()
+    ]
+    for k in stale:
+        _session_locks.pop(k, None)
 
     async with lock:
         agent_response: str | None = None
@@ -325,6 +372,25 @@ async def process_message(
                 wamid=None,
                 db=db,
             )
+
+            # Phase 25: Detect verification request in agent response and
+            # transition session to awaiting_email so the webhook intercepts
+            # the next message for OTP flow.
+            if _is_verification_request(agent_response) and verification_state == "unverified":
+                from src.features.chat.models import ChatSession
+                from sqlalchemy import select
+
+                sess_result = await db.execute(
+                    select(ChatSession).where(ChatSession.id == session_id)
+                )
+                session = sess_result.scalar_one_or_none()
+                if session:
+                    await webhook_service.initiate_mid_conversation_verification(session, db)
+                    logger.info(
+                        "Verification initiated for session %s (agent requested email)",
+                        session_id,
+                    )
+
             await db.commit()
 
         # Send response via WhatsApp (D-07: WhatsApp client already handles retry)

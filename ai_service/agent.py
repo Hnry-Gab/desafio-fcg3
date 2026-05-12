@@ -20,8 +20,9 @@ from ai_service.security import sanitize_input, filter_output
 logger = logging.getLogger(__name__)
 
 FALLBACK_MESSAGE = (
-    "Desculpe, estou com dificuldades tecnicas para processar sua solicitacao. "
-    "Tente novamente em alguns minutos ou procure a secretaria."
+    "Opa, tive um probleminha tecnico agora. "
+    "Tente novamente em alguns minutos ou procure a secretaria. "
+    "Desculpe pelo inconveniente!"
 )
 
 
@@ -53,7 +54,11 @@ async def _tolerate_tool_errors(request, handler):
             type(exc).__name__,
         )
         return ToolMessage(
-            content=f"Tool error: {exc}",
+            content=(
+                f"ERRO na ferramenta '{request.tool_call.get('name', '?')}': {exc}\n"
+                "INSTRUCAO: NAO tente chamar esta ferramenta novamente com os mesmos parametros. "
+                "Explique o erro ao aluno de forma clara e amigavel, e sugira alternativas."
+            ),
             tool_call_id=request.tool_call["id"],
         )
 
@@ -146,22 +151,44 @@ async def invoke_agent(
     )
     agent = create_chat_agent(settings, [*mcp_tools, rag_tool], system_prompt)
 
-    history_messages = load_chat_history(
+    history_messages = await asyncio.to_thread(
+        load_chat_history,
         db_pool,
         session_id,
         k=settings.CHAT_HISTORY_K,
     )
 
     # D-01, LANG-01: Inject welcome generation instruction on new sessions
+    # D-13 to D-16: Differentiate first-time vs returning students
     if is_new_session:
         name_part = f" o aluno {student_name}" if student_name else " o aluno"
-        welcome_instruction = SystemMessage(
-            content=(
-                f"Este e o inicio de uma nova conversa. Cumprimente{name_part} pelo nome "
-                "de forma calorosa e breve, apresente-se como Alpha, e pergunte como "
-                "pode ajudar. Em seguida, responda a mensagem do aluno."
+        has_prior_history = len(history_messages) > 0
+        if has_prior_history:
+            welcome_instruction = SystemMessage(
+                content=(
+                    f"Este e o inicio de uma nova conversa com{name_part}, "
+                    "que ja conversou com voce antes. "
+                    "Cumprimente de forma breve e calorosa pelo nome — SEM se apresentar novamente. "
+                    "IMPORTANTE: Use a ferramenta get_student_info para verificar pendencias "
+                    "(matricula em rascunho, documento pronto, prazo de matricula). "
+                    "Se houver pendencias, mencione-as proativamente. "
+                    "Depois, responda a mensagem do aluno."
+                )
             )
-        )
+        else:
+            welcome_instruction = SystemMessage(
+                content=(
+                    f"Este e o inicio de uma NOVA conversa com{name_part}. "
+                    "O aluno NUNCA conversou com voce antes. "
+                    "Faca uma apresentacao completa: cumprimente pelo nome com 👋, "
+                    "apresente-se como Alpha (assistente da secretaria academica), "
+                    "e diga brevemente como pode ajudar. "
+                    "IMPORTANTE: Use a ferramenta get_student_info para verificar se o aluno "
+                    "tem pendencias (matricula em rascunho, documento pronto, prazo de matricula). "
+                    "Se houver pendencias, mencione-as proativamente na saudacao. "
+                    "Depois, responda a mensagem do aluno."
+                )
+            )
         all_messages = [welcome_instruction, *history_messages, HumanMessage(content=user_message)]
     else:
         all_messages = [*history_messages, HumanMessage(content=user_message)]

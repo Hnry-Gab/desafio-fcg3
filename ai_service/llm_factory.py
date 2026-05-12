@@ -32,7 +32,7 @@ def create_llm(settings: Any) -> "BaseChatModel":
     if settings.LLM_PROVIDER == "openai":
         from langchain_openai import ChatOpenAI
 
-        return ChatOpenAI(model=settings.LLM_MODEL, api_key=settings.OPENAI_API_KEY)
+        return ChatOpenAI(model=settings.LLM_MODEL, api_key=settings.OPENAI_API_KEY, temperature=settings.LLM_TEMPERATURE)
 
     if settings.LLM_PROVIDER == "gemini":
         from langchain_google_genai import ChatGoogleGenerativeAI
@@ -40,6 +40,7 @@ def create_llm(settings: Any) -> "BaseChatModel":
         return ChatGoogleGenerativeAI(
             model=settings.LLM_MODEL,
             google_api_key=settings.GEMINI_API_KEY,
+            temperature=settings.LLM_TEMPERATURE,
         )
 
     if settings.LLM_PROVIDER == "openrouter":
@@ -49,6 +50,7 @@ def create_llm(settings: Any) -> "BaseChatModel":
             model=settings.LLM_MODEL,
             api_key=settings.OPENROUTER_API_KEY,
             base_url="https://openrouter.ai/api/v1",
+            temperature=settings.LLM_TEMPERATURE,
         )
 
     raise ValueError(

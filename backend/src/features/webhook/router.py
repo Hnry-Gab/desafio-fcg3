@@ -160,7 +160,10 @@ async def whatsapp_webhook(request: Request) -> Response:
                         await webhook_service.close_session(session, db)
                         await db.commit()
                         await wa_client.send_text_message(
-                            phone, "Sessao encerrada. Ate logo!"
+                            phone,
+                            f"Até mais{', ' + student.name if student else ''}! "
+                            "Se precisar de qualquer coisa, é só mandar mensagem. "
+                            "Bons estudos! 📚",
                         )
                         continue
 

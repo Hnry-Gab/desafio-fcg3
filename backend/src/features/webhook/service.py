@@ -417,8 +417,39 @@ class WebhookService:
 
         await wa_client.send_text_message(
             phone,
-            f"Identidade verificada! Ola, {student.name}. Como posso ajudar?",
+            f"Identidade verificada com sucesso, {student.name}! ✅ "
+            "Vou prosseguir com o que você pediu...",
         )
+
+        # Phase 25: Auto-continue — re-dispatch to AI agent so it picks up
+        # where it left off. The agent has full chat history and is now verified,
+        # so it can execute the pending mutating action automatically.
+        # WR-05: Save as system message for audit trail (not user input).
+        await self.save_message(
+            session_id=session.id,
+            role="system",
+            content="[Verificação concluída — retomando ação pendente]",
+            media_type=None,
+            wamid=None,
+            db=db,
+        )
+        await db.flush()
+
+        import asyncio
+        from src.features.webhook.background import process_message
+
+        task = asyncio.create_task(
+            process_message(
+                session_id=session.id,
+                message_text="O aluno acabou de verificar sua identidade com sucesso. Olhe o historico da conversa, identifique a ultima acao que ele pediu antes da verificacao (ex: matricula, documento, agendamento) e execute automaticamente. Nao peca para ele repetir.",
+                phone=phone,
+                wa_client=wa_client,
+                is_new_session=False,
+                student_name=student.name,
+                verification_state="verified",
+            )
+        )
+        task.add_done_callback(lambda t: t.exception() if not t.cancelled() else None)
 
     def get_media_response(self, media_type: str) -> str:
         """Return exact Portuguese response for media type per docs/chatbot.md.
