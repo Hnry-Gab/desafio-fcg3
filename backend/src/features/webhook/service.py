@@ -424,6 +424,17 @@ class WebhookService:
         # Phase 25: Auto-continue — re-dispatch to AI agent so it picks up
         # where it left off. The agent has full chat history and is now verified,
         # so it can execute the pending mutating action automatically.
+        # WR-05: Save as system message for audit trail (not user input).
+        await self.save_message(
+            session_id=session.id,
+            role="system",
+            content="[Verificação concluída — retomando ação pendente]",
+            media_type=None,
+            wamid=None,
+            db=db,
+        )
+        await db.flush()
+
         import asyncio
         from src.features.webhook.background import process_message
 
