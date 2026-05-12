@@ -118,6 +118,25 @@ def _is_farewell_response(response: str) -> bool:
     return sum(1 for phrase in WEAK_FAREWELL_INDICATORS if phrase in normalized) >= 2
 
 
+# Phase 25: Verification request detection phrases.
+# When the agent asks for the student's email to verify identity,
+# we transition the session to awaiting_email so the webhook handles OTP.
+VERIFICATION_REQUEST_PHRASES = [
+    "email institucional",
+    "email cadastrado",
+    "codigo de verificacao",
+    "verificar sua identidade",
+    "enviar um codigo",
+    "enviar o codigo",
+]
+
+
+def _is_verification_request(response: str) -> bool:
+    """Detect if the agent response is asking the student for email verification."""
+    normalized = _strip_accents(response.lower())
+    return any(phrase in normalized for phrase in VERIFICATION_REQUEST_PHRASES)
+
+
 def _handle_task_result(task: asyncio.Task) -> None:
     """Done callback for background tasks.
 
@@ -334,6 +353,25 @@ async def process_message(
                 wamid=None,
                 db=db,
             )
+
+            # Phase 25: Detect verification request in agent response and
+            # transition session to awaiting_email so the webhook intercepts
+            # the next message for OTP flow.
+            if _is_verification_request(agent_response) and verification_state == "unverified":
+                from src.features.chat.models import ChatSession
+                from sqlalchemy import select
+
+                sess_result = await db.execute(
+                    select(ChatSession).where(ChatSession.id == session_id)
+                )
+                session = sess_result.scalar_one_or_none()
+                if session:
+                    await webhook_service.initiate_mid_conversation_verification(session, db)
+                    logger.info(
+                        "Verification initiated for session %s (agent requested email)",
+                        session_id,
+                    )
+
             await db.commit()
 
         # Send response via WhatsApp (D-07: WhatsApp client already handles retry)
