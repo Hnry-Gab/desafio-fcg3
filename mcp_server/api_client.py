@@ -93,9 +93,9 @@ async def call_api(
     *,
     student_id: str | None = None,
     **kwargs: Any,
-) -> tuple[dict[str, Any], bool]:
+) -> tuple[dict[str, Any] | list[Any], bool]:
     response, retried = await call_api_raw(client, method, path, student_id=student_id, **kwargs)
     data = response.json()
-    if not isinstance(data, dict):
+    if not isinstance(data, (dict, list)):
         raise ToolError(GENERIC_SERVER_ERROR)
     return data, retried
