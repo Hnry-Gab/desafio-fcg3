@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_animations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/utils/mcp_log_formatter.dart';
 import '../../../shared/widgets/animated_entrance.dart';
 import '../../../shared/widgets/app_bar_actions.dart';
 import '../../../shared/widgets/app_skeleton_list.dart';
@@ -534,13 +535,13 @@ class _ActionsPanel extends ConsumerWidget {
                 log.isError ? Icons.error_outline : Icons.check_circle_outline,
                 color: log.isError ? colors.error : (Theme.of(context).brightness == Brightness.dark ? const Color(0xFF81C784) : const Color(0xFF4CAF50)),
               ),
-              title: Text(log.toolName),
-              subtitle: Text(log.status),
+              title: Text(McpLogFormatter.toolLabel(log.toolName)),
+              subtitle: Text(McpLogFormatter.statusLabel(log.status)),
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: Text(
-                    'Latência: ${log.latencyMs ?? "?"}ms',
+                    'Latencia: ${log.latencyMs ?? "?"}ms',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),

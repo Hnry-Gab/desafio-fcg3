@@ -1,7 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../shared/utils/mcp_log_formatter.dart';
 import '../../../shared/widgets/app_skeleton_chat.dart';
 import '../../../shared/widgets/app_skeleton_list.dart';
 import '../../client/models/chat_session_model.dart';
@@ -375,45 +374,33 @@ class _ActionLogTile extends StatelessWidget {
     return isDark ? const Color(0xFF81C784) : const Color(0xFF4CAF50);
   }
 
+  String _formatTime(DateTime dt) {
+    final h = dt.hour.toString().padLeft(2, '0');
+    final m = dt.minute.toString().padLeft(2, '0');
+    return '$h:$m';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final inputText = McpLogFormatter.formatInput(log.toolName, log.inputParams);
+    final outputText = McpLogFormatter.formatOutput(log.toolName, log.outputResult);
 
     return ExpansionTile(
       leading: Icon(_statusIcon(), color: _statusColor(context)),
-      title: Text(log.toolName),
-      subtitle: Text('${_formatTime(log.createdAt)} \u2022 ${log.latencyMs ?? '?'}ms'),
+      title: Text(McpLogFormatter.toolLabel(log.toolName)),
+      subtitle: Text(
+        '${_formatTime(log.createdAt)} \u2022 ${McpLogFormatter.statusLabel(log.status)} \u2022 ${log.latencyMs ?? '?'}ms',
+      ),
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Input:',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  jsonEncode(log.inputParams),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontFamily: 'monospace',
-                  ),
-                ),
-              ),
-              if (log.outputResult != null) ...[
-                const SizedBox(height: 12),
+              if (inputText != null) ...[
                 Text(
-                  'Output:',
+                  'Parametros:',
                   style: theme.textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -427,17 +414,35 @@ class _ActionLogTile extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    jsonEncode(log.outputResult!),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontFamily: 'monospace',
-                    ),
+                    inputText,
+                    style: theme.textTheme.bodySmall,
                   ),
                 ),
+                const SizedBox(height: 12),
               ],
+              Text(
+                'Resultado:',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  outputText ?? 'Sem resultado',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ),
               if (log.reasoning != null) ...[
                 const SizedBox(height: 12),
                 Text(
-                  'Reasoning:',
+                  'Raciocinio da IA:',
                   style: theme.textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -455,11 +460,5 @@ class _ActionLogTile extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  String _formatTime(DateTime dt) {
-    final h = dt.hour.toString().padLeft(2, '0');
-    final m = dt.minute.toString().padLeft(2, '0');
-    return '$h:$m';
   }
 }
