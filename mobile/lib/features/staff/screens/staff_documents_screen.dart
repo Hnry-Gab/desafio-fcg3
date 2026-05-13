@@ -295,17 +295,23 @@ void _showStaffDocumentDetailSheet(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
-    builder: (ctx) => _StaffDocumentDetailContent(document: document, ref: ref),
+    builder: (ctx) => _StaffDocumentDetailContent(
+      document: document,
+      ref: ref,
+      parentContext: context,
+    ),
   );
 }
 
 class _StaffDocumentDetailContent extends StatelessWidget {
   final DocumentModel document;
   final WidgetRef ref;
+  final BuildContext parentContext;
 
   const _StaffDocumentDetailContent({
     required this.document,
     required this.ref,
+    required this.parentContext,
   });
 
   @override
@@ -373,18 +379,19 @@ class _StaffDocumentDetailContent extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // Action button
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.edit),
-              label: const Text('Atualizar Status'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                showUpdateStatusSheet(context, ref, document);
-              },
+          // Action button — only show if not terminal status
+          if (document.status != 'delivered')
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.edit),
+                label: Text(_nextActionLabel(document.status)),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  showUpdateStatusSheet(parentContext, ref, document);
+                },
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -535,6 +542,13 @@ String _typeLabel(String type) => switch (type) {
       'declaration' => 'Declaração',
       'certificate' => 'Certificado',
       _ => type,
+    };
+
+String _nextActionLabel(String currentStatus) => switch (currentStatus) {
+      'requested' => 'Marcar como Processando',
+      'processing' => 'Finalizar Documento',
+      'ready' => 'Marcar como Entregue',
+      _ => 'Atualizar Status',
     };
 
 String _statusLabel(String status) => switch (status) {

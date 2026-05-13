@@ -1,7 +1,7 @@
 """Business logic for the Resources feature slice.
 
 ResourceService: CRUD operations on resources with role-based filtering.
-Students only see is_available=True resources; staff see all.
+Students only see is_available=True resources; staff and provider see all.
 """
 
 from __future__ import annotations
@@ -41,7 +41,7 @@ class ResourceService:
         count_query = select(func.count()).select_from(Resource).where(Resource.is_deleted.is_(False))
 
         # Students always see only available resources
-        if user_role != "staff":
+        if user_role not in ("staff", "provider"):
             query = query.where(Resource.is_available.is_(True))
             count_query = count_query.where(Resource.is_available.is_(True))
         elif is_available is not None:

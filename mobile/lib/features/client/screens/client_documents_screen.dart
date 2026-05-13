@@ -68,7 +68,7 @@ class _ClientDocumentsScreenState extends ConsumerState<ClientDocumentsScreen> {
       ),
       body: Column(
         children: [
-          // Segmented filter control
+          // Status filter tabs
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 20,
@@ -80,30 +80,50 @@ class _ClientDocumentsScreenState extends ConsumerState<ClientDocumentsScreen> {
                 color: colors.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
               ),
-              child: Row(
-                children: [
-                  _FilterTab(
-                    label: 'Ver todos',
-                    isSelected: filter == null,
-                    onTap: () => ref
-                        .read(documentFilterProvider.notifier)
-                        .setFilter(null),
-                  ),
-                  _FilterTab(
-                    label: 'Pendentes',
-                    isSelected: filter == 'pending',
-                    onTap: () => ref
-                        .read(documentFilterProvider.notifier)
-                        .setFilter(filter == 'pending' ? null : 'pending'),
-                  ),
-                  _FilterTab(
-                    label: 'Prontos',
-                    isSelected: filter == 'ready',
-                    onTap: () => ref
-                        .read(documentFilterProvider.notifier)
-                        .setFilter(filter == 'ready' ? null : 'ready'),
-                  ),
-                ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _FilterTab(
+                      label: 'Todos',
+                      isSelected: filter == null,
+                      onTap: () => ref
+                          .read(documentFilterProvider.notifier)
+                          .setFilter(null),
+                    ),
+                    _FilterTab(
+                      label: 'Solicitados',
+                      isSelected: filter == 'requested',
+                      onTap: () => ref
+                          .read(documentFilterProvider.notifier)
+                          .setFilter(
+                              filter == 'requested' ? null : 'requested'),
+                    ),
+                    _FilterTab(
+                      label: 'Processando',
+                      isSelected: filter == 'processing',
+                      onTap: () => ref
+                          .read(documentFilterProvider.notifier)
+                          .setFilter(
+                              filter == 'processing' ? null : 'processing'),
+                    ),
+                    _FilterTab(
+                      label: 'Prontos',
+                      isSelected: filter == 'ready',
+                      onTap: () => ref
+                          .read(documentFilterProvider.notifier)
+                          .setFilter(filter == 'ready' ? null : 'ready'),
+                    ),
+                    _FilterTab(
+                      label: 'Entregues',
+                      isSelected: filter == 'delivered',
+                      onTap: () => ref
+                          .read(documentFilterProvider.notifier)
+                          .setFilter(
+                              filter == 'delivered' ? null : 'delivered'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -178,13 +198,7 @@ class _ClientDocumentsScreenState extends ConsumerState<ClientDocumentsScreen> {
     String? filter,
   ) {
     if (filter == null) return documents;
-    if (filter == 'pending') {
-      return documents.where((d) => d.isPending).toList();
-    }
-    if (filter == 'ready') {
-      return documents.where((d) => d.status == 'ready').toList();
-    }
-    return documents;
+    return documents.where((d) => d.status == filter).toList();
   }
 
   Future<void> _launchDownload(String url) async {

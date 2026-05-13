@@ -623,6 +623,9 @@ class _StudentFormSheetState extends State<_StudentFormSheet> {
       if (_phoneCtrl.text.trim().isNotEmpty) {
         data['phone'] = _phoneCtrl.text.trim();
       }
+      if (_raCtrl.text.trim().isNotEmpty) {
+        data['registration_number'] = _raCtrl.text.trim();
+      }
       if (_periodCtrl.text.trim().isNotEmpty) {
         data['semester'] = int.tryParse(_periodCtrl.text.trim());
       }
@@ -741,13 +744,17 @@ class _StudentFormSheetState extends State<_StudentFormSheet> {
                               : null,
                         ),
                         const SizedBox(height: AppSpacing.md),
-                        if (isEdit)
-                          _buildField(
-                            controller: _raCtrl,
-                            label: 'RA (gerado automaticamente)',
-                            readOnly: true,
-                          ),
-                        if (isEdit) const SizedBox(height: AppSpacing.md),
+                        _buildField(
+                          controller: _raCtrl,
+                          label: isEdit ? 'RA' : 'RA (Matrícula) *',
+                          readOnly: isEdit,
+                          validator: isEdit
+                              ? null
+                              : (v) => v == null || v.trim().isEmpty
+                                  ? 'RA é obrigatório'
+                                  : null,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
                         _buildField(
                           controller: _periodCtrl,
                           label: 'Período',

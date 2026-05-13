@@ -178,8 +178,13 @@ class StaffResourcesScreen extends ConsumerWidget {
     List<ResourceModel> resources,
     String? filter,
   ) {
-    if (filter == null) return resources;
-    return resources.where((r) => r.resourceType == filter).toList();
+    final filtered =
+        filter == null ? resources : resources.where((r) => r.resourceType == filter).toList();
+    // Sort: available resources first, then unavailable at the bottom
+    return [...filtered]..sort((a, b) {
+        if (a.isAvailable == b.isAvailable) return 0;
+        return a.isAvailable ? -1 : 1;
+      });
   }
 }
 
