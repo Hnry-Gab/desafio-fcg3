@@ -225,33 +225,31 @@ class _FilterTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected ? colors.surfaceContainerLowest : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: colors.primary.withValues(alpha: 0.06),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: isSelected ? colors.primary : colors.onSurfaceVariant,
-                ),
-          ),
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? colors.surfaceContainerLowest : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: colors.primary.withValues(alpha: 0.06),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: isSelected ? colors.primary : colors.onSurfaceVariant,
+              ),
         ),
       ),
     );
@@ -288,6 +286,7 @@ class _DocumentCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isReady = document.status == 'ready';
+    final isProcessing = document.status == 'processing';
 
     return GlassCard(
       onTap: () => showDocumentDetailSheet(context, document),
@@ -325,7 +324,7 @@ class _DocumentCard extends StatelessWidget {
                 Text(
                   'Solicitado em ${_formatDateTime(document.requestedAt)}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colors.onSurfaceVariant,
+                        color: isDark ? colors.onSurfaceVariant : colors.onSurface.withValues(alpha: 0.55),
                       ),
                 ),
               ],
@@ -336,13 +335,17 @@ class _DocumentCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: isReady
-                  ? colors.tertiaryContainer.withValues(alpha: 0.1)
-                  : Colors.amber.withValues(alpha: isDark ? 0.15 : 0.1),
+                  ? Colors.green.withValues(alpha: isDark ? 0.15 : 0.1)
+                  : isProcessing
+                      ? Colors.blue.withValues(alpha: isDark ? 0.15 : 0.1)
+                      : Colors.amber.withValues(alpha: isDark ? 0.15 : 0.1),
               borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
               border: Border.all(
                 color: isReady
-                    ? colors.tertiary.withValues(alpha: 0.2)
-                    : Colors.amber.withValues(alpha: 0.2),
+                    ? Colors.green.withValues(alpha: 0.3)
+                    : isProcessing
+                        ? Colors.blue.withValues(alpha: 0.3)
+                        : Colors.amber.withValues(alpha: 0.3),
               ),
             ),
             child: Text(
@@ -352,7 +355,11 @@ class _DocumentCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: isReady ? colors.tertiary : (isDark ? Colors.amber.shade300 : Colors.amber.shade700),
+                color: isReady
+                    ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
+                    : isProcessing
+                        ? (isDark ? Colors.blue.shade300 : Colors.blue.shade700)
+                        : (isDark ? Colors.amber.shade300 : Colors.amber.shade700),
               ),
             ),
           ),

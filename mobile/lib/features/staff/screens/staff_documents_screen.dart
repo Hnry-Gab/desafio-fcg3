@@ -573,8 +573,8 @@ class _StaffDocumentCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isReady = document.status == 'ready';
-    final isPending =
-        document.status == 'requested' || document.status == 'processing';
+    final isRequested = document.status == 'requested';
+    final isProcessing = document.status == 'processing';
 
     return GlassCard(
       onTap: onTap,
@@ -611,14 +611,14 @@ class _StaffDocumentCard extends StatelessWidget {
                 Text(
                   _typeLabel(document.type),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colors.onSurfaceVariant,
+                        color: isDark ? colors.onSurfaceVariant : colors.onSurface.withValues(alpha: 0.7),
                         fontWeight: FontWeight.w600,
                       ),
                 ),
                 Text(
                   'Solicitado em ${_formatDate(document.requestedAt)}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colors.onSurfaceVariant,
+                        color: isDark ? colors.onSurfaceVariant : colors.onSurface.withValues(alpha: 0.55),
                       ),
                 ),
               ],
@@ -627,18 +627,22 @@ class _StaffDocumentCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: isPending
+              color: isRequested
                   ? Colors.amber.withValues(alpha: isDark ? 0.15 : 0.1)
-                  : isReady
-                      ? colors.tertiaryContainer.withValues(alpha: 0.1)
-                      : colors.surfaceContainerHigh,
+                  : isProcessing
+                      ? Colors.blue.withValues(alpha: isDark ? 0.15 : 0.1)
+                      : isReady
+                          ? Colors.green.withValues(alpha: isDark ? 0.15 : 0.1)
+                          : colors.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
               border: Border.all(
-                color: isPending
-                    ? Colors.amber.withValues(alpha: 0.2)
-                    : isReady
-                        ? colors.tertiary.withValues(alpha: 0.2)
-                        : colors.outlineVariant,
+                color: isRequested
+                    ? Colors.amber.withValues(alpha: 0.3)
+                    : isProcessing
+                        ? Colors.blue.withValues(alpha: 0.3)
+                        : isReady
+                            ? Colors.green.withValues(alpha: 0.3)
+                            : colors.outlineVariant,
               ),
             ),
             child: Text(
@@ -648,11 +652,13 @@ class _StaffDocumentCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: isPending
+                color: isRequested
                     ? (isDark ? Colors.amber.shade300 : Colors.amber.shade700)
-                    : isReady
-                        ? colors.tertiary
-                        : colors.onSurfaceVariant,
+                    : isProcessing
+                        ? (isDark ? Colors.blue.shade300 : Colors.blue.shade700)
+                        : isReady
+                            ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
+                            : colors.onSurfaceVariant,
               ),
             ),
           ),

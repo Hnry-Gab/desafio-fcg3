@@ -59,12 +59,17 @@ class Auth extends _$Auth {
     }
   }
 
-  /// Request OTP code for email
+  /// Request OTP code for email.
+  /// Returns the success message, or an error string starting with 'ERROR:'
+  /// if the email is not registered, or null on network failure.
   Future<String?> requestCode(String email) async {
     try {
       final response = await _authService.requestCode(email: email);
       return response.message;
-    } on DioException catch (_) {
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return 'ERROR:USER_NOT_FOUND';
+      }
       return null;
     }
   }

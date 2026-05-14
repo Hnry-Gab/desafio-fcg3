@@ -249,6 +249,7 @@ class _ResourceCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GlassCard(
       onTap: onEdit,
@@ -297,11 +298,15 @@ class _ResourceCard extends ConsumerWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: colors.errorContainer.withValues(alpha: 0.3),
+                      color: isDark
+                          ? colors.errorContainer.withValues(alpha: 0.3)
+                          : Colors.orange.withValues(alpha: 0.12),
                       borderRadius:
                           BorderRadius.circular(AppSpacing.radiusFull),
                       border: Border.all(
-                        color: colors.error.withValues(alpha: 0.2),
+                        color: isDark
+                            ? colors.error.withValues(alpha: 0.2)
+                            : Colors.orange.shade700.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Text(
@@ -311,7 +316,7 @@ class _ResourceCard extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: colors.error,
+                        color: isDark ? colors.error : Colors.orange.shade800,
                       ),
                     ),
                   ),

@@ -410,9 +410,17 @@ class _KpiCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // In light mode the theme containers are very dark (e.g. #004D57),
+    // so we use a light tint of the icon color instead.
+    final effectiveContainerColor = isDark
+        ? containerColor
+        : iconColor.withValues(alpha: 0.12);
 
     return GlassCard(
       onTap: onTap,
+      glowColor: iconColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -420,7 +428,7 @@ class _KpiCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: containerColor,
+              color: effectiveContainerColor,
               borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
             ),
             child: Icon(icon, color: iconColor, size: 20),
@@ -446,7 +454,7 @@ class _KpiCard extends StatelessWidget {
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.5,
-                    color: colors.onSurfaceVariant,
+                    color: isDark ? colors.onSurfaceVariant : colors.onSurface.withValues(alpha: 0.6),
                   ),
             ),
           ),

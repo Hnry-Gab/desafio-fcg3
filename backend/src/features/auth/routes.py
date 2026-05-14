@@ -63,11 +63,13 @@ async def request_code(
     request: Request,
     _body: dict = Depends(body_parser),  # caches body for key_func
     db: AsyncSession = Depends(get_db_session),
-) -> RequestCodeResponse:
+) -> RequestCodeResponse | JSONResponse:
     settings = get_settings()
     # Parse the cached body into the schema (validates email format)
     payload = RequestCodePayload.model_validate(_body)
-    # D-08: always generate + hash + persist for timing parity; only send if registered
+    # Check if the email is registered before generating OTP
+    if not await otp_service.user_exists(db, payload.email):
+        return _auth_error(404, "USER_NOT_FOUND", "E-mail não cadastrado")
     await otp_service.generate_and_send_code(db, payload.email)
     await db.commit()
     return RequestCodeResponse(message="Codigo enviado", expires_in=settings.otp_expiry_seconds)

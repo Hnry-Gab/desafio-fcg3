@@ -42,11 +42,11 @@ class GlassCard extends StatelessWidget {
     final double glowAlpha;
     switch (elevation) {
       case 2:
-        glowAlpha = 0.25;
+        glowAlpha = isDark ? 0.15 : 0.25;
       case 3:
-        glowAlpha = 0.35;
+        glowAlpha = isDark ? 0.20 : 0.35;
       default:
-        glowAlpha = 0.15;
+        glowAlpha = isDark ? 0.08 : 0.075;
     }
 
     final effectiveGlowColor = glowColor ??
@@ -61,18 +61,18 @@ class GlassCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: isDark
                 ? Colors.white.withValues(alpha: 0.05)
-                : Colors.black.withValues(alpha: 0.03),
+                : Colors.white.withValues(alpha: 0.85),
             borderRadius: effectiveBorderRadius,
             border: Border.all(
               color: isDark
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : Colors.black.withValues(alpha: 0.08),
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.12),
             ),
             boxShadow: [
               BoxShadow(
-                color: effectiveGlowColor.withValues(alpha: isDark ? glowAlpha : glowAlpha * 0.5),
-                blurRadius: 20,
-                spreadRadius: 1,
+                color: effectiveGlowColor.withValues(alpha: glowAlpha),
+                blurRadius: isDark ? 16 : 20,
+                spreadRadius: isDark ? 0 : 1,
               ),
             ],
           ),

@@ -176,7 +176,9 @@ class _StaffListTabState extends ConsumerState<StaffListTab> {
                 color: colors.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
               ),
-              child: Row(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
                 children: [
                   _FilterTab(
                     label: 'Todos',
@@ -198,6 +200,7 @@ class _StaffListTabState extends ConsumerState<StaffListTab> {
                     ),
                   ),
                 ],
+              ),
               ),
             ),
           ),
@@ -267,35 +270,33 @@ class _FilterTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? colors.surfaceContainerLowest
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: colors.primary.withValues(alpha: 0.06),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: isSelected ? colors.primary : colors.onSurfaceVariant,
-                ),
-          ),
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? colors.surfaceContainerLowest
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: colors.primary.withValues(alpha: 0.06),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: isSelected ? colors.primary : colors.onSurfaceVariant,
+              ),
         ),
       ),
     );

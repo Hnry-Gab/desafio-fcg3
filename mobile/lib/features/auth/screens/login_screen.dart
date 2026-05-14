@@ -71,16 +71,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     setState(() => _isSubmitting = false);
 
-    if (result != null) {
+    if (result != null && !result.startsWith('ERROR:')) {
       setState(() => _isOtpStep = true);
       _startResendCountdown();
       _codeFocusNodes.first.requestFocus();
     } else {
       if (mounted) {
+        final message = result == 'ERROR:USER_NOT_FOUND'
+            ? 'E-mail não cadastrado. Verifique o endereço ou entre em contato com a secretaria.'
+            : 'Erro ao enviar código. Tente novamente.';
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao enviar código. Tente novamente.'),
-            duration: Duration(seconds: 4),
+          SnackBar(
+            content: Text(message),
+            duration: const Duration(seconds: 4),
           ),
         );
       }
