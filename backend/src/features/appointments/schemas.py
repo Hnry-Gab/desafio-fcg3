@@ -10,7 +10,7 @@ API note: docs/api.md exposes "staff" in slot responses, but the DB uses
 from __future__ import annotations
 
 from datetime import date, datetime, time
-from typing import Literal
+from typing import Literal, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -127,13 +127,13 @@ class AppointmentListItem(BaseModel):
 class SlotUpdate(BaseModel):
     """PUT /scheduling/slots/{id} — edit a free slot's date/time."""
 
-    date: date | None = None
-    start_time: str | None = Field(
+    date: Optional[date] = None
+    start_time: Optional[str] = Field(
         default=None,
         description="Start time in HH:MM format",
         pattern=r"^\d{2}:\d{2}$",
     )
-    end_time: str | None = Field(
+    end_time: Optional[str] = Field(
         default=None,
         description="End time in HH:MM format",
         pattern=r"^\d{2}:\d{2}$",
