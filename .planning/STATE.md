@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
 status: executing
-last_updated: "2026-05-14T23:00:00.000Z"
-last_activity: 2026-05-14 -- Notification read status persisted server-side (notifications table, REST API, Flutter API integration, unread badge on app bar)
+last_updated: "2026-05-14T23:30:00.000Z"
+last_activity: 2026-05-14 -- Staff schedule management with grouped slots (TabBar Agendamentos/Horarios, batch delete, no-show, slot CRUD)
 progress:
   total_phases: 8
   completed_phases: 7
@@ -17,18 +17,18 @@ progress:
 
 ## Current Position
 
-Phase: 23 (complete) + notification persistence branch
-Plan: All 4 plans complete. Notification read status now server-side.
+Phase: 23 (complete) + staff schedule management branch
+Plan: All 4 plans complete. Staff schedule screen refactored with full slot management.
 Status: Executing
-Last activity: 2026-05-14 -- Notification persistence: created notifications table (Alembic 019a), 3 REST endpoints (GET /notifications, PUT /read, PUT /read-all), Flutter fetches from API, unread badge on bell icon. 44 new tests (24 backend + 20 Flutter).
+Last activity: 2026-05-14 -- Staff schedule management: TabBar with Agendamentos + Horarios sub-tabs, slots grouped by resource+date with occupancy bar, batch delete (available-only or all with appointment cancellation), individual slot edit/delete, no-show endpoint, 5 new backend endpoints.
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação acadêmica — com ações concretas executadas em tempo real.
-**Current focus:** Notification persistence complete — Next: Phase 24 (UI Polish & Integration)
-**Branch:** `feat/notifications-backend-persistence` (from `fix/enrollment-draft-flow`)
+**Current focus:** Staff schedule management complete — Next: Phase 24 (UI Polish & Integration)
+**Branch:** `feature/staff-schedule-tabs` (from `feat/notifications-backend-persistence`)
 
 ## Milestones Shipped
 
@@ -84,6 +84,14 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **22-05:** Flutter NotificationService + notificationsProvider + NotificationActions (API-driven)
 - **22-05:** Unread badge (Badge widget) on bell icon in AppBarActions, count from notificationsProvider
 - **22-05:** 44 new tests: 24 backend (persistence + endpoints + IDOR) + 20 Flutter (service + provider + model)
+- **staff-schedule:** TabBar refactor: Agenda screen split into Agendamentos (appointments) + Horarios (slots) sub-tabs
+- **staff-schedule:** 5 new backend endpoints: GET /scheduling/slots/all, PUT /scheduling/slots/{id}, DELETE /scheduling/slots/{id}, DELETE /scheduling/slots/batch, PUT /appointments/{id}/no-show
+- **staff-schedule:** Slots grouped by resource+date: compact card with occupancy bar (LinearProgressIndicator), livres/reservados badges, expandable detail rows
+- **staff-schedule:** Batch delete: only_available flag deletes free slots or all slots (cancelling associated appointments)
+- **staff-schedule:** Appointment filters expanded: added Concluidos and Ausentes tabs (was Todos/Agendados/Cancelados)
+- **staff-schedule:** "Marcar Ausente" button on appointment detail screen (scheduled -> no_show transition)
+- **staff-schedule:** Edit slot sheet (edit_slot_sheet.dart) for individual slot date/time editing
+- **staff-schedule:** SlotUpdate schema uses Optional[] instead of `X | None` to avoid Pydantic+__future__ annotations runtime eval error
 - **18-05:** showAppointmentDetailSheet: reusable appointment detail bottom sheet widget
 - **18-05:** Refactored home screen inline sheet to use shared widget (DRY)
 - **18-05:** onDetailTap pattern: combined mark-as-read + open detail on notification tap
@@ -158,6 +166,7 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 | 2026-05-12 | gsd/v3.0-group1-corrections | gsd/v3.0-group1-corrections-2 | — | New stable baseline branch for continued development |
 | 2026-05-14 | gsd/v3.0-group1-corrections-2 | feature/student-profile-screen | — | Phase 23: Student profile + professor field + staff student detail |
 | 2026-05-14 | fix/enrollment-draft-flow | feat/notifications-backend-persistence | — | Notification read status persisted server-side (notifications table + REST API + Flutter) |
+| 2026-05-14 | feat/notifications-backend-persistence | feature/staff-schedule-tabs | — | Staff schedule management: TabBar, grouped slots, batch delete, no-show, slot CRUD |
 
 ## Session Continuity
 
