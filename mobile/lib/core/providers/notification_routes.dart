@@ -13,7 +13,11 @@ class NotificationRouter {
       case 'enrollment_confirmed':
         return RoutePaths.clientHome;
       case 'appointment_confirmed':
-        return RoutePaths.clientSupport;
+      case 'appointment_completed':
+      case 'appointment_cancelled':
+      case 'appointment_no_show':
+        // Navigate to Resources tab (Meus Agendamentos)
+        return '${RoutePaths.clientResources}?tab=1';
       default:
         // T-22-11: Unknown events route to safe default (clientHome)
         return RoutePaths.clientHome;
@@ -24,6 +28,8 @@ class NotificationRouter {
   /// Used to suppress foreground snackbar when already viewing relevant content.
   static bool isAlreadyOnTarget(String currentPath, Map<String, dynamic> data) {
     final targetPath = routeFor(data);
-    return currentPath == targetPath;
+    // Strip query params for comparison
+    final cleanTarget = targetPath.split('?').first;
+    return currentPath == cleanTarget || currentPath == targetPath;
   }
 }

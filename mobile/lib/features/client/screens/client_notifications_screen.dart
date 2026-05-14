@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/providers/notification_routes.dart';
 import '../../../core/theme/app_animations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/widgets/animated_entrance.dart';
@@ -10,8 +12,6 @@ import '../../../shared/widgets/app_error_state.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/responsive_container.dart';
 import '../providers/notification_provider.dart';
-import '../providers/appointment_provider.dart';
-import 'widgets/appointment_detail_sheet.dart';
 
 class ClientNotificationsScreen extends ConsumerWidget {
   const ClientNotificationsScreen({super.key});
@@ -187,21 +187,13 @@ class ClientNotificationsScreen extends ConsumerWidget {
                                           .markAsRead(notification.id);
                                     }
                                   },
-                                  onDetailTap: notification.event ==
-                                          'appointment_confirmed'
-                                      ? () {
-                                          final appointments = ref
-                                                  .read(appointmentsProvider)
-                                                  .valueOrNull ??
-                                              [];
-                                          // Try to extract appointment_id from data JSON
-                                          final apt = appointments.firstOrNull;
-                                          if (apt != null) {
-                                            showAppointmentDetailSheet(
-                                                context, apt);
-                                          }
-                                        }
-                                      : null,
+                                  onDetailTap: () {
+                                    // Navigate to the relevant tab for this event
+                                    final route = NotificationRouter.routeFor(
+                                      {'event': notification.event},
+                                    );
+                                    context.go(route);
+                                  },
                                 ),
                               );
                             },
@@ -346,7 +338,11 @@ class _NotificationCard extends StatelessWidget {
   String _categoryLabel(ServerNotification n) => switch (n.event) {
         'document_ready' => 'DOCUMENTO',
         'enrollment_confirmed' => 'MATRÍCULA',
-        'appointment_confirmed' => 'AGENDAMENTO',
+        'appointment_confirmed' ||
+        'appointment_completed' ||
+        'appointment_cancelled' ||
+        'appointment_no_show' =>
+          'AGENDAMENTO',
         _ => 'ALERTA',
       };
 }

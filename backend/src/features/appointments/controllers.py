@@ -225,12 +225,22 @@ async def book_appointment(
     )
     await db.commit()
 
-    # FCM: Notify student that appointment was confirmed/booked
+    # Capture details for notification before background task
+    _notif_student_id = user.id
+    _notif_appt_id = result.id
+    _notif_resource = result.slot.staff.name if result.slot else ""
+    _notif_date = str(result.slot.date) if result.slot else ""
+    _notif_time = result.slot.start_time if result.slot else ""
+
+    # FCM: Notify student that appointment was booked
     async def _send_notification():
         async for fresh_db in get_db_session():
             try:
                 await notification_service.notify_appointment_confirmed(
-                    fresh_db, user.id, result.id
+                    fresh_db, _notif_student_id, _notif_appt_id,
+                    resource_name=_notif_resource,
+                    slot_date=_notif_date,
+                    slot_time=_notif_time,
                 )
             except Exception as exc:
                 import logging
@@ -299,6 +309,31 @@ async def cancel_appointment(
         user_role=user.role,
     )
     await db.commit()
+
+    # FCM: Notify student that appointment was cancelled
+    _notif_student_id = result.student_id
+    _notif_appt_id = result.id
+    _notif_resource = result.slot.staff.name if result.slot else ""
+    _notif_date = str(result.slot.date) if result.slot else ""
+    _notif_time = result.slot.start_time if result.slot else ""
+
+    async def _send_cancel_notification():
+        async for fresh_db in get_db_session():
+            try:
+                await notification_service.notify_appointment_cancelled(
+                    fresh_db, _notif_student_id, _notif_appt_id,
+                    resource_name=_notif_resource,
+                    slot_date=_notif_date,
+                    slot_time=_notif_time,
+                )
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).error(
+                    "FCM notification failed in background task: %s", exc
+                )
+
+    asyncio.create_task(_send_cancel_notification())
+
     return result
 
 
@@ -320,6 +355,31 @@ async def confirm_appointment(
         user_role=user.role,
     )
     await db.commit()
+
+    # FCM: Notify student that appointment was confirmed by staff
+    _notif_student_id = result.student_id
+    _notif_appt_id = result.id
+    _notif_resource = result.slot.staff.name if result.slot else ""
+    _notif_date = str(result.slot.date) if result.slot else ""
+    _notif_time = result.slot.start_time if result.slot else ""
+
+    async def _send_confirm_notification():
+        async for fresh_db in get_db_session():
+            try:
+                await notification_service.notify_appointment_completed(
+                    fresh_db, _notif_student_id, _notif_appt_id,
+                    resource_name=_notif_resource,
+                    slot_date=_notif_date,
+                    slot_time=_notif_time,
+                )
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).error(
+                    "FCM notification failed in background task: %s", exc
+                )
+
+    asyncio.create_task(_send_confirm_notification())
+
     return result
 
 
@@ -341,6 +401,31 @@ async def mark_no_show(
         user_role=user.role,
     )
     await db.commit()
+
+    # FCM: Notify student they were marked as no-show
+    _notif_student_id = result.student_id
+    _notif_appt_id = result.id
+    _notif_resource = result.slot.staff.name if result.slot else ""
+    _notif_date = str(result.slot.date) if result.slot else ""
+    _notif_time = result.slot.start_time if result.slot else ""
+
+    async def _send_noshow_notification():
+        async for fresh_db in get_db_session():
+            try:
+                await notification_service.notify_appointment_no_show(
+                    fresh_db, _notif_student_id, _notif_appt_id,
+                    resource_name=_notif_resource,
+                    slot_date=_notif_date,
+                    slot_time=_notif_time,
+                )
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).error(
+                    "FCM notification failed in background task: %s", exc
+                )
+
+    asyncio.create_task(_send_noshow_notification())
+
     return result
 
 

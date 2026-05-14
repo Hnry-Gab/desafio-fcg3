@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
 status: executing
-last_updated: "2026-05-14T23:59:00.000Z"
-last_activity: 2026-05-14 -- Fix resource booking authorization upload, provider 403 on actions, staff authorization download
+last_updated: "2026-05-15T01:00:00.000Z"
+last_activity: 2026-05-15 -- Descriptive notifications with resource details, new appointment events, correct tap navigation
 progress:
   total_phases: 8
   completed_phases: 7
@@ -17,18 +17,18 @@ progress:
 
 ## Current Position
 
-Phase: 23 (complete) + staff schedule management + resource booking authorization fix
-Plan: All 4 plans complete. Authorization upload and provider actions fixed.
+Phase: 23 (complete) + staff schedule management + resource booking fix + notification details
+Plan: All 4 plans complete. Notifications now descriptive with correct navigation.
 Status: Executing
-Last activity: 2026-05-14 -- Fix resource booking authorization: multipart upload using bytes+MIME type (web-compatible), provider role D-04 on cancel/confirm/no-show, authorization download button on staff detail screen.
+Last activity: 2026-05-15 -- Descriptive notifications: 3 new events (cancelled/completed/no_show), body includes resource name+date+time, tap navigates to Meus Agendamentos, distinct icons/colors per event.
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação acadêmica — com ações concretas executadas em tempo real.
-**Current focus:** Resource booking authorization fix complete — Next: Phase 24 (UI Polish & Integration)
-**Branch:** `fix/resource-booking-authorization` (from `feature/staff-schedule-tabs`)
+**Current focus:** Notification details complete — Next: Phase 24 (UI Polish & Integration)
+**Branch:** `feature/notification-details-and-navigation` (from `fix/resource-booking-authorization`)
 
 ## Milestones Shipped
 
@@ -99,6 +99,15 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **auth-fix:** Provider role (D-04) added to cancel/confirm/no-show permission checks in `services.py` (was only "staff", now "staff" or "provider")
 - **auth-fix:** `AppointmentModel` extended with `authorizationFileUrl` field + `hasAuthorization` getter
 - **auth-fix:** Staff appointment detail screen shows authorization doc with download button via `url_launcher` + `buildDownloadUrl`
+- **notif-detail:** 3 new NotificationEvent values: `appointment_cancelled`, `appointment_completed`, `appointment_no_show`
+- **notif-detail:** Notification body now includes resource name, date, and time (e.g., "Seu agendamento para Quadra Poliesportiva em 2026-05-14 08:00 foi cancelado")
+- **notif-detail:** Cancel, confirm, and no-show endpoints now dispatch FCM notifications via `asyncio.create_task`
+- **notif-detail:** `notify_appointment_confirmed` renamed to "Agendamento criado" (was "Agendamento confirmado") to differentiate from staff confirm
+- **notif-detail:** New `_appointment_detail()` helper builds human-readable detail fragment for all appointment notification bodies
+- **notif-detail:** NotificationRouter routes all `appointment_*` events to `/client/resources?tab=1` (Meus Agendamentos) instead of `/client/support`
+- **notif-detail:** notification_provider.dart: distinct icons (check_circle/cancel/person_off) and colors (green/red/orange) per appointment event
+- **notif-detail:** notification_handler_provider.dart: invalidates `appointmentsProvider` on all 4 appointment event types
+- **notif-detail:** Notification tap navigates via `context.go(NotificationRouter.routeFor(...))` for all events (not just appointment_confirmed)
 - **18-05:** showAppointmentDetailSheet: reusable appointment detail bottom sheet widget
 - **18-05:** Refactored home screen inline sheet to use shared widget (DRY)
 - **18-05:** onDetailTap pattern: combined mark-as-read + open detail on notification tap
@@ -175,6 +184,7 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 | 2026-05-14 | fix/enrollment-draft-flow | feat/notifications-backend-persistence | — | Notification read status persisted server-side (notifications table + REST API + Flutter) |
 | 2026-05-14 | feat/notifications-backend-persistence | feature/staff-schedule-tabs | — | Staff schedule management: TabBar, grouped slots, batch delete, no-show, slot CRUD |
 | 2026-05-14 | feature/staff-schedule-tabs | fix/resource-booking-authorization | — | Fix authorization upload (bytes+MIME), provider D-04 role on actions, staff authorization download |
+| 2026-05-14 | fix/resource-booking-authorization | feature/notification-details-and-navigation | — | Descriptive notifications with resource/date/time, 3 new events, correct navigation to Meus Agendamentos |
 
 ## Session Continuity
 

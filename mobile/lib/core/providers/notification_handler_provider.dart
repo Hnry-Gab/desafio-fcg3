@@ -130,6 +130,9 @@ class NotificationHandler extends _$NotificationHandler {
         ref.invalidate(notificationsProvider);
         break;
       case 'appointment_confirmed':
+      case 'appointment_completed':
+      case 'appointment_cancelled':
+      case 'appointment_no_show':
         ref.invalidate(appointmentsProvider);
         ref.invalidate(notificationsProvider);
         break;

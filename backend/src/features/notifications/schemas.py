@@ -38,6 +38,9 @@ class NotificationEvent(StrEnum):
     document_ready = "document_ready"
     enrollment_confirmed = "enrollment_confirmed"
     appointment_confirmed = "appointment_confirmed"
+    appointment_cancelled = "appointment_cancelled"
+    appointment_completed = "appointment_completed"
+    appointment_no_show = "appointment_no_show"
 
 
 class NotificationPayload(BaseModel):

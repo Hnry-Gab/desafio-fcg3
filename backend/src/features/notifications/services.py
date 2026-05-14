@@ -309,16 +309,95 @@ class NotificationService:
         db: AsyncSession,
         student_id: UUID,
         appointment_id: UUID,
+        resource_name: str = "",
+        slot_date: str = "",
+        slot_time: str = "",
     ) -> None:
-        """Notify student that their appointment was confirmed."""
+        """Notify student that their appointment was booked successfully."""
+        detail = self._appointment_detail(resource_name, slot_date, slot_time)
         await self.send_push(
             db=db,
             student_id=student_id,
             event=NotificationEvent.appointment_confirmed,
-            title="Agendamento confirmado",
-            body="Seu agendamento foi confirmado",
+            title="Agendamento criado",
+            body=f"Seu agendamento{detail} foi registrado",
             data={"appointment_id": str(appointment_id)},
         )
+
+    async def notify_appointment_completed(
+        self,
+        db: AsyncSession,
+        student_id: UUID,
+        appointment_id: UUID,
+        resource_name: str = "",
+        slot_date: str = "",
+        slot_time: str = "",
+    ) -> None:
+        """Notify student that staff confirmed their appointment."""
+        detail = self._appointment_detail(resource_name, slot_date, slot_time)
+        await self.send_push(
+            db=db,
+            student_id=student_id,
+            event=NotificationEvent.appointment_completed,
+            title="Agendamento confirmado",
+            body=f"Seu agendamento{detail} foi confirmado pelo staff",
+            data={"appointment_id": str(appointment_id)},
+        )
+
+    async def notify_appointment_cancelled(
+        self,
+        db: AsyncSession,
+        student_id: UUID,
+        appointment_id: UUID,
+        resource_name: str = "",
+        slot_date: str = "",
+        slot_time: str = "",
+    ) -> None:
+        """Notify student that their appointment was cancelled."""
+        detail = self._appointment_detail(resource_name, slot_date, slot_time)
+        await self.send_push(
+            db=db,
+            student_id=student_id,
+            event=NotificationEvent.appointment_cancelled,
+            title="Agendamento cancelado",
+            body=f"Seu agendamento{detail} foi cancelado",
+            data={"appointment_id": str(appointment_id)},
+        )
+
+    async def notify_appointment_no_show(
+        self,
+        db: AsyncSession,
+        student_id: UUID,
+        appointment_id: UUID,
+        resource_name: str = "",
+        slot_date: str = "",
+        slot_time: str = "",
+    ) -> None:
+        """Notify student they were marked as no-show."""
+        detail = self._appointment_detail(resource_name, slot_date, slot_time)
+        await self.send_push(
+            db=db,
+            student_id=student_id,
+            event=NotificationEvent.appointment_no_show,
+            title="Ausência registrada",
+            body=f"Você foi marcado como ausente no agendamento{detail}",
+            data={"appointment_id": str(appointment_id)},
+        )
+
+    @staticmethod
+    def _appointment_detail(resource_name: str, slot_date: str, slot_time: str) -> str:
+        """Build a human-readable detail fragment for appointment notifications."""
+        parts: list[str] = []
+        if resource_name:
+            parts.append(resource_name)
+        if slot_date:
+            date_str = slot_date
+            if slot_time:
+                date_str = f"{slot_date} {slot_time}"
+            parts.append(date_str)
+        if not parts:
+            return ""
+        return " para " + " em ".join(parts)
 
 
 # Module-level singleton

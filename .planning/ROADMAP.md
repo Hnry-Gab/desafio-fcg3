@@ -294,3 +294,4 @@ Plans:
 | `feat/notifications-backend-persistence` | `fix/enrollment-draft-flow` | 2026-05-14 | Notification read status persisted server-side (replaced SharedPreferences with PostgreSQL) |
 | `feature/staff-schedule-tabs` | `feat/notifications-backend-persistence` | 2026-05-14 | Staff schedule management: TabBar, grouped slots with occupancy bar, batch delete, no-show, slot CRUD |
 | `fix/resource-booking-authorization` | `feature/staff-schedule-tabs` | 2026-05-14 | Fix resource booking authorization upload, provider 403 on appointment actions, staff authorization doc download |
+| `feature/notification-details-and-navigation` | `fix/resource-booking-authorization` | 2026-05-14 | Descriptive notifications with resource/date/time, new events (cancelled/completed/no-show), correct navigation to Meus Agendamentos |

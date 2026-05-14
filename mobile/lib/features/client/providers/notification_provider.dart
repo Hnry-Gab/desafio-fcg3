@@ -48,7 +48,11 @@ class ServerNotification {
 
   NotificationType get type => switch (event) {
         'document_ready' => NotificationType.documentStatus,
-        'appointment_confirmed' => NotificationType.appointmentReminder,
+        'appointment_confirmed' ||
+        'appointment_completed' ||
+        'appointment_cancelled' ||
+        'appointment_no_show' =>
+          NotificationType.appointmentReminder,
         'enrollment_confirmed' => NotificationType.appointmentReminder,
         _ => NotificationType.errorAlert,
       };
@@ -56,6 +60,9 @@ class ServerNotification {
   IconData get icon => switch (event) {
         'document_ready' => Icons.description,
         'appointment_confirmed' => Icons.access_time,
+        'appointment_completed' => Icons.check_circle,
+        'appointment_cancelled' => Icons.cancel,
+        'appointment_no_show' => Icons.person_off,
         'enrollment_confirmed' => Icons.school,
         _ => Icons.notifications,
       };
@@ -63,6 +70,9 @@ class ServerNotification {
   Color get color => switch (event) {
         'document_ready' => Colors.green,
         'appointment_confirmed' => Colors.blue,
+        'appointment_completed' => Colors.green,
+        'appointment_cancelled' => Colors.red,
+        'appointment_no_show' => Colors.orange,
         'enrollment_confirmed' => Colors.orange,
         _ => Colors.grey,
       };
