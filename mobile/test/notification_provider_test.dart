@@ -1,240 +1,215 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/features/client/models/document_model.dart';
-import 'package:frontend/features/client/models/appointment_model.dart';
+import 'package:frontend/core/network/dio_client.dart';
 import 'package:frontend/features/client/providers/notification_provider.dart';
-import 'package:frontend/features/client/providers/document_provider.dart';
-import 'package:frontend/features/client/providers/appointment_provider.dart';
+import 'package:frontend/features/client/services/notification_service.dart';
 
 void main() {
-  group('derivedNotificationsProvider derives notifications correctly', () {
-    test('user sees notification for document completed within 7 days',
-        () async {
-      final now = DateTime.now();
-      final recentCompletion = now.subtract(const Duration(days: 3));
+  group('ServerNotification model', () {
+    test('parses JSON with all fields correctly', () {
+      final json = {
+        'id': 'notif-001',
+        'event': 'document_ready',
+        'title': 'Documento pronto',
+        'body': 'Seu historico esta pronto',
+        'data': '{"document_id": "abc-123"}',
+        'read_at': '2026-05-14T20:41:35.215488+00:00',
+        'created_at': '2026-05-14T20:41:18.014972+00:00',
+      };
 
-      final container = ProviderContainer(overrides: [
-        documentsProvider.overrideWith((ref) async => [
-              DocumentModel(
-                id: 'doc-001',
-                type: 'transcript',
-                status: 'ready',
-                fileUrl: 'https://example.com/doc.pdf',
-                notes: null,
-                requestedAt: now.subtract(const Duration(days: 10)),
-                completedAt: recentCompletion,
-              ),
-            ]),
-        appointmentsProvider.overrideWith((ref) async => []),
-      ]);
-      addTearDown(container.dispose);
+      final notification = ServerNotification.fromJson(json);
 
-      final notifications =
-          await container.read(derivedNotificationsProvider.future);
-
-      expect(notifications, hasLength(1));
-      expect(notifications.first.type, NotificationType.documentStatus);
-      expect(notifications.first.title, 'Documento pronto');
-      expect(notifications.first.subtitle, contains('Historico Escolar'));
+      expect(notification.id, 'notif-001');
+      expect(notification.event, 'document_ready');
+      expect(notification.title, 'Documento pronto');
+      expect(notification.body, 'Seu historico esta pronto');
+      expect(notification.data, contains('document_id'));
+      expect(notification.readAt, isNotNull);
+      expect(notification.createdAt, isNotNull);
+      expect(notification.isRead, isTrue);
     });
 
-    test('user does NOT see notification for document completed over 7 days ago',
-        () async {
-      final now = DateTime.now();
-      final oldCompletion = now.subtract(const Duration(days: 10));
+    test('parses JSON with null read_at as unread', () {
+      final json = {
+        'id': 'notif-002',
+        'event': 'enrollment_confirmed',
+        'title': 'Matrícula confirmada',
+        'body': 'Sua matrícula foi confirmada',
+        'data': null,
+        'read_at': null,
+        'created_at': '2026-05-14T20:41:18.014972+00:00',
+      };
 
-      final container = ProviderContainer(overrides: [
-        documentsProvider.overrideWith((ref) async => [
-              DocumentModel(
-                id: 'doc-old',
-                type: 'transcript',
-                status: 'ready',
-                fileUrl: 'https://example.com/doc.pdf',
-                notes: null,
-                requestedAt: now.subtract(const Duration(days: 20)),
-                completedAt: oldCompletion,
-              ),
-            ]),
-        appointmentsProvider.overrideWith((ref) async => []),
-      ]);
-      addTearDown(container.dispose);
+      final notification = ServerNotification.fromJson(json);
 
-      final notifications =
-          await container.read(derivedNotificationsProvider.future);
-
-      expect(notifications, isEmpty);
+      expect(notification.isRead, isFalse);
+      expect(notification.readAt, isNull);
     });
 
-    test('user sees notification for document in processing status', () async {
-      final now = DateTime.now();
-
-      final container = ProviderContainer(overrides: [
-        documentsProvider.overrideWith((ref) async => [
-              DocumentModel(
-                id: 'doc-proc',
-                type: 'enrollment_proof',
-                status: 'processing',
-                fileUrl: null,
-                notes: null,
-                requestedAt: now.subtract(const Duration(hours: 12)),
-                completedAt: null,
-              ),
-            ]),
-        appointmentsProvider.overrideWith((ref) async => []),
-      ]);
-      addTearDown(container.dispose);
-
-      final notifications =
-          await container.read(derivedNotificationsProvider.future);
-
-      expect(notifications, hasLength(1));
-      expect(notifications.first.title, 'Documento em processamento');
-      expect(
-          notifications.first.subtitle, contains('Comprovante de Matricula'));
+    test('document_ready maps to documentStatus type', () {
+      final n = _makeNotification(event: 'document_ready');
+      expect(n.type, NotificationType.documentStatus);
     });
 
-    test('user sees notification for appointment within 48 hours', () async {
-      final now = DateTime.now();
-      final upcomingDate = now.add(const Duration(hours: 24));
-
-      final container = ProviderContainer(overrides: [
-        documentsProvider.overrideWith((ref) async => []),
-        appointmentsProvider.overrideWith((ref) async => [
-              AppointmentModel(
-                id: 'apt-001',
-                slotId: 'slot-1',
-                reason: 'Reuniao com coordenador',
-                status: 'scheduled',
-                slotDate: upcomingDate.toIso8601String().split('T').first,
-                slotStartTime: '14:00',
-                endTime: '14:30',
-                createdAt: now.subtract(const Duration(days: 2)),
-              ),
-            ]),
-      ]);
-      addTearDown(container.dispose);
-
-      final notifications =
-          await container.read(derivedNotificationsProvider.future);
-
-      expect(notifications, hasLength(1));
-      expect(notifications.first.type, NotificationType.appointmentReminder);
-      expect(notifications.first.title, 'Agendamento proximo');
-      expect(notifications.first.subtitle, contains('Reuniao com coordenador'));
+    test('appointment_confirmed maps to appointmentReminder type', () {
+      final n = _makeNotification(event: 'appointment_confirmed');
+      expect(n.type, NotificationType.appointmentReminder);
     });
 
-    test('user does NOT see notification for appointment beyond 48 hours',
-        () async {
-      final now = DateTime.now();
-      final farDate = now.add(const Duration(hours: 72));
-
-      final container = ProviderContainer(overrides: [
-        documentsProvider.overrideWith((ref) async => []),
-        appointmentsProvider.overrideWith((ref) async => [
-              AppointmentModel(
-                id: 'apt-far',
-                slotId: 'slot-2',
-                reason: 'Reuniao distante',
-                status: 'scheduled',
-                slotDate: farDate.toIso8601String().split('T').first,
-                slotStartTime: '10:00',
-                endTime: '10:30',
-                createdAt: now.subtract(const Duration(days: 1)),
-              ),
-            ]),
-      ]);
-      addTearDown(container.dispose);
-
-      final notifications =
-          await container.read(derivedNotificationsProvider.future);
-
-      expect(notifications, isEmpty);
+    test('enrollment_confirmed maps to appointmentReminder type', () {
+      final n = _makeNotification(event: 'enrollment_confirmed');
+      expect(n.type, NotificationType.appointmentReminder);
     });
 
-    test('user does NOT see notification for cancelled appointment', () async {
-      final now = DateTime.now();
-      final upcomingDate = now.add(const Duration(hours: 12));
-
-      final container = ProviderContainer(overrides: [
-        documentsProvider.overrideWith((ref) async => []),
-        appointmentsProvider.overrideWith((ref) async => [
-              AppointmentModel(
-                id: 'apt-cancelled',
-                slotId: 'slot-3',
-                reason: 'Cancelada',
-                status: 'cancelled',
-                slotDate: upcomingDate.toIso8601String().split('T').first,
-                slotStartTime: '10:00',
-                endTime: null,
-                createdAt: now.subtract(const Duration(days: 1)),
-              ),
-            ]),
-      ]);
-      addTearDown(container.dispose);
-
-      final notifications =
-          await container.read(derivedNotificationsProvider.future);
-
-      expect(notifications, isEmpty);
-    });
-
-    test('notifications are sorted by timestamp descending', () async {
-      final now = DateTime.now();
-      final earlier = now.subtract(const Duration(days: 1));
-      final later = now.subtract(const Duration(hours: 2));
-      final upcoming = now.add(const Duration(hours: 6));
-
-      final container = ProviderContainer(overrides: [
-        documentsProvider.overrideWith((ref) async => [
-              DocumentModel(
-                id: 'doc-a',
-                type: 'transcript',
-                status: 'ready',
-                fileUrl: 'https://example.com/a.pdf',
-                notes: null,
-                requestedAt: now.subtract(const Duration(days: 5)),
-                completedAt: earlier,
-              ),
-              DocumentModel(
-                id: 'doc-b',
-                type: 'declaration',
-                status: 'ready',
-                fileUrl: 'https://example.com/b.pdf',
-                notes: null,
-                requestedAt: now.subtract(const Duration(days: 3)),
-                completedAt: later,
-              ),
-            ]),
-        appointmentsProvider.overrideWith((ref) async => [
-              AppointmentModel(
-                id: 'apt-sort',
-                slotId: 'slot-s',
-                reason: 'Test',
-                status: 'scheduled',
-                slotDate: upcoming.toIso8601String().split('T').first,
-                slotStartTime: '15:00',
-                endTime: null,
-                createdAt: now.subtract(const Duration(days: 1)),
-              ),
-            ]),
-      ]);
-      addTearDown(container.dispose);
-
-      final notifications =
-          await container.read(derivedNotificationsProvider.future);
-
-      // Should be: upcoming appointment (future) > doc-b (2h ago) > doc-a (1d ago)
-      expect(notifications.length, greaterThanOrEqualTo(2));
-      for (var i = 0; i < notifications.length - 1; i++) {
-        expect(
-          notifications[i].timestamp.isAfter(notifications[i + 1].timestamp) ||
-              notifications[i]
-                  .timestamp
-                  .isAtSameMomentAs(notifications[i + 1].timestamp),
-          isTrue,
-          reason: 'Notifications must be sorted descending by timestamp',
-        );
-      }
+    test('unknown event maps to errorAlert type', () {
+      final n = _makeNotification(event: 'unknown_event');
+      expect(n.type, NotificationType.errorAlert);
     });
   });
+
+  group('NotificationFilter enum', () {
+    test('has all, unread, and read values', () {
+      expect(NotificationFilter.values, hasLength(3));
+      expect(NotificationFilter.values, contains(NotificationFilter.all));
+      expect(NotificationFilter.values, contains(NotificationFilter.unread));
+      expect(NotificationFilter.values, contains(NotificationFilter.read));
+    });
+  });
+
+  group('notificationsProvider', () {
+    test('returns empty list when service returns empty', () async {
+      final container = ProviderContainer(overrides: [
+        notificationApiServiceProvider.overrideWithValue(
+          _FakeNotificationService(notifications: []),
+        ),
+      ]);
+      addTearDown(container.dispose);
+
+      final result = await container.read(notificationsProvider.future);
+      expect(result, isEmpty);
+    });
+
+    test('parses and returns ServerNotification list from API', () async {
+      final container = ProviderContainer(overrides: [
+        notificationApiServiceProvider.overrideWithValue(
+          _FakeNotificationService(notifications: [
+            {
+              'id': 'n-1',
+              'event': 'document_ready',
+              'title': 'Documento pronto',
+              'body': 'Seu historico esta pronto',
+              'data': null,
+              'read_at': null,
+              'created_at': '2026-05-14T10:00:00.000Z',
+            },
+            {
+              'id': 'n-2',
+              'event': 'enrollment_confirmed',
+              'title': 'Matrícula confirmada',
+              'body': 'Sua matrícula foi confirmada com sucesso',
+              'data': null,
+              'read_at': '2026-05-14T11:00:00.000Z',
+              'created_at': '2026-05-14T09:00:00.000Z',
+            },
+          ]),
+        ),
+      ]);
+      addTearDown(container.dispose);
+
+      final result = await container.read(notificationsProvider.future);
+      expect(result, hasLength(2));
+      expect(result[0].id, 'n-1');
+      expect(result[0].isRead, isFalse);
+      expect(result[1].id, 'n-2');
+      expect(result[1].isRead, isTrue);
+    });
+  });
+
+  group('NotificationFilterNotifier', () {
+    test('initial state is NotificationFilter.all', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final filter = container.read(notificationFilterNotifierProvider);
+      expect(filter, NotificationFilter.all);
+    });
+
+    test('setFilter changes state', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container
+          .read(notificationFilterNotifierProvider.notifier)
+          .setFilter(NotificationFilter.unread);
+
+      expect(container.read(notificationFilterNotifierProvider),
+          NotificationFilter.unread);
+    });
+
+    test('setFilter cycles through all values', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final notifier =
+          container.read(notificationFilterNotifierProvider.notifier);
+
+      notifier.setFilter(NotificationFilter.read);
+      expect(container.read(notificationFilterNotifierProvider),
+          NotificationFilter.read);
+
+      notifier.setFilter(NotificationFilter.all);
+      expect(container.read(notificationFilterNotifierProvider),
+          NotificationFilter.all);
+    });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+ServerNotification _makeNotification({
+  String event = 'document_ready',
+  bool read = false,
+}) {
+  return ServerNotification.fromJson({
+    'id': 'test-id',
+    'event': event,
+    'title': 'Test',
+    'body': 'Test body',
+    'data': null,
+    'read_at': read ? '2026-05-14T10:00:00.000Z' : null,
+    'created_at': '2026-05-14T10:00:00.000Z',
+  });
+}
+
+/// Fake NotificationService that returns canned data without HTTP calls.
+class _FakeNotificationService extends NotificationService {
+  final List<Map<String, dynamic>> notifications;
+  final List<List<String>> markAsReadCalls = [];
+  int markAllAsReadCallCount = 0;
+
+  _FakeNotificationService({required this.notifications})
+      : super(client: DioClient(storage: const FlutterSecureStorage()));
+
+  @override
+  Future<List<Map<String, dynamic>>> getNotifications() async => notifications;
+
+  @override
+  Future<void> markAsRead(List<String> notificationIds) async {
+    markAsReadCalls.add(notificationIds);
+  }
+
+  @override
+  Future<void> markAllAsRead() async {
+    markAllAsReadCallCount++;
+  }
+}
+
+/// Base class extracted for testability (mirrors NotificationService interface).
+abstract class NotificationServiceBase {
+  Future<List<Map<String, dynamic>>> getNotifications();
+  Future<void> markAsRead(List<String> notificationIds);
+  Future<void> markAllAsRead();
 }

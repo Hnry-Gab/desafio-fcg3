@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
 status: executing
-last_updated: "2026-05-14T22:00:00.000Z"
-last_activity: 2026-05-14 -- Fix enrollment draft flow: backend flush race condition, GET /enrollments/{id} detail endpoint, draft detection via semester_year, pre-selection of draft courses, pending banner, error code parsing, back navigation
+last_updated: "2026-05-14T23:00:00.000Z"
+last_activity: 2026-05-14 -- Notification read status persisted server-side (notifications table, REST API, Flutter API integration, unread badge on app bar)
 progress:
   total_phases: 8
   completed_phases: 7
@@ -17,18 +17,18 @@ progress:
 
 ## Current Position
 
-Phase: 23 (complete) + enrollment bugfix branch
-Plan: All 4 plans complete. Enrollment draft flow bugs fixed.
+Phase: 23 (complete) + notification persistence branch
+Plan: All 4 plans complete. Notification read status now server-side.
 Status: Executing
-Last activity: 2026-05-14 -- Fixed enrollment draft flow (7 bugs: UniqueViolation flush, draft detection, pre-selection, pending banner, error codes, nav, back button)
+Last activity: 2026-05-14 -- Notification persistence: created notifications table (Alembic 019a), 3 REST endpoints (GET /notifications, PUT /read, PUT /read-all), Flutter fetches from API, unread badge on bell icon. 44 new tests (24 backend + 20 Flutter).
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação acadêmica — com ações concretas executadas em tempo real.
-**Current focus:** Enrollment bugfix complete — Next: Phase 24 (UI Polish & Integration)
-**Branch:** `fix/enrollment-draft-flow` (from `feature/weekly-class-schedule`)
+**Current focus:** Notification persistence complete — Next: Phase 24 (UI Polish & Integration)
+**Branch:** `feat/notifications-backend-persistence` (from `fix/enrollment-draft-flow`)
 
 ## Milestones Shipped
 
@@ -75,9 +75,15 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **18-02:** ChatFilterNotifier pattern for client-side filtering (no extra API call)
 - **18-03:** Document cards show date+time (DD/MM/YYYY HH:MM), tap opens detail bottom sheet
 - **18-03:** showDocumentDetailSheet pattern with _DetailRow for key-value display in sheets
-- **18-04:** Notifications: read/unread state via client-side Set<String> (ReadNotificationIds provider)
+- **18-04:** Notifications: read/unread state via server-side `notifications` table (replaced client-side SharedPreferences)
 - **18-04:** Filter tabs (Todas/Não lidas/Lidas) and "Visualizar todos" bulk mark-as-read
 - **18-04:** Individual notification marked as read only on direct tap (not on scroll/view)
+- **22-05:** Notification persistence: Alembic 019a `notifications` table with `read_at` column
+- **22-05:** 3 REST endpoints: GET /notifications, PUT /notifications/read, PUT /notifications/read-all
+- **22-05:** send_push now persists notification row before dispatching FCM (even if FCM disabled)
+- **22-05:** Flutter NotificationService + notificationsProvider + NotificationActions (API-driven)
+- **22-05:** Unread badge (Badge widget) on bell icon in AppBarActions, count from notificationsProvider
+- **22-05:** 44 new tests: 24 backend (persistence + endpoints + IDOR) + 20 Flutter (service + provider + model)
 - **18-05:** showAppointmentDetailSheet: reusable appointment detail bottom sheet widget
 - **18-05:** Refactored home screen inline sheet to use shared widget (DRY)
 - **18-05:** onDetailTap pattern: combined mark-as-read + open detail on notification tap
@@ -151,6 +157,7 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 | 2026-05-12 | feature/improve-chatbot-ux | gsd/v3.0-group1-corrections | #15 | Phase 25 chatbot interaction polish, persona rewrite, WhatsApp formatting, knowledge base expansion |
 | 2026-05-12 | gsd/v3.0-group1-corrections | gsd/v3.0-group1-corrections-2 | — | New stable baseline branch for continued development |
 | 2026-05-14 | gsd/v3.0-group1-corrections-2 | feature/student-profile-screen | — | Phase 23: Student profile + professor field + staff student detail |
+| 2026-05-14 | fix/enrollment-draft-flow | feat/notifications-backend-persistence | — | Notification read status persisted server-side (notifications table + REST API + Flutter) |
 
 ## Session Continuity
 

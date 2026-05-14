@@ -199,6 +199,7 @@ Plans:
 - [x] 22-02-PLAN.md — Flutter Firebase setup + FCM token lifecycle management
 - [x] 22-03-PLAN.md — Backend event triggers + unit tests
 - [x] 22-04-PLAN.md — Flutter notification handlers + deep-link navigation
+- [x] 22-05 — Server-side notification persistence (notifications table, REST endpoints, Flutter API integration, badge indicator)
 
 **UI hint**: yes
 
@@ -274,7 +275,7 @@ Plans:
 | 19. Staff UX Corrections | v3.0 | 9/9 | Complete    | 2026-05-10 |
 | 20. LangChain Workflow | v3.0 | 11/11 | Complete   | 2026-05-09 |
 | 21. Roles & Auth Expansion | v3.0 | 4/4 | Complete   | 2026-05-09 |
-| 22. FCM Push Notifications | v3.0 | 4/4 | Complete    | 2026-05-09 |
+| 22. FCM Push Notifications | v3.0 | 5/5 | Complete    | 2026-05-14 |
 | 23. New Features | v3.0 | 3/4 | In progress | - |
 | 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |
 | 25. Chatbot Interaction Polish | v3.0 | 3/3 | Complete | 2026-05-12 |
@@ -290,3 +291,4 @@ Plans:
 | `gsd/v3.0-group1-corrections` | `development` | — | Group 1-2 corrections + improvements execution |
 | `gsd/v3.0-group1-corrections-2` | `gsd/v3.0-group1-corrections` | 2026-05-12 | Stable baseline with visual redesign + chatbot polish merged |
 | `feature/student-profile-screen` | `gsd/v3.0-group1-corrections-2` | 2026-05-14 | Phase 23: Student profile + professor field + staff student detail |
+| `feat/notifications-backend-persistence` | `fix/enrollment-draft-flow` | 2026-05-14 | Notification read status persisted server-side (replaced SharedPreferences with PostgreSQL) |

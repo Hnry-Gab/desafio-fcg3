@@ -3,6 +3,8 @@
 Provides:
 - init_firebase(): Called at app startup to initialize Firebase Admin SDK
 - NotificationService: Sends push notifications to student devices via FCM
+  and persists every notification in the ``notifications`` table so read
+  status can be tracked server-side.
 - notification_service: Module-level singleton instance
 
 Design decisions:
@@ -10,15 +12,17 @@ Design decisions:
 - Invalid token cleanup (D-05): UnregisteredError triggers token deletion
 - Graceful degradation: If FCM_CREDENTIALS_PATH is None, all sends are no-op
 - All notification content in Portuguese
+- Every send_push also inserts a row into the notifications table
 """
 
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from uuid import UUID
 
-from sqlalchemy import select, delete as sql_delete
+from sqlalchemy import select, update, delete as sql_delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.features.notifications.schemas import NotificationEvent
@@ -69,7 +73,98 @@ class NotificationService:
 
     All methods are fire-and-forget — errors are logged but never propagated.
     Invalid tokens are cleaned up automatically on send failure.
+    Every notification is persisted in the ``notifications`` table for
+    server-side read tracking.
     """
+
+    # ------------------------------------------------------------------
+    # Persistence helpers
+    # ------------------------------------------------------------------
+
+    async def _persist(
+        self,
+        db: AsyncSession,
+        student_id: UUID,
+        event: NotificationEvent,
+        title: str,
+        body: str,
+        data: dict[str, str] | None = None,
+    ) -> None:
+        """Insert a notification row so the client can fetch & track reads."""
+        from src.features.notifications.models import Notification
+
+        notification = Notification(
+            student_id=student_id,
+            event=event.value,
+            title=title,
+            body=body,
+            data=json.dumps(data) if data else None,
+        )
+        db.add(notification)
+        await db.flush()
+
+    # ------------------------------------------------------------------
+    # Query helpers (used by controllers)
+    # ------------------------------------------------------------------
+
+    async def list_notifications(
+        self,
+        db: AsyncSession,
+        student_id: UUID,
+    ) -> list:
+        """Return all notifications for a student, newest first."""
+        from src.features.notifications.models import Notification
+
+        result = await db.execute(
+            select(Notification)
+            .where(Notification.student_id == student_id)
+            .order_by(Notification.created_at.desc())
+        )
+        return list(result.scalars().all())
+
+    async def mark_as_read(
+        self,
+        db: AsyncSession,
+        student_id: UUID,
+        notification_ids: list[UUID],
+    ) -> int:
+        """Mark specific notifications as read. Returns count updated."""
+        from src.features.notifications.models import Notification
+
+        result = await db.execute(
+            update(Notification)
+            .where(
+                Notification.id.in_(notification_ids),
+                Notification.student_id == student_id,
+                Notification.read_at.is_(None),
+            )
+            .values(read_at=func.now())
+        )
+        await db.commit()
+        return result.rowcount  # type: ignore[return-value]
+
+    async def mark_all_as_read(
+        self,
+        db: AsyncSession,
+        student_id: UUID,
+    ) -> int:
+        """Mark all unread notifications as read. Returns count updated."""
+        from src.features.notifications.models import Notification
+
+        result = await db.execute(
+            update(Notification)
+            .where(
+                Notification.student_id == student_id,
+                Notification.read_at.is_(None),
+            )
+            .values(read_at=func.now())
+        )
+        await db.commit()
+        return result.rowcount  # type: ignore[return-value]
+
+    # ------------------------------------------------------------------
+    # FCM push dispatch
+    # ------------------------------------------------------------------
 
     async def send_push(
         self,
@@ -80,7 +175,7 @@ class NotificationService:
         body: str,
         data: dict[str, str] | None = None,
     ) -> None:
-        """Dispatch FCM message to all registered tokens for a student.
+        """Persist notification and dispatch FCM message to all registered tokens.
 
         Args:
             db: Async database session for token queries and cleanup
@@ -90,6 +185,18 @@ class NotificationService:
             body: Push notification body text
             data: Optional data payload (key-value pairs for client handling)
         """
+        # Always persist — even if FCM is disabled the notification should be
+        # available for the client to fetch via the REST API.
+        try:
+            await self._persist(db, student_id, event, title, body, data)
+            await db.commit()
+        except Exception as exc:
+            logger.error(
+                "Failed to persist notification: student=%s event=%s error=%s",
+                student_id, event, exc,
+            )
+            await db.rollback()
+
         if not _firebase_initialized:
             logger.debug(
                 "FCM not initialized — skipping push for student %s, event %s",
@@ -161,7 +268,7 @@ class NotificationService:
                 )
 
     # ------------------------------------------------------------------
-    # Event-specific helpers (called by feature services)
+    # Event-specific helpers (called by feature controllers)
     # ------------------------------------------------------------------
 
     async def notify_document_ready(
