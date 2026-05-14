@@ -252,8 +252,56 @@ class _AppointmentsTab extends ConsumerWidget {
 }
 
 // ============================================================================
-// Tab 2: Horarios (slots management)
+// Tab 2: Horarios (slots management — grouped by resource + date)
 // ============================================================================
+
+/// A group of consecutive slots for the same resource on the same date.
+class _SlotGroup {
+  final String resourceId;
+  final String resourceName;
+  final String date; // YYYY-MM-DD
+  final List<SchedulingSlotModel> slots;
+
+  _SlotGroup({
+    required this.resourceId,
+    required this.resourceName,
+    required this.date,
+    required this.slots,
+  });
+
+  int get total => slots.length;
+  int get available => slots.where((s) => s.isAvailable).length;
+  int get booked => total - available;
+
+  String get firstStart => slots.first.startTime;
+  String get lastEnd => slots.last.endTime;
+
+  /// Infer slot duration from the first slot
+  int get slotDurationMin {
+    if (slots.isEmpty) return 0;
+    final s = slots.first;
+    final startParts = s.startTime.split(':');
+    final endParts = s.endTime.split(':');
+    final startMin =
+        int.parse(startParts[0]) * 60 + int.parse(startParts[1]);
+    final endMin = int.parse(endParts[0]) * 60 + int.parse(endParts[1]);
+    return endMin - startMin;
+  }
+
+  String get dateFormatted {
+    final parts = date.split('-');
+    return parts.length == 3
+        ? '${parts[2]}/${parts[1]}/${parts[0]}'
+        : date;
+  }
+
+  bool get isPast {
+    final d = DateTime.tryParse(date);
+    if (d == null) return false;
+    final now = DateTime.now();
+    return d.isBefore(DateTime(now.year, now.month, now.day));
+  }
+}
 
 class _SlotsTab extends ConsumerWidget {
   const _SlotsTab();
@@ -280,7 +328,7 @@ class _SlotsTab extends ConsumerWidget {
           child: slotsAsync.when(
             loading: () => const ResponsiveContainer(
               padding: EdgeInsets.all(16),
-              child: AppSkeletonList(itemCount: 5, itemHeight: 72),
+              child: AppSkeletonList(itemCount: 4, itemHeight: 100),
             ),
             error: (error, stack) => ResponsiveContainer(
               padding: const EdgeInsets.all(16),
@@ -289,8 +337,8 @@ class _SlotsTab extends ConsumerWidget {
               ),
             ),
             data: (slots) {
-              final filtered = _applySearch(slots, searchQuery);
-              if (filtered.isEmpty) {
+              final groups = _groupSlots(slots, searchQuery);
+              if (groups.isEmpty) {
                 return const AppEmptyState(
                   icon: Icons.access_time,
                   message: 'Nenhum horario encontrado',
@@ -312,14 +360,15 @@ class _SlotsTab extends ConsumerWidget {
                           vertical: AppSpacing.sm,
                         ),
                         child: ListView.separated(
-                          itemCount: filtered.length,
+                          itemCount: groups.length,
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: AppSpacing.md),
                           itemBuilder: (context, index) =>
                               AnimatedEntrance(
                             delay:
                                 AppAnimations.getEntranceDelay(index),
-                            child: _SlotCard(slot: filtered[index]),
+                            child:
+                                _SlotGroupCard(group: groups[index]),
                           ),
                         ),
                       ),
@@ -334,16 +383,44 @@ class _SlotsTab extends ConsumerWidget {
     );
   }
 
-  List<SchedulingSlotModel> _applySearch(
+  List<_SlotGroup> _groupSlots(
     List<SchedulingSlotModel> slots,
-    String query,
+    String searchQuery,
   ) {
-    if (query.isEmpty) return slots;
-    final q = query.toLowerCase();
-    return slots.where((s) {
-      final resourceName = s.staff?.name.toLowerCase() ?? '';
-      return resourceName.contains(q);
-    }).toList();
+    // Apply search filter first
+    var filtered = slots;
+    if (searchQuery.isNotEmpty) {
+      final q = searchQuery.toLowerCase();
+      filtered = slots.where((s) {
+        final name = s.staff?.name.toLowerCase() ?? '';
+        return name.contains(q);
+      }).toList();
+    }
+
+    // Group by resourceId + date
+    final map = <String, _SlotGroup>{};
+    for (final slot in filtered) {
+      final key = '${slot.staff?.id ?? 'unknown'}_${slot.date}';
+      if (!map.containsKey(key)) {
+        map[key] = _SlotGroup(
+          resourceId: slot.staff?.id ?? '',
+          resourceName: slot.staff?.name ?? 'Recurso',
+          date: slot.date,
+          slots: [],
+        );
+      }
+      map[key]!.slots.add(slot);
+    }
+
+    // Sort groups by date then resource name
+    final groups = map.values.toList()
+      ..sort((a, b) {
+        final dateCompare = a.date.compareTo(b.date);
+        if (dateCompare != 0) return dateCompare;
+        return a.resourceName.compareTo(b.resourceName);
+      });
+
+    return groups;
   }
 }
 
@@ -393,178 +470,411 @@ class _ResourceFilterDropdown extends ConsumerWidget {
 }
 
 // ============================================================================
-// Slot card with status indicator and actions
+// Grouped slot card with occupancy bar and batch actions
 // ============================================================================
 
-class _SlotCard extends ConsumerWidget {
-  final SchedulingSlotModel slot;
+class _SlotGroupCard extends ConsumerStatefulWidget {
+  final _SlotGroup group;
 
-  const _SlotCard({required this.slot});
+  const _SlotGroupCard({required this.group});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_SlotGroupCard> createState() => _SlotGroupCardState();
+}
+
+class _SlotGroupCardState extends ConsumerState<_SlotGroupCard> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final now = DateTime.now();
-    final slotDate = DateTime.tryParse(slot.date);
-    final isPast = slotDate != null && slotDate.isBefore(DateTime(now.year, now.month, now.day));
+    final g = widget.group;
 
-    // Status: available, booked, or past
-    final String statusLabel;
-    final Color statusBg;
-    final Color statusFg;
+    // Occupancy ratio
+    final ratio = g.total > 0 ? g.booked / g.total : 0.0;
 
-    if (isPast && slot.isAvailable) {
-      statusLabel = 'Expirado';
-      statusBg = isDark
-          ? colors.surfaceContainerHigh
-          : Colors.grey.shade200;
-      statusFg = colors.onSurfaceVariant;
-    } else if (slot.isAvailable) {
-      statusLabel = 'Disponivel';
-      statusBg = isDark
-          ? const Color(0xFF4CAF50).withValues(alpha: 0.15)
-          : const Color(0xFF4CAF50).withValues(alpha: 0.1);
-      statusFg = isDark
-          ? const Color(0xFF81C784)
-          : const Color(0xFF2E7D32);
-    } else {
-      statusLabel = 'Reservado';
-      statusBg = isDark
-          ? const Color(0xFF2196F3).withValues(alpha: 0.15)
-          : const Color(0xFF2196F3).withValues(alpha: 0.1);
-      statusFg = isDark
-          ? const Color(0xFF64B5F6)
-          : const Color(0xFF1565C0);
-    }
+    // Colors
+    final greenFg =
+        isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32);
+    final blueFg =
+        isDark ? const Color(0xFF64B5F6) : const Color(0xFF1565C0);
+    final greyFg = colors.onSurfaceVariant;
 
     return GlassCard(
       padding: const EdgeInsets.all(AppSpacing.md),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Time icon with color
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: statusBg,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              slot.isAvailable ? Icons.access_time : Icons.event_busy,
-              color: statusFg,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          // Slot info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  slot.staff?.name ?? 'Recurso',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colors.onSurface,
-                      ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+          // ---- Header row: resource name + menu ----
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      g.resourceName,
+                      style:
+                          Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: colors.onSurface,
+                              ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${g.dateFormatted}  ${g.firstStart} - ${g.lastEnd}',
+                      style:
+                          Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: colors.onSurfaceVariant,
+                              ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  _formatSlotDateTime(),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colors.onSurfaceVariant,
+              ),
+              if (!g.isPast)
+                PopupMenuButton<String>(
+                  padding: EdgeInsets.zero,
+                  iconSize: 20,
+                  icon: Icon(Icons.more_vert,
+                      color: colors.onSurfaceVariant),
+                  onSelected: (action) =>
+                      _onGroupAction(context, action),
+                  itemBuilder: (_) => [
+                    if (g.available > 0)
+                      PopupMenuItem(
+                        value: 'delete_available',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_sweep,
+                                size: 18,
+                                color: Colors.orange.shade700),
+                            const SizedBox(width: 8),
+                            Text('Excluir disponiveis (${g.available})',
+                                style: TextStyle(
+                                    color: Colors.orange.shade700)),
+                          ],
+                        ),
                       ),
+                    PopupMenuItem(
+                      value: 'delete_all',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_forever,
+                              size: 18, color: Colors.red.shade700),
+                          const SizedBox(width: 8),
+                          Text('Excluir todos (${g.total})',
+                              style: TextStyle(
+                                  color: Colors.red.shade700)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+            ],
           ),
-          // Status badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: statusBg,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-              border: Border.all(
-                color: statusFg.withValues(alpha: 0.2),
+          const SizedBox(height: AppSpacing.sm),
+
+          // ---- Stats row ----
+          Row(
+            children: [
+              Text(
+                '${g.total} slots de ${g.slotDurationMin}min',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                      fontSize: 11,
+                    ),
               ),
-            ),
-            child: Text(
-              statusLabel,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: statusFg,
-              ),
-            ),
-          ),
-          // Actions (only for available, non-past slots)
-          if (slot.isAvailable && !isPast) ...[
-            const SizedBox(width: 4),
-            PopupMenuButton<String>(
-              padding: EdgeInsets.zero,
-              iconSize: 20,
-              icon: Icon(Icons.more_vert, color: colors.onSurfaceVariant),
-              onSelected: (action) => _onAction(context, ref, action),
-              itemBuilder: (_) => [
-                const PopupMenuItem(
-                  value: 'edit',
-                  child: Row(
-                    children: [
-                      Icon(Icons.edit, size: 18),
-                      SizedBox(width: 8),
-                      Text('Editar'),
-                    ],
+              const Spacer(),
+              // Available count
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: greenFg.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '${g.available} livre${g.available != 1 ? 's' : ''}',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: greenFg,
                   ),
                 ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete, size: 18, color: Colors.red),
-                      const SizedBox(width: 8),
-                      Text('Excluir',
-                          style: TextStyle(color: Colors.red.shade700)),
-                    ],
+              ),
+              if (g.booked > 0) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: blueFg.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    '${g.booked} reservado${g.booked != 1 ? 's' : ''}',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: blueFg,
+                    ),
                   ),
                 ),
               ],
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+
+          // ---- Occupancy bar ----
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: SizedBox(
+              height: 6,
+              child: LinearProgressIndicator(
+                value: ratio,
+                backgroundColor: greenFg.withValues(alpha: 0.2),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  g.isPast ? greyFg : blueFg,
+                ),
+              ),
             ),
-          ],
+          ),
+
+          // ---- Expand/collapse details ----
+          const SizedBox(height: 4),
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _expanded ? 'Ocultar detalhes' : 'Ver detalhes',
+                    style:
+                        Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: colors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    _expanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    size: 16,
+                    color: colors.primary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // ---- Expanded individual slots ----
+          if (_expanded)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Column(
+                children: g.slots
+                    .map((slot) => _SlotDetailRow(
+                          slot: slot,
+                          isPast: g.isPast,
+                        ))
+                    .toList(),
+              ),
+            ),
         ],
       ),
     );
   }
 
-  String _formatSlotDateTime() {
-    final dateParts = slot.date.split('-');
-    final dateStr = dateParts.length == 3
-        ? '${dateParts[2]}/${dateParts[1]}/${dateParts[0]}'
-        : slot.date;
-    return '$dateStr  ${slot.startTime} - ${slot.endTime}';
-  }
-
-  void _onAction(BuildContext context, WidgetRef ref, String action) {
+  void _onGroupAction(BuildContext context, String action) {
     switch (action) {
-      case 'edit':
-        showEditSlotSheet(context, ref, slot);
+      case 'delete_available':
+        _batchDelete(context, onlyAvailable: true);
         break;
-      case 'delete':
-        _confirmDelete(context, ref);
+      case 'delete_all':
+        _batchDelete(context, onlyAvailable: false);
         break;
     }
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+  Future<void> _batchDelete(
+    BuildContext context, {
+    required bool onlyAvailable,
+  }) async {
+    final g = widget.group;
+    final label = onlyAvailable
+        ? '${g.available} horario(s) disponivel(is)'
+        : 'todos os ${g.total} horario(s)${g.booked > 0 ? ' (${g.booked} reservado(s) serao cancelados)' : ''}';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Excluir Horarios'),
+        content: Text(
+          'Excluir $label de ${g.resourceName} em ${g.dateFormatted}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Voltar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      try {
+        final result = await ref
+            .read(staffScheduleServiceProvider)
+            .batchDeleteSlots(
+              resourceId: g.resourceId,
+              date: g.date,
+              onlyAvailable: onlyAvailable,
+            );
+        ref.invalidate(staffAllSlotsProvider);
+        ref.invalidate(staffSlotsProvider);
+        ref.invalidate(staffAppointmentsProvider);
+        if (context.mounted) {
+          final deleted = result['deleted_slots'] ?? 0;
+          final cancelled = result['cancelled_appointments'] ?? 0;
+          var msg = '$deleted horario(s) excluido(s)';
+          if (cancelled > 0) {
+            msg += ', $cancelled agendamento(s) cancelado(s)';
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(msg)),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro ao excluir: $e'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
+      }
+    }
+  }
+}
+
+// ============================================================================
+// Individual slot row inside expanded group
+// ============================================================================
+
+class _SlotDetailRow extends ConsumerWidget {
+  final SchedulingSlotModel slot;
+  final bool isPast;
+
+  const _SlotDetailRow({
+    required this.slot,
+    required this.isPast,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final isAvailable = slot.isAvailable;
+    final Color dotColor;
+    final String label;
+
+    if (isPast && isAvailable) {
+      dotColor = colors.onSurfaceVariant;
+      label = 'Expirado';
+    } else if (isAvailable) {
+      dotColor =
+          isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32);
+      label = 'Disponivel';
+    } else {
+      dotColor =
+          isDark ? const Color(0xFF64B5F6) : const Color(0xFF1565C0);
+      label = 'Reservado';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: dotColor,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '${slot.startTime} - ${slot.endTime}',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: dotColor,
+                  fontSize: 11,
+                ),
+          ),
+          const Spacer(),
+          // Individual slot actions (edit/delete) only for available+non-past
+          if (isAvailable && !isPast)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                InkWell(
+                  onTap: () => showEditSlotSheet(context, ref, slot),
+                  borderRadius: BorderRadius.circular(4),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(Icons.edit,
+                        size: 16, color: colors.onSurfaceVariant),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                InkWell(
+                  onTap: () => _deleteSlot(context, ref),
+                  borderRadius: BorderRadius.circular(4),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(Icons.close,
+                        size: 16, color: colors.error),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteSlot(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         title: const Text('Excluir Horario'),
-        content: const Text(
-          'Tem certeza que deseja excluir este horario? Esta acao nao pode ser desfeita.',
+        content: Text(
+          'Excluir o horario ${slot.startTime} - ${slot.endTime}?',
         ),
         actions: [
           TextButton(
@@ -588,14 +898,15 @@ class _SlotCard extends ConsumerWidget {
         ref.invalidate(staffSlotsProvider);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Horario excluido com sucesso')),
+            const SnackBar(
+                content: Text('Horario excluido com sucesso')),
           );
         }
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Erro ao excluir horario: $e'),
+              content: Text('Erro ao excluir: $e'),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );

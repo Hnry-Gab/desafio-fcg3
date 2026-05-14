@@ -43,6 +43,7 @@ from src.features.appointments.schemas import (
     AppointmentCreate,
     AppointmentListItem,
     AppointmentResponse,
+    SlotBatchDelete,
     SlotCreate,
     SlotResponse,
     SlotUpdate,
@@ -169,6 +170,29 @@ async def delete_slot(
     await slot_service.delete_slot(db, slot_id=slot_id)
     await db.commit()
     return {"message": "Slot excluido com sucesso"}
+
+
+# ------------------------------------------------------------------
+# DELETE /scheduling/slots/batch — batch delete slots by resource+date
+# ------------------------------------------------------------------
+
+@scheduling_router.delete("/slots/batch", status_code=200)
+async def batch_delete_slots(
+    data: SlotBatchDelete,
+    user: UserContext = Depends(get_current_user_or_service),
+    db: AsyncSession = Depends(get_db_session),
+) -> dict:
+    """Batch delete slots for a resource on a specific date.
+
+    If only_available=True, deletes only free slots.
+    If only_available=False, deletes all and cancels associated appointments.
+    Staff only.
+    """
+    require_staff(user)
+
+    result = await slot_service.batch_delete_slots(db, data=data)
+    await db.commit()
+    return result
 
 
 # ---------------------------------------------------------------------------

@@ -138,3 +138,15 @@ class SlotUpdate(BaseModel):
         description="End time in HH:MM format",
         pattern=r"^\d{2}:\d{2}$",
     )
+
+
+class SlotBatchDelete(BaseModel):
+    """DELETE /scheduling/slots/batch — delete slots in bulk."""
+
+    resource_id: UUID
+    date: date
+    only_available: bool = Field(
+        default=True,
+        description="If True, only delete available (unbooked) slots. "
+        "If False, delete all slots and cancel associated appointments.",
+    )

@@ -21,6 +21,7 @@ from src.features.appointments.schemas import (
     AppointmentCreate,
     AppointmentListItem,
     AppointmentResponse,
+    SlotBatchDelete,
     SlotCreate,
     SlotResponse,
     SlotUpdate,
@@ -291,6 +292,68 @@ class SlotService:
 
         await db.delete(slot)
         await db.flush()
+
+    # ------------------------------------------------------------------
+    # Staff: Batch delete slots by resource + date
+    # ------------------------------------------------------------------
+
+    async def batch_delete_slots(
+        self,
+        db: AsyncSession,
+        data: SlotBatchDelete,
+    ) -> dict[str, int]:
+        """Delete slots in bulk for a resource on a specific date.
+
+        If only_available=True: deletes only free slots.
+        If only_available=False: deletes ALL slots and cancels any associated
+        appointments (releases them with status='cancelled').
+
+        Returns counts of deleted slots and cancelled appointments.
+        """
+        # Fetch all slots for this resource+date
+        query = select(SchedulingSlot).where(
+            and_(
+                SchedulingSlot.resource_id == data.resource_id,
+                SchedulingSlot.date == data.date,
+            )
+        )
+
+        if data.only_available:
+            query = query.where(SchedulingSlot.is_available.is_(True))
+
+        result = await db.execute(query)
+        slots = list(result.scalars().all())
+
+        if not slots:
+            raise NotFoundException("slot", f"resource={data.resource_id}, date={data.date}")
+
+        deleted_count = 0
+        cancelled_count = 0
+
+        for slot in slots:
+            # If slot is booked, cancel associated appointments first
+            if not slot.is_available:
+                appt_result = await db.execute(
+                    select(Appointment).where(
+                        and_(
+                            Appointment.slot_id == slot.id,
+                            Appointment.status == "scheduled",
+                        )
+                    )
+                )
+                for appt in appt_result.scalars().all():
+                    appt.status = "cancelled"
+                    cancelled_count += 1
+
+            await db.delete(slot)
+            deleted_count += 1
+
+        await db.flush()
+
+        return {
+            "deleted_slots": deleted_count,
+            "cancelled_appointments": cancelled_count,
+        }
 
     # ------------------------------------------------------------------
     # APPT-STAFF-01: Create scheduling slots from time range

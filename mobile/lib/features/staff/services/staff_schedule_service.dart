@@ -98,6 +98,23 @@ class StaffScheduleService {
     await _client.dio.delete('/scheduling/slots/$slotId');
   }
 
+  /// DELETE /scheduling/slots/batch — batch delete slots by resource+date
+  Future<Map<String, dynamic>> batchDeleteSlots({
+    required String resourceId,
+    required String date,
+    bool onlyAvailable = true,
+  }) async {
+    final response = await _client.dio.delete(
+      '/scheduling/slots/batch',
+      data: {
+        'resource_id': resourceId,
+        'date': date,
+        'only_available': onlyAvailable,
+      },
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
   /// PUT /appointments/{id}/cancel
   Future<void> cancelAppointment(String appointmentId) async {
     await _client.dio.put('/appointments/$appointmentId/cancel');
