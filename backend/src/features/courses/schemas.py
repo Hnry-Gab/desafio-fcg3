@@ -22,6 +22,7 @@ class CourseListItem(BaseModel):
     name: str
     credits: int
     workload_hours: int
+    professor: str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -48,6 +49,7 @@ class CourseDetail(BaseModel):
     credits: int
     workload_hours: int
     description: str | None
+    professor: str | None = None
     prerequisites: list[PrerequisiteItem]
 
     model_config = {"from_attributes": True}
@@ -84,6 +86,7 @@ class CurriculumCourseItem(BaseModel):
     name: str
     credits: int
     is_required: bool
+    professor: str | None = None
 
     model_config = {"from_attributes": True}
 

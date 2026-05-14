@@ -78,7 +78,7 @@ GROUP 4 — Polish (depends on all above):
 - [x] **Phase 20: LangChain Workflow** - Complete agent lifecycle, RAG, MCP, defenses, logging (gap closure in progress) (completed 2026-05-09)
 - [x] **Phase 21: Roles & Auth Expansion** - Add provider role with hierarchical CRUDs (completed 2026-05-09)
 - [x] **Phase 22: FCM Push Notifications** - End-to-end push infrastructure (backend + Flutter) (completed 2026-05-09)
-- [ ] **Phase 23: New Features** - Cardápio semanal, perfil do aluno, grade curricular
+- [ ] **Phase 23: New Features** - Perfil do aluno, campo professor, visualização staff do aluno
 - [ ] **Phase 24: UI Polish & Integration** - Splash screen, dashboard metrics, end-to-end coherence
 - [x] **Phase 25: Chatbot Interaction Polish** - System prompt rewrite, proactive behavior, tone calibration, hardcoded messages (completed 2026-05-12)
 
@@ -204,15 +204,22 @@ Plans:
 
 ### Phase 23: New Features
 
-**Goal**: Students can view weekly meal menu, their academic profile, and class schedule calendar
+**Goal**: Students can view their academic profile; staff/provider can view student details; courses include professor info
 **Depends on**: Nothing (independent screens with new backend endpoints)
-**Requirements**: CARD-01, CARD-02, CARD-03, PERF-01, PERF-02, PERF-03, GRAD-01, GRAD-02, GRAD-03
+**Requirements**: PROF-01, PROF-02, PERF-01, PERF-02, PERF-03, STDET-01, STDET-02
 **Success Criteria** (what must be TRUE):
-  1. Staff/provider can create and edit the weekly meal menu (text per day); students see it with day-by-day navigation
-  2. Student can view and edit app profile data (photo, name, notification preferences) and see academic data (RA, curso, período, campus, notas)
-  3. Student sees weekly calendar with enrolled classes showing time, professor, and subject description
-  4. All three new features are accessible from the main navigation
-**Plans**: TBD
+  1. Course model includes professor field; seed data populates professors; grades/curriculum endpoints return professor
+  2. Student can tap greeting card on home screen to open profile with personal data, academic summary, and current semester grades
+  3. Staff/provider can tap any student in cadastro/gestão to see full student detail (same structure as student profile)
+  4. Profile screen shows: avatar, name, email, RA, phone, semester, enrollment year, status, CRA, progress, grades with professor
+**Plans**: In progress
+**Branch**: `feature/student-profile-screen`
+
+Plans:
+- [ ] 23-01 — Backend: professor field on Course model + migration + schemas + seed
+- [ ] 23-02 — Frontend: student profile screen + provider + route + home card
+- [ ] 23-03 — Frontend: staff student detail screen + route + integration
+
 **UI hint**: yes
 
 ### Phase 24: UI Polish & Integration
@@ -264,7 +271,7 @@ Plans:
 | 20. LangChain Workflow | v3.0 | 11/11 | Complete   | 2026-05-09 |
 | 21. Roles & Auth Expansion | v3.0 | 4/4 | Complete   | 2026-05-09 |
 | 22. FCM Push Notifications | v3.0 | 4/4 | Complete    | 2026-05-09 |
-| 23. New Features | v3.0 | 0/TBD | Not started | - |
+| 23. New Features | v3.0 | 0/3 | In progress | - |
 | 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |
 | 25. Chatbot Interaction Polish | v3.0 | 3/3 | Complete | 2026-05-12 |
 
@@ -278,3 +285,4 @@ Plans:
 |--------|------|---------|---------|
 | `gsd/v3.0-group1-corrections` | `development` | — | Group 1-2 corrections + improvements execution |
 | `gsd/v3.0-group1-corrections-2` | `gsd/v3.0-group1-corrections` | 2026-05-12 | Stable baseline with visual redesign + chatbot polish merged |
+| `feature/student-profile-screen` | `gsd/v3.0-group1-corrections-2` | 2026-05-14 | Phase 23: Student profile + professor field + staff student detail |

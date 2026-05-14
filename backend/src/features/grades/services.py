@@ -147,7 +147,7 @@ class GradeService:
         return [
             GradeResponse(
                 id=grade.id,
-                course=CourseInfo(code=course.code, name=course.name),
+                course=CourseInfo(code=course.code, name=course.name, professor=course.professor),
                 semester_year=grade.semester_year,
                 grade_1=float(grade.grade_1) if grade.grade_1 is not None else None,
                 grade_2=float(grade.grade_2) if grade.grade_2 is not None else None,
@@ -196,6 +196,7 @@ class GradeService:
                 TranscriptEntry(
                     course_code=course.code,
                     course_name=course.name,
+                    professor=course.professor,
                     semester_year=grade.semester_year,
                     grade_final=float(grade.grade_final) if grade.grade_final is not None else None,
                     status=grade.status,

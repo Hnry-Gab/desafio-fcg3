@@ -22,6 +22,7 @@ class Course(Base):
     credits: Mapped[int] = mapped_column(Integer, nullable=False)
     workload_hours: Mapped[int] = mapped_column(Integer, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
+    professor: Mapped[str | None] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     curriculum_courses: Mapped[list["CurriculumCourse"]] = relationship(back_populates="course")

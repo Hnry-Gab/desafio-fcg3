@@ -383,6 +383,7 @@ class StudentService(BaseService[Student]):
                         code=course.code,
                         name=course.name,
                         credits=course.credits,
+                        professor=course.professor,
                         prerequisites_met=True,
                         semester=cc.semester,
                     )

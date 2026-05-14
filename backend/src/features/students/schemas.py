@@ -112,6 +112,7 @@ class AvailableCourseItem(BaseModel):
     code: str
     name: str
     credits: int
+    professor: str | None = None
     prerequisites_met: bool
     semester: int
 

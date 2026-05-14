@@ -65,46 +65,46 @@ WARNING_TABLES = [
 ]
 
 COURSES_DATA = [
-    ("SCC0101", "Introdução à Computação", 4, 60, 1, True),
-    ("SCC0102", "Algoritmos e Estruturas de Dados I", 4, 60, 1, True),
-    ("SMA0300", "Cálculo I", 4, 60, 1, True),
-    ("SMA0354", "Álgebra Linear e Geometria Analítica", 4, 60, 1, True),
-    ("SCC0103", "Laboratório de Introdução à Ciência da Computação I", 2, 30, 1, True),
-    ("SCC0201", "Algoritmos e Estruturas de Dados II", 4, 60, 2, True),
-    ("SCC0202", "Laboratório de Introdução à Ciência da Computação II", 2, 30, 2, True),
-    ("SMA0301", "Cálculo II", 4, 60, 2, True),
-    ("SMA0355", "Álgebra Linear II", 4, 60, 2, True),
-    ("SSC0101", "Organização de Computadores Digitais", 4, 60, 2, True),
-    ("SCC0210", "Estruturas de Dados", 4, 60, 3, True),
-    ("SCC0211", "Laboratório de Organização e Arquitetura de Computadores", 2, 30, 3, True),
-    ("SMA0356", "Probabilidade e Estatística", 4, 60, 3, True),
-    ("SSC0301", "Arquitetura de Computadores", 4, 60, 3, True),
-    ("SCC0212", "Programação Orientada a Objetos", 4, 60, 3, True),
-    ("SCC0301", "Programação Funcional", 4, 60, 4, True),
-    ("SCC0302", "Análise e Projeto de Algoritmos", 4, 60, 4, True),
-    ("SCC0303", "Bases de Dados", 4, 60, 4, True),
-    ("SSC0302", "Sistemas Operacionais I", 4, 60, 4, True),
-    ("SCC0304", "Laboratório de Bases de Dados", 2, 30, 4, True),
-    ("SCC0401", "Compiladores", 4, 60, 5, True),
-    ("SCC0402", "Teoria dos Grafos", 4, 60, 5, True),
-    ("SCC0403", "Redes de Computadores", 4, 60, 5, True),
-    ("SSC0401", "Sistemas Operacionais II", 4, 60, 5, True),
-    ("SCC0404", "Linguagens Formais e Autômatos", 4, 60, 5, True),
-    ("SCC0501", "Inteligência Artificial", 4, 60, 6, True),
-    ("SCC0502", "Computação Gráfica", 4, 60, 6, True),
-    ("SCC0503", "Engenharia de Software I", 4, 60, 6, True),
-    ("SSC0501", "Segurança da Computação", 4, 60, 6, True),
-    ("SCC0504", "Sistemas Distribuídos I", 4, 60, 6, True),
-    ("SCC0601", "Processamento de Linguagem Natural", 4, 60, 7, True),
-    ("SCC0602", "Aprendizado de Máquina", 4, 60, 7, True),
-    ("SCC0603", "Engenharia de Software II", 4, 60, 7, True),
-    ("SCC0604", "Interação Humano-Computador", 4, 60, 7, False),
-    ("SCC0605", "Tópicos Avançados em Ciência da Computação", 4, 60, 7, False),
-    ("SCC0701", "Trabalho de Conclusão de Curso I", 4, 60, 8, True),
-    ("SCC0702", "Trabalho de Conclusão de Curso II", 4, 60, 8, True),
-    ("SCC0703", "Estágio Supervisionado", 4, 60, 8, True),
-    ("SCC0704", "Empreendedorismo em Software", 4, 60, 8, False),
-    ("SCC0705", "Ciência de Dados", 4, 60, 8, False),
+    ("SCC0101", "Introdução à Computação", 4, 60, 1, True, "Prof. Dr. João Silva"),
+    ("SCC0102", "Algoritmos e Estruturas de Dados I", 4, 60, 1, True, "Prof. Dr. Maria Santos"),
+    ("SMA0300", "Cálculo I", 4, 60, 1, True, "Prof. Dr. Carlos Mendes"),
+    ("SMA0354", "Álgebra Linear e Geometria Analítica", 4, 60, 1, True, "Prof. Dr. Ana Ferreira"),
+    ("SCC0103", "Laboratório de Introdução à Ciência da Computação I", 2, 30, 1, True, "Prof. Dr. João Silva"),
+    ("SCC0201", "Algoritmos e Estruturas de Dados II", 4, 60, 2, True, "Prof. Dr. Maria Santos"),
+    ("SCC0202", "Laboratório de Introdução à Ciência da Computação II", 2, 30, 2, True, "Prof. Dr. Pedro Almeida"),
+    ("SMA0301", "Cálculo II", 4, 60, 2, True, "Prof. Dr. Carlos Mendes"),
+    ("SMA0355", "Álgebra Linear II", 4, 60, 2, True, "Prof. Dr. Ana Ferreira"),
+    ("SSC0101", "Organização de Computadores Digitais", 4, 60, 2, True, "Prof. Dr. Roberto Lima"),
+    ("SCC0210", "Estruturas de Dados", 4, 60, 3, True, "Prof. Dr. Marcos Oliveira"),
+    ("SCC0211", "Laboratório de Organização e Arquitetura de Computadores", 2, 30, 3, True, "Prof. Dr. Roberto Lima"),
+    ("SMA0356", "Probabilidade e Estatística", 4, 60, 3, True, "Prof. Dra. Luciana Costa"),
+    ("SSC0301", "Arquitetura de Computadores", 4, 60, 3, True, "Prof. Dr. Roberto Lima"),
+    ("SCC0212", "Programação Orientada a Objetos", 4, 60, 3, True, "Prof. Dr. Pedro Almeida"),
+    ("SCC0301", "Programação Funcional", 4, 60, 4, True, "Prof. Dr. Marcos Oliveira"),
+    ("SCC0302", "Análise e Projeto de Algoritmos", 4, 60, 4, True, "Prof. Dr. Maria Santos"),
+    ("SCC0303", "Bases de Dados", 4, 60, 4, True, "Prof. Dra. Fernanda Ribeiro"),
+    ("SSC0302", "Sistemas Operacionais I", 4, 60, 4, True, "Prof. Dr. Roberto Lima"),
+    ("SCC0304", "Laboratório de Bases de Dados", 2, 30, 4, True, "Prof. Dra. Fernanda Ribeiro"),
+    ("SCC0401", "Compiladores", 4, 60, 5, True, "Prof. Dr. Marcos Oliveira"),
+    ("SCC0402", "Teoria dos Grafos", 4, 60, 5, True, "Prof. Dr. Maria Santos"),
+    ("SCC0403", "Redes de Computadores", 4, 60, 5, True, "Prof. Dr. Thiago Souza"),
+    ("SSC0401", "Sistemas Operacionais II", 4, 60, 5, True, "Prof. Dr. Roberto Lima"),
+    ("SCC0404", "Linguagens Formais e Autômatos", 4, 60, 5, True, "Prof. Dr. Marcos Oliveira"),
+    ("SCC0501", "Inteligência Artificial", 4, 60, 6, True, "Prof. Dr. André Carvalho"),
+    ("SCC0502", "Computação Gráfica", 4, 60, 6, True, "Prof. Dr. Pedro Almeida"),
+    ("SCC0503", "Engenharia de Software I", 4, 60, 6, True, "Prof. Dra. Renata Vieira"),
+    ("SSC0501", "Segurança da Computação", 4, 60, 6, True, "Prof. Dr. Thiago Souza"),
+    ("SCC0504", "Sistemas Distribuídos I", 4, 60, 6, True, "Prof. Dr. Thiago Souza"),
+    ("SCC0601", "Processamento de Linguagem Natural", 4, 60, 7, True, "Prof. Dr. André Carvalho"),
+    ("SCC0602", "Aprendizado de Máquina", 4, 60, 7, True, "Prof. Dr. André Carvalho"),
+    ("SCC0603", "Engenharia de Software II", 4, 60, 7, True, "Prof. Dra. Renata Vieira"),
+    ("SCC0604", "Interação Humano-Computador", 4, 60, 7, False, "Prof. Dra. Renata Vieira"),
+    ("SCC0605", "Tópicos Avançados em Ciência da Computação", 4, 60, 7, False, "Prof. Dr. João Silva"),
+    ("SCC0701", "Trabalho de Conclusão de Curso I", 4, 60, 8, True, "Prof. Dr. João Silva"),
+    ("SCC0702", "Trabalho de Conclusão de Curso II", 4, 60, 8, True, "Prof. Dr. João Silva"),
+    ("SCC0703", "Estágio Supervisionado", 4, 60, 8, True, "Prof. Dra. Renata Vieira"),
+    ("SCC0704", "Empreendedorismo em Software", 4, 60, 8, False, "Prof. Dra. Fernanda Ribeiro"),
+    ("SCC0705", "Ciência de Dados", 4, 60, 8, False, "Prof. Dr. André Carvalho"),
 ]
 
 PREREQUISITE_DATA = [
@@ -356,7 +356,7 @@ STAFF_DATA = (
 
 
 def validate_seed_shapes() -> None:
-    semesters = {semester for *_prefix, semester, _required in COURSES_DATA}
+    semesters = {semester for *_prefix, semester, _required, _professor in COURSES_DATA}
     if len(COURSES_DATA) != 40:
         raise ValueError(f"Expected 40 seeded courses, found {len(COURSES_DATA)}")
     if semesters != set(range(1, 9)):
@@ -422,12 +422,13 @@ async def seed_curriculum(session: AsyncSession) -> tuple[Curriculum, dict[str, 
     await session.flush()
 
     courses_by_code: dict[str, Course] = {}
-    for code, name, credits, workload_hours, semester, is_required in COURSES_DATA:
+    for code, name, credits, workload_hours, semester, is_required, professor in COURSES_DATA:
         course = Course(
             code=code,
             name=name,
             credits=credits,
             workload_hours=workload_hours,
+            professor=professor,
         )
         session.add(course)
         await session.flush()

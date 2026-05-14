@@ -40,6 +40,7 @@ class _ClientShellState extends ConsumerState<ClientShell> {
     if (location.startsWith(RoutePaths.clientDocuments)) return 2;
     if (location.startsWith(RoutePaths.clientResources)) return 3;
     if (location.startsWith(RoutePaths.clientSupport)) return 3; // fallback
+    if (location.startsWith(RoutePaths.clientProfile)) return 4;
     return 0;
   }
 
@@ -53,6 +54,8 @@ class _ClientShellState extends ConsumerState<ClientShell> {
         context.go(RoutePaths.clientDocuments);
       case 3:
         context.go(RoutePaths.clientResources);
+      case 4:
+        context.go(RoutePaths.clientProfile);
     }
   }
 
@@ -61,6 +64,7 @@ class _ClientShellState extends ConsumerState<ClientShell> {
     NavItem(icon: Icons.chat_outlined, activeIcon: Icons.chat, label: 'Chat'),
     NavItem(icon: Icons.description_outlined, activeIcon: Icons.description, label: 'Docs'),
     NavItem(icon: Icons.meeting_room_outlined, activeIcon: Icons.meeting_room, label: 'Recursos'),
+    NavItem(icon: Icons.person_outlined, activeIcon: Icons.person, label: 'Perfil'),
   ];
 
   static const _railDestinations = [
@@ -83,6 +87,11 @@ class _ClientShellState extends ConsumerState<ClientShell> {
       icon: Icon(Icons.meeting_room_outlined),
       selectedIcon: Icon(Icons.meeting_room),
       label: Text('Recursos'),
+    ),
+    NavigationRailDestination(
+      icon: Icon(Icons.person_outlined),
+      selectedIcon: Icon(Icons.person),
+      label: Text('Perfil'),
     ),
   ];
 

@@ -20,6 +20,7 @@ class CourseInfo(BaseModel):
 
     code: str
     name: str
+    professor: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -59,6 +60,7 @@ class TranscriptEntry(BaseModel):
 
     course_code: str
     course_name: str
+    professor: str | None = None
     semester_year: str
     grade_final: float | None
     status: str

@@ -13,6 +13,8 @@ class RouteNames {
   // Client detail
   static const String clientChatDetail = 'client-chat-detail';
   static const String clientResources = 'client-resources';
+  static const String clientProfile = 'client-profile';
+  static const String clientEnrollment = 'client-enrollment';
 
   // Staff tabs
   static const String staffDashboard = 'staff-dashboard';
@@ -30,6 +32,7 @@ class RouteNames {
   static const String staffAppointmentDetail = 'staff-appointment-detail';
   static const String staffChatDetail = 'staff-chat-detail';
   static const String staffInterventionChat = 'staff-intervention-chat';
+  static const String staffStudentDetail = 'staff-student-detail';
 }
 
 class RoutePaths {
@@ -44,6 +47,8 @@ class RoutePaths {
   static const String clientNotifications = '/client/notifications';
   static const String clientSupport = '/client/support';
   static const String clientResources = '/client/resources';
+  static const String clientProfile = '/client/profile';
+  static const String clientEnrollment = '/client/enrollment';
 
   // Staff
   static const String staffDashboard = '/staff';
@@ -61,4 +66,5 @@ class RoutePaths {
   static const String staffAppointmentDetail = '/staff/schedule/:appointmentId';
   static const String staffChatDetail = '/staff/ai/:sessionId';
   static const String staffInterventionChat = '/staff/intervention/:sessionId';
+  static const String staffStudentDetail = '/staff/students/:studentId';
 }

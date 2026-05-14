@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/widgets/app_bar_actions.dart';
 import '../../../shared/widgets/app_skeleton_list.dart';
@@ -434,6 +435,21 @@ class _StudentCard extends ConsumerWidget {
                     _DetailRow(label: 'RA', value: student.ra!),
                   if (student.semester != null)
                     _DetailRow(label: 'Período', value: '${student.semester}º'),
+                  const SizedBox(height: AppSpacing.sm),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.person_outline, size: 18),
+                      label: const Text('Ver Perfil Acadêmico'),
+                      onPressed: () => context.push(
+                        '/staff/students/${student.id}',
+                        extra: {
+                          'studentName': student.name,
+                          'studentEmail': student.email,
+                        },
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

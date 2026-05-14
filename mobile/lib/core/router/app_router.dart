@@ -15,6 +15,8 @@ import '../../features/client/screens/client_documents_screen.dart';
 import '../../features/client/screens/client_notifications_screen.dart';
 import '../../features/client/screens/client_support_screen.dart';
 import '../../features/client/screens/client_resources_screen.dart';
+import '../../features/client/screens/client_profile_screen.dart';
+import '../../features/client/screens/client_enrollment_screen.dart';
 import '../../features/staff/screens/staff_shell.dart';
 import '../../features/staff/screens/staff_dashboard_screen.dart';
 import '../../features/staff/screens/staff_schedule_screen.dart';
@@ -222,10 +224,36 @@ GoRouter appRouter(Ref ref) {
               );
             },
           ),
+          GoRoute(
+            path: RoutePaths.clientProfile,
+            name: RouteNames.clientProfile,
+            pageBuilder: (context, state) {
+              final extra = state.extra as Map<String, dynamic>?;
+              return _fadeThroughPage(
+                key: state.pageKey,
+                child: StudentProfileScreen(
+                  studentId: extra?['studentId'] as String?,
+                  studentName: extra?['studentName'] as String?,
+                  studentEmail: extra?['studentEmail'] as String?,
+                ),
+              );
+            },
+          ),
+          GoRoute(
+            path: RoutePaths.clientEnrollment,
+            name: RouteNames.clientEnrollment,
+            pageBuilder: (context, state) {
+              final extra = state.extra as Map<String, dynamic>;
+              return _slidePage(
+                key: state.pageKey,
+                child: ClientEnrollmentScreen(
+                  studentId: extra['studentId'] as String,
+                ),
+              );
+            },
+          ),
         ],
       ),
-
-      // Staff shell with 4 tabs
       ShellRoute(
         builder: (context, state, child) => StaffShell(child: child),
         routes: [
@@ -302,6 +330,22 @@ GoRouter appRouter(Ref ref) {
             path: RoutePaths.staffCadastro,
             name: RouteNames.staffCadastro,
             builder: (context, state) => const StaffCadastroScreen(),
+          ),
+          GoRoute(
+            path: '/staff/students/:studentId',
+            name: RouteNames.staffStudentDetail,
+            pageBuilder: (context, state) {
+              final extra = state.extra as Map<String, dynamic>;
+              return _slidePage(
+                key: state.pageKey,
+                child: StudentProfileScreen(
+                  studentId: state.pathParameters['studentId']!,
+                  studentName: extra['studentName'] as String,
+                  studentEmail: extra['studentEmail'] as String,
+                  isStaffView: true,
+                ),
+              );
+            },
           ),
           GoRoute(
             path: RoutePaths.staffDocuments,

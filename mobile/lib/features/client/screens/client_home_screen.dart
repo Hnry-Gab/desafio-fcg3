@@ -45,7 +45,10 @@ class ClientHomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final userName = authState is AuthAuthenticated ? authState.user.name : '';
+    final userEmail = authState is AuthAuthenticated ? authState.user.email : '';
+    final userId = authState is AuthAuthenticated ? authState.user.id : '';
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final chatSessionsAsync = ref.watch(chatSessionsProvider);
     final appointmentsAsync = ref.watch(appointmentsProvider);
@@ -71,28 +74,60 @@ class ClientHomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Greeting
+                // Greeting — tap to open profile
                 AnimatedEntrance(
                   delay: AppAnimations.getEntranceDelay(0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Olá, $userName!',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  child: GlassCard(
+                    onTap: () => context.push(
+                      RoutePaths.clientProfile,
+                      extra: {
+                        'studentId': userId,
+                        'studentName': userName,
+                        'studentEmail': userEmail,
+                      },
+                    ),
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: colors.primary.withValues(alpha: isDark ? 0.3 : 0.12),
+                          child: Text(
+                            userName.isNotEmpty ? userName[0].toUpperCase() : '?',
+                            style: TextStyle(
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: colors.onSurface,
+                              color: colors.primary,
                             ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Pronto para mais um dia de aprendizado?',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: colors.onSurfaceVariant,
-                              fontWeight: FontWeight.w500,
-                            ),
-                      ),
-                    ],
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Olá, $userName!',
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: colors.onSurface,
+                                    ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Toque para ver seu perfil acadêmico',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: isDark ? colors.onSurfaceVariant : colors.onSurface.withValues(alpha: 0.55),
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.chevron_right, color: colors.onSurfaceVariant),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
@@ -257,6 +292,20 @@ class ClientHomeScreen extends ConsumerWidget {
         onTap: () {
           ref.read(documentAutoOpenDrawerProvider.notifier).state = true;
           context.go(RoutePaths.clientDocuments);
+        },
+      ),
+      _QuickAction(
+        label: 'Matricular em disciplinas',
+        icon: Icons.school_outlined,
+        color: colors.secondary,
+        onTap: () {
+          final authState = ref.read(authProvider);
+          if (authState is AuthAuthenticated) {
+            context.push(
+              RoutePaths.clientEnrollment,
+              extra: {'studentId': authState.user.id},
+            );
+          }
         },
       ),
     ];
