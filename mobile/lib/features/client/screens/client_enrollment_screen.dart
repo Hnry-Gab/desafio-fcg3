@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/router/route_names.dart';
 import '../../../core/theme/app_animations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/widgets/animated_entrance.dart';
@@ -24,6 +26,7 @@ class _ClientEnrollmentScreenState
     extends ConsumerState<ClientEnrollmentScreen> {
   final Set<String> _selectedCourseIds = {};
   bool _isSubmitting = false;
+  bool _initialized = false;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +39,7 @@ class _ClientEnrollmentScreenState
         title: const Text('Matrícula'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).maybePop(),
+          onPressed: () => context.go(RoutePaths.clientProfile),
         ),
         actions: const [AppBarActions()],
       ),
@@ -56,6 +59,18 @@ class _ClientEnrollmentScreenState
           ),
         ),
         data: (data) {
+          // Pre-select courses from existing draft (IN-02)
+          if (!_initialized && data.draftCourseIds.isNotEmpty) {
+            _initialized = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() {
+                  _selectedCourseIds.addAll(data.draftCourseIds);
+                });
+              }
+            });
+          }
+
           final period = data.period;
 
           if (period == null) {
@@ -154,9 +169,46 @@ class _ClientEnrollmentScreenState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Draft banner (when resuming a pending enrollment)
+                        if (data.hasDraftEnrollment)
+                          AnimatedEntrance(
+                            delay: AppAnimations.getEntranceDelay(0),
+                            child: Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                              padding: const EdgeInsets.all(AppSpacing.md),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.withValues(alpha: isDark ? 0.15 : 0.1),
+                                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                                border: Border.all(
+                                  color: Colors.amber.withValues(alpha: 0.4),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.pending_actions,
+                                    size: 20,
+                                    color: isDark ? Colors.amber.shade300 : Colors.amber.shade800,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      'Matrícula pendente de confirmação. Revise as disciplinas e confirme.',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            color: isDark ? Colors.amber.shade300 : Colors.amber.shade900,
+                                          ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
                         // Period banner
                         AnimatedEntrance(
-                          delay: AppAnimations.getEntranceDelay(0),
+                          delay: AppAnimations.getEntranceDelay(data.hasDraftEnrollment ? 1 : 0),
                           child: GlassCard(
                             padding: const EdgeInsets.all(AppSpacing.md),
                             child: Row(
@@ -372,8 +424,8 @@ class _ClientEnrollmentScreenState
                             : const Icon(Icons.check),
                         label: Text(
                           _isSubmitting
-                              ? 'Matriculando...'
-                              : 'Matricular em ${_selectedCourseIds.length} disciplina${_selectedCourseIds.length > 1 ? 's' : ''}',
+                              ? 'Confirmando...'
+                              : 'Confirmar matrícula (${_selectedCourseIds.length} disciplina${_selectedCourseIds.length > 1 ? 's' : ''})',
                         ),
                       ),
                     ),
@@ -394,17 +446,26 @@ class _ClientEnrollmentScreenState
 
     try {
       final service = ref.read(enrollmentServiceProvider);
-      final periodId = period['id'] as String;
+      String enrollmentId;
 
-      // Create draft enrollment
-      final enrollment = await service.createEnrollment(
-        periodId: periodId,
-        courseIds: _selectedCourseIds.toList(),
-      );
+      if (data.hasDraftEnrollment && data.draftEnrollmentId != null) {
+        // Draft exists: update courses on the existing enrollment
+        enrollmentId = data.draftEnrollmentId!;
+        await service.updateEnrollmentCourses(
+          enrollmentId: enrollmentId,
+          courseIds: _selectedCourseIds.toList(),
+        );
+      } else {
+        // No enrollment yet: create a new draft
+        final periodId = period['id'] as String;
+        final enrollment = await service.createEnrollment(
+          periodId: periodId,
+          courseIds: _selectedCourseIds.toList(),
+        );
+        enrollmentId = enrollment['id'] as String;
+      }
 
-      final enrollmentId = enrollment['id'] as String;
-
-      // Confirm immediately
+      // Confirm the enrollment
       await service.confirmEnrollment(enrollmentId);
 
       if (mounted) {
@@ -418,13 +479,29 @@ class _ClientEnrollmentScreenState
         );
         // Invalidate profile data so it refreshes
         ref.invalidate(enrollmentDataProvider(widget.studentId));
-        Navigator.of(context).maybePop();
+        context.go(RoutePaths.clientProfile);
       }
     } catch (e) {
+      // WR-02: Invalidate provider on error so retry gets fresh data
+      ref.invalidate(enrollmentDataProvider(widget.studentId));
+
       if (mounted) {
-        final errorMsg = e.toString().contains('409')
-            ? 'Você já possui uma matrícula para este período.'
-            : 'Erro ao realizar matrícula. Tente novamente.';
+        // WR-01: Parse specific error codes for user-friendly messages
+        final errorStr = e.toString();
+        final String errorMsg;
+        if (errorStr.contains('MATRICULA_JA_EXISTENTE')) {
+          errorMsg = 'Você já possui uma matrícula para este período.';
+        } else if (errorStr.contains('PERIODO_MATRICULA_FECHADO')) {
+          errorMsg = 'O período de matrícula não está mais ativo.';
+        } else if (errorStr.contains('PREREQUISITO_NAO_CUMPRIDO')) {
+          errorMsg = 'Pré-requisitos não cumpridos para uma ou mais disciplinas.';
+        } else if (errorStr.contains('MATRICULA_JA_CONFIRMADA')) {
+          errorMsg = 'Esta matrícula já foi confirmada.';
+        } else if (errorStr.contains('OPERACAO_NAO_PERMITIDA')) {
+          errorMsg = 'Operação não permitida no estado atual da matrícula.';
+        } else {
+          errorMsg = 'Erro ao realizar matrícula. Tente novamente.';
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMsg),

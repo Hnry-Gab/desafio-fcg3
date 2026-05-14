@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
 status: executing
-last_updated: "2026-05-14T18:00:00.000Z"
-last_activity: 2026-05-14 -- Phase 23 complete: plan 23-04 weekly class schedule (class_schedules table, timetable screen, Grade tab, schedule summary in grade cards, nav fixes)
+last_updated: "2026-05-14T22:00:00.000Z"
+last_activity: 2026-05-14 -- Fix enrollment draft flow: backend flush race condition, GET /enrollments/{id} detail endpoint, draft detection via semester_year, pre-selection of draft courses, pending banner, error code parsing, back navigation
 progress:
   total_phases: 8
   completed_phases: 7
@@ -17,18 +17,18 @@ progress:
 
 ## Current Position
 
-Phase: 23 (complete)
-Plan: All 4 plans complete. Phase 23 done.
+Phase: 23 (complete) + enrollment bugfix branch
+Plan: All 4 plans complete. Enrollment draft flow bugs fixed.
 Status: Executing
-Last activity: 2026-05-14 -- Completed plan 23-04: weekly class schedule with class_schedules table, timetable screen, Grade bottom nav tab, schedule summary in grade cards, navigation consistency fixes
+Last activity: 2026-05-14 -- Fixed enrollment draft flow (7 bugs: UniqueViolation flush, draft detection, pre-selection, pending banner, error codes, nav, back button)
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação acadêmica — com ações concretas executadas em tempo real.
-**Current focus:** Phase 23 complete — Next: Phase 24 (UI Polish & Integration)
-**Branch:** `feature/weekly-class-schedule` (from `feature/student-profile-screen`)
+**Current focus:** Enrollment bugfix complete — Next: Phase 24 (UI Polish & Integration)
+**Branch:** `fix/enrollment-draft-flow` (from `feature/weekly-class-schedule`)
 
 ## Milestones Shipped
 

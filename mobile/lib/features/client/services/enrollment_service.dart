@@ -48,4 +48,21 @@ class EnrollmentService {
     final response = await _client.dio.post('/enrollments/$enrollmentId/confirm');
     return response.data as Map<String, dynamic>;
   }
+
+  /// PUT /enrollments/{id} — update courses on a draft enrollment
+  Future<Map<String, dynamic>> updateEnrollmentCourses({
+    required String enrollmentId,
+    required List<String> courseIds,
+  }) async {
+    final response = await _client.dio.put('/enrollments/$enrollmentId', data: {
+      'course_ids': courseIds,
+    });
+    return response.data as Map<String, dynamic>;
+  }
+
+  /// GET /enrollments/{id} — enrollment detail with courses
+  Future<Map<String, dynamic>> getEnrollmentDetail(String enrollmentId) async {
+    final response = await _client.dio.get('/enrollments/$enrollmentId');
+    return response.data as Map<String, dynamic>;
+  }
 }

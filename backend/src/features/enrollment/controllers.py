@@ -244,6 +244,31 @@ async def lock_enrollment(
 
 
 # ------------------------------------------------------------------
+# GET /enrollments/{id} — dual-auth, enrollment detail with courses
+# ------------------------------------------------------------------
+
+@enrollments_router.get(
+    "/{enrollment_id}",
+    response_model=EnrollmentResponse,
+)
+async def get_enrollment_detail(
+    enrollment_id: UUID,
+    user: UserContext = Depends(get_current_user_or_service),
+    db: AsyncSession = Depends(get_db_session),
+) -> EnrollmentResponse:
+    """Get enrollment detail with courses. IDOR-safe.
+
+    Students can only view their own enrollments.
+    Staff/provider can view any enrollment.
+    Accepts X-Service-Token for MCP access.
+    """
+    result = await enrollment_service.get_enrollment_detail(
+        db, enrollment_id=enrollment_id, student_id=user.id, role=user.role,
+    )
+    return result
+
+
+# ------------------------------------------------------------------
 # ENROLL-07: GET /enrollments — dual-auth
 # ------------------------------------------------------------------
 

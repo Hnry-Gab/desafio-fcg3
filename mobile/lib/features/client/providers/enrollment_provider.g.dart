@@ -23,7 +23,7 @@ final enrollmentServiceProvider = Provider<EnrollmentService>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef EnrollmentServiceRef = ProviderRef<EnrollmentService>;
-String _$enrollmentDataHash() => r'625aaa2602e0c3afc1afd346892334e23b294f65';
+String _$enrollmentDataHash() => r'cb7f1d6dc333ab7c3444f1e16eacd129c4c3972a';
 
 /// Copied from Dart SDK
 class _SystemHash {

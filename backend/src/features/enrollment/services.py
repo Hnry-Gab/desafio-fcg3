@@ -270,6 +270,28 @@ class EnrollmentService(BaseService[Enrollment]):
                 )
 
     # ------------------------------------------------------------------
+    # GET /enrollments/{id} — detail with courses
+    # ------------------------------------------------------------------
+
+    async def get_enrollment_detail(
+        self,
+        db: AsyncSession,
+        enrollment_id: UUID,
+        student_id: UUID,
+        role: str,
+    ) -> EnrollmentResponse:
+        """Get enrollment detail with courses. IDOR-safe."""
+        enrollment = await self.get_by_id(db, enrollment_id)
+        if enrollment is None:
+            raise NotFoundException("enrollment", enrollment_id)
+
+        # IDOR check: students can only see own enrollments
+        if role not in ("staff", "provider") and enrollment.student_id != student_id:
+            raise NotFoundException("enrollment", enrollment_id)
+
+        return await self._build_response(db, enrollment)
+
+    # ------------------------------------------------------------------
     # ENROLL-02: Create enrollment (draft)
     # ------------------------------------------------------------------
 
@@ -509,6 +531,9 @@ class EnrollmentService(BaseService[Enrollment]):
         )
         for ec in existing_result.scalars().all():
             await db.delete(ec)
+
+        # Flush deletes before inserting to avoid unique constraint violation
+        await db.flush()
 
         # Create new enrollment_courses
         for cid in unique_course_ids:
