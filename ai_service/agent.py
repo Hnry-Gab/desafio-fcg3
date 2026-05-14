@@ -43,19 +43,26 @@ async def _tolerate_tool_errors(request, handler):
     tool. We use the async variant because every tool wired into this
     agent (MCP tools via ``langchain-mcp-adapters`` and the RAG tool)
     executes through the async path.
+
+    Note: Verification-blocked tool calls (D-15/D-21) are handled in the
+    MCP server middleware as normal responses (not errors), so they never
+    reach this handler.
     """
 
     try:
         return await handler(request)
     except Exception as exc:
+        tool_name = request.tool_call.get("name", "?")
+        error_str = str(exc)
         logger.warning(
             "Tool '%s' raised %s; surfacing error to the LLM instead of aborting.",
-            request.tool_call.get("name", "?"),
+            tool_name,
             type(exc).__name__,
         )
+
         return ToolMessage(
             content=(
-                f"ERRO na ferramenta '{request.tool_call.get('name', '?')}': {exc}\n"
+                f"ERRO na ferramenta '{tool_name}': {error_str}\n"
                 "INSTRUCAO: NAO tente chamar esta ferramenta novamente com os mesmos parametros. "
                 "Explique o erro ao aluno de forma clara e amigavel, e sugira alternativas."
             ),
@@ -181,7 +188,7 @@ async def invoke_agent(
                     f"Este e o inicio de uma NOVA conversa com{name_part}. "
                     "O aluno NUNCA conversou com voce antes. "
                     "Faca uma apresentacao completa: cumprimente pelo nome com 👋, "
-                    "apresente-se como Alpha (assistente da secretaria academica), "
+                    "apresente-se como Alphredo (assistente da secretaria academica), "
                     "e diga brevemente como pode ajudar. "
                     "IMPORTANTE: Use a ferramenta get_student_info para verificar se o aluno "
                     "tem pendencias (matricula em rascunho, documento pronto, prazo de matricula). "
@@ -194,16 +201,21 @@ async def invoke_agent(
         all_messages = [*history_messages, HumanMessage(content=user_message)]
 
     # D-14/D-15: Inject verification state context so agent knows student status
+    # Positioned AFTER welcome/history so the greeting instruction takes priority.
+    # Phrased as reactive-only to prevent the LLM from proactively asking for email.
     if verification_state != "verified":
         verification_context = SystemMessage(
             content=(
-                "Estado de verificacao do aluno: NAO VERIFICADO. "
-                "Operacoes de leitura estao liberadas. "
-                "Se o aluno solicitar uma acao que altere dados e a ferramenta retornar erro de verificacao, "
-                "solicite o email institucional do aluno para enviar o codigo de verificacao."
+                "CONTEXTO DE VERIFICACAO: O aluno ainda nao verificou sua identidade. "
+                "Operacoes de leitura (consultar notas, historico, disciplinas, documentos, horarios) "
+                "estao LIBERADAS — responda normalmente sem pedir verificacao. "
+                "NAO peca email, nome ou qualquer identificacao proativamente. "
+                "Voce ja sabe quem e o aluno pelo contexto da sessao. "
+                "SOMENTE se o aluno pedir uma acao que ALTERE dados (matricula, trancamento, agendamento, documento) "
+                "E a ferramenta retornar ERRO de verificacao, ENTAO solicite o email cadastrado para enviar o codigo."
             )
         )
-        all_messages = [verification_context, *all_messages]
+        all_messages.append(verification_context)
 
     try:
         result = await asyncio.wait_for(

@@ -39,9 +39,16 @@ FALLBACK_MESSAGE = (
 )
 
 # Escalation constants (HI-01)
+# IMPORTANT: These are substring-matched against the user message.
+# Do NOT add generic words like "secretaria" that appear in legitimate
+# bot actions (e.g., "agendar atendimento na secretaria"). Only add
+# phrases that indicate explicit intent to talk to a human.
 ESCALATION_KEYWORDS = {
-    "atendente", "humano", "pessoa", "secretaria",
+    "atendente", "humano", "pessoa",
     "falar com alguem", "atendimento humano",
+    "falar com a secretaria", "ligar para a secretaria",
+    "ir na secretaria", "ir à secretaria", "ir a secretaria",
+    "preciso da secretaria",
 }
 ESCALATION_BOT_PHRASES = [
     "procurar a secretaria",

@@ -57,7 +57,7 @@ def create_rag_tool(
 
     @tool
     def search_knowledge_base(search_query: str) -> str:
-        """Pesquisa a base de conhecimento academica para responder duvidas sobre regras, regulamentos, prazos, curriculo e politicas do curso de Ciencia da Computacao. Use esta tool para perguntas de regulamento e orientacao academica; para consultar dados do aluno ou executar acoes, prefira as MCP tools."""
+        """Pesquisa a base de conhecimento academica para responder duvidas sobre regras, regulamentos, prazos, curriculo e politicas do curso de Ciencia da Computacao. Inclui criterios de aprovacao (media minima, nota para passar, exame final), frequencia obrigatoria, trancamento, estagio, TCC, atividades complementares, bolsas e calendario academico. Use esta tool SEMPRE que o aluno perguntar sobre regras institucionais, normas ou criterios — por exemplo: 'qual a nota para passar?', 'quantas faltas posso ter?', 'como funciona o exame final?'. Para consultar dados pessoais do aluno (suas notas, sua matricula) ou executar acoes, prefira as MCP tools."""
 
         normalized_query = search_query.strip()
         if not normalized_query:

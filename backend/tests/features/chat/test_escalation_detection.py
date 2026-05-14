@@ -31,8 +31,14 @@ class TestKeywordEscalationDetection:
     def test_keyword_pessoa_triggers_escalation(self):
         assert _should_escalate_by_keywords("quero falar com uma pessoa") is True
 
-    def test_keyword_secretaria_triggers_escalation(self):
+    def test_preciso_da_secretaria_triggers_escalation(self):
         assert _should_escalate_by_keywords("preciso da secretaria") is True
+
+    def test_falar_com_a_secretaria_triggers_escalation(self):
+        assert _should_escalate_by_keywords("quero falar com a secretaria") is True
+
+    def test_ir_na_secretaria_triggers_escalation(self):
+        assert _should_escalate_by_keywords("preciso ir na secretaria") is True
 
     def test_keyword_falar_com_alguem_triggers_escalation(self):
         assert _should_escalate_by_keywords("eu preciso falar com alguem agora") is True
@@ -51,6 +57,18 @@ class TestKeywordEscalationDetection:
 
     def test_keyword_detection_strips_whitespace(self):
         assert _should_escalate_by_keywords("  atendente  ") is True
+
+    def test_scheduling_request_does_not_trigger_escalation(self):
+        """Scheduling requests mention 'secretaria' but should reach the agent."""
+        assert _should_escalate_by_keywords("quero agendar um atendimento na secretaria") is False
+
+    def test_appointment_query_does_not_trigger_escalation(self):
+        """Asking about appointment slots should not trigger escalation."""
+        assert _should_escalate_by_keywords("tem horario disponivel na secretaria?") is False
+
+    def test_document_request_mentioning_secretaria_does_not_trigger(self):
+        """Requesting a document from secretaria should reach the agent."""
+        assert _should_escalate_by_keywords("preciso de um documento da secretaria") is False
 
 
 class TestAIResponseEscalationDetection:
@@ -107,4 +125,5 @@ class TestChatSessionModelFields:
         assert hasattr(ChatSession, "student")
 
     def test_escalation_ack_message_defined(self):
-        assert ESCALATION_ACK_MESSAGE == "Vou transferir voce para um atendente. Aguarde um momento."
+        assert "atendente" in ESCALATION_ACK_MESSAGE
+        assert "secretaria" in ESCALATION_ACK_MESSAGE

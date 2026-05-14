@@ -36,6 +36,7 @@ async def test_tool_logging_middleware_logs_successful_calls(
     mock_context.lifespan_context["db_pool"].fetchrow.return_value = {
         "id": "11111111-1111-1111-1111-111111111111",
         "student_id": "22222222-2222-2222-2222-222222222222",
+        "verification_state": "verified",
     }
     monkeypatch.setattr(
         "mcp_server.middleware.get_http_headers",
@@ -72,6 +73,7 @@ async def test_tool_logging_middleware_logs_errors_without_output(
     mock_context.lifespan_context["db_pool"].fetchrow.return_value = {
         "id": "11111111-1111-1111-1111-111111111111",
         "student_id": "22222222-2222-2222-2222-222222222222",
+        "verification_state": "verified",
     }
     monkeypatch.setattr(
         "mcp_server.middleware.get_http_headers",
@@ -101,6 +103,7 @@ async def test_tool_logging_middleware_records_retry_success_and_latency(
     mock_context.lifespan_context["db_pool"].fetchrow.return_value = {
         "id": "11111111-1111-1111-1111-111111111111",
         "student_id": "22222222-2222-2222-2222-222222222222",
+        "verification_state": "verified",
     }
     mock_context.get_state.return_value = True
     monotonic_values = iter([10.0, 10.025])
@@ -141,6 +144,7 @@ async def test_tool_logging_middleware_includes_chat_session_id_from_headers(
     mock_context.lifespan_context["db_pool"].fetchrow.return_value = {
         "id": "33333333-3333-3333-3333-333333333333",
         "student_id": "22222222-2222-2222-2222-222222222222",
+        "verification_state": "verified",
     }
     monkeypatch.setattr(
         "mcp_server.middleware.get_http_headers",
@@ -251,6 +255,7 @@ async def test_tool_logging_middleware_surfaces_audit_insert_failures(
     db_pool.fetchrow.return_value = {
         "id": "11111111-1111-1111-1111-111111111111",
         "student_id": "22222222-2222-2222-2222-222222222222",
+        "verification_state": "verified",
     }
     db_pool.execute.side_effect = RuntimeError("insert failed")
     monkeypatch.setattr(
@@ -272,6 +277,7 @@ async def test_tool_logging_middleware_surfaces_insert_failures_after_tool_error
     db_pool.fetchrow.return_value = {
         "id": "11111111-1111-1111-1111-111111111111",
         "student_id": "22222222-2222-2222-2222-222222222222",
+        "verification_state": "verified",
     }
     db_pool.execute.side_effect = RuntimeError("insert failed")
     monkeypatch.setattr(

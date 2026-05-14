@@ -12,7 +12,7 @@ from mcp_server.dependencies import resolve_student_id
 def register_scheduling_tools(mcp: FastMCP) -> None:
     @mcp.tool(
         name="get_available_slots",
-        description="Lista horarios de atendimento disponiveis na secretaria.",
+        description="Lista horarios de atendimento disponiveis na secretaria. Use esta ferramenta quando o aluno quiser agendar, marcar ou verificar horarios de atendimento presencial. Retorna os slots (data, hora, tipo de atendimento) que ainda estao livres para agendamento.",
         annotations={"readOnlyHint": True},
     )
     async def get_available_slots(
@@ -38,7 +38,7 @@ def register_scheduling_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(
         name="book_appointment",
-        description="Agenda um atendimento presencial na secretaria.",
+        description="Agenda um atendimento presencial na secretaria para o aluno. Requer o slot_id (obtido via get_available_slots) e o motivo do atendimento. Use apos o aluno escolher um horario disponivel.",
     )
     async def book_appointment(
         slot_id: str,
@@ -58,7 +58,7 @@ def register_scheduling_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(
         name="cancel_appointment",
-        description="Cancela um agendamento de atendimento.",
+        description="Cancela um agendamento de atendimento existente do aluno. Requer o appointment_id do agendamento a ser cancelado.",
     )
     async def cancel_appointment(
         appointment_id: str,

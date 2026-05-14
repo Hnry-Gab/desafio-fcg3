@@ -542,6 +542,15 @@ async def seed_active_period(session: AsyncSession) -> EnrollmentPeriod:
 async def seed_scheduling(session: AsyncSession) -> None:
     resources_data = [
         {
+            "name": "Atendimento na Secretaria",
+            "resource_type": "room",
+            "description": "Atendimento presencial na secretaria acadêmica para dúvidas, documentos e orientação",
+            "capacity": 1,
+            "location": "Bloco Administrativo, Térreo, Sala 01",
+            "is_available": True,
+            "requires_authorization": False,
+        },
+        {
             "name": "Sala de Coordenação",
             "resource_type": "room",
             "description": "Sala para reuniões com a coordenação do curso",
@@ -615,37 +624,58 @@ async def seed_scheduling(session: AsyncSession) -> None:
         },
     ]
 
-    created_resources = []
+    created_resources: list[Resource] = []
     for res_data in resources_data:
         resource = Resource(**res_data)
         session.add(resource)
         await session.flush()
         created_resources.append(resource)
 
-    # Create scheduling slots only for the first resource (coordination room)
+    secretaria_resource = created_resources[0]  # "Atendimento na Secretaria"
+    coordination_resource = created_resources[1]  # "Sala de Coordenação"
+
+    # Create scheduling slots for "Atendimento na Secretaria" (used by appointment seeds)
     base_day = date.today() + timedelta(days=1)
-    slot_specs = [
+    secretaria_slot_specs = [
         (base_day, time(9, 0), time(10, 0)),
         (base_day, time(10, 0), time(11, 0)),
+        (base_day, time(11, 0), time(12, 0)),
+        (base_day + timedelta(days=1), time(9, 0), time(10, 0)),
         (base_day + timedelta(days=1), time(14, 0), time(15, 0)),
         (base_day + timedelta(days=2), time(9, 0), time(10, 0)),
         (base_day + timedelta(days=2), time(10, 0), time(11, 0)),
     ]
-    slots: list[SchedulingSlot] = []
-    for slot_date, start_time, end_time in slot_specs:
+    secretaria_slots: list[SchedulingSlot] = []
+    for slot_date, start_time, end_time in secretaria_slot_specs:
         slot = SchedulingSlot(
-            resource_id=resource.id,
+            resource_id=secretaria_resource.id,
             date=slot_date,
             start_time=start_time,
             end_time=end_time,
             is_available=True,
         )
         session.add(slot)
-        slots.append(slot)
+        secretaria_slots.append(slot)
+
+    # Create scheduling slots for coordination room
+    coordination_slot_specs = [
+        (base_day, time(14, 0), time(15, 0)),
+        (base_day + timedelta(days=1), time(10, 0), time(11, 0)),
+        (base_day + timedelta(days=2), time(14, 0), time(15, 0)),
+    ]
+    for slot_date, start_time, end_time in coordination_slot_specs:
+        slot = SchedulingSlot(
+            resource_id=coordination_resource.id,
+            date=slot_date,
+            start_time=start_time,
+            end_time=end_time,
+            is_available=True,
+        )
+        session.add(slot)
 
     await session.flush()
     await session.commit()
-    return slots
+    return secretaria_slots
 
 
 async def seed_users_and_current_period(
@@ -734,6 +764,21 @@ async def seed_users_and_current_period(
                     completed_at=completed_at,
                 )
             )
+
+        # Appointments
+        for appt in student_seed.appointments:
+            if appt.slot_index < len(slots):
+                target_slot = slots[appt.slot_index]
+                session.add(
+                    Appointment(
+                        student_id=student.id,
+                        slot_id=target_slot.id,
+                        reason=appt.reason,
+                        status=appt.status,
+                    )
+                )
+                # Mark slot as no longer available since it's booked
+                target_slot.is_available = False
 
     await session.commit()
 
