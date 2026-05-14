@@ -216,9 +216,10 @@ Plans:
 **Branch**: `feature/student-profile-screen`
 
 Plans:
-- [ ] 23-01 — Backend: professor field on Course model + migration + schemas + seed
-- [ ] 23-02 — Frontend: student profile screen + provider + route + home card
-- [ ] 23-03 — Frontend: staff student detail screen + route + integration
+- [x] 23-01 — Backend: professor field on Course model + migration + schemas + seed
+- [x] 23-02 — Frontend: student profile screen + provider + route + home card + bottom nav tab
+- [x] 23-03 — Frontend: enrollment screen + staff student detail + integration
+- [ ] 23-04 — Weekly class schedule (class_schedules table + timetable screen)
 
 **UI hint**: yes
 
@@ -271,7 +272,7 @@ Plans:
 | 20. LangChain Workflow | v3.0 | 11/11 | Complete   | 2026-05-09 |
 | 21. Roles & Auth Expansion | v3.0 | 4/4 | Complete   | 2026-05-09 |
 | 22. FCM Push Notifications | v3.0 | 4/4 | Complete    | 2026-05-09 |
-| 23. New Features | v3.0 | 0/3 | In progress | - |
+| 23. New Features | v3.0 | 3/4 | In progress | - |
 | 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |
 | 25. Chatbot Interaction Polish | v3.0 | 3/3 | Complete | 2026-05-12 |
 
