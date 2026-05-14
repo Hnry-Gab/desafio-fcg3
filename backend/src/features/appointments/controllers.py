@@ -45,6 +45,7 @@ from src.features.appointments.schemas import (
     AppointmentResponse,
     SlotCreate,
     SlotResponse,
+    SlotUpdate,
 )
 from src.features.appointments.services import appointment_service, slot_service
 
@@ -104,6 +105,70 @@ async def create_slots(
     slots = await slot_service.create_slots(db, data=data)
     await db.commit()
     return slots
+
+
+# ------------------------------------------------------------------
+# GET /scheduling/slots/all — staff sees ALL slots (available + booked)
+# ------------------------------------------------------------------
+
+@scheduling_router.get("/slots/all", response_model=list[SlotResponse])
+async def get_all_slots(
+    date_from: date | None = Query(default=None, description="Start date filter"),
+    date_to: date | None = Query(default=None, description="End date filter"),
+    resource_id: UUID | None = Query(default=None, description="Filter by resource ID"),
+    user: UserContext = Depends(get_current_user_or_service),
+    db: AsyncSession = Depends(get_db_session),
+) -> list[SlotResponse]:
+    """Get ALL scheduling slots (available and booked) for staff management.
+
+    Unlike GET /slots, this endpoint does not filter by is_available.
+    Staff only.
+    """
+    require_staff(user)
+
+    return await slot_service.get_all_slots(
+        db,
+        date_from=date_from,
+        date_to=date_to,
+        resource_id=resource_id,
+    )
+
+
+# ------------------------------------------------------------------
+# PUT /scheduling/slots/{id} — edit a free slot
+# ------------------------------------------------------------------
+
+@scheduling_router.put("/slots/{slot_id}", response_model=SlotResponse)
+async def update_slot(
+    slot_id: UUID,
+    data: SlotUpdate,
+    user: UserContext = Depends(get_current_user_or_service),
+    db: AsyncSession = Depends(get_db_session),
+) -> SlotResponse:
+    """Update a scheduling slot's date/time. Only free slots can be edited. Staff only."""
+    require_staff(user)
+
+    result = await slot_service.update_slot(db, slot_id=slot_id, data=data)
+    await db.commit()
+    return result
+
+
+# ------------------------------------------------------------------
+# DELETE /scheduling/slots/{id} — delete a free slot
+# ------------------------------------------------------------------
+
+@scheduling_router.delete("/slots/{slot_id}", status_code=200)
+async def delete_slot(
+    slot_id: UUID,
+    user: UserContext = Depends(get_current_user_or_service),
+    db: AsyncSession = Depends(get_db_session),
+) -> dict:
+    """Delete a scheduling slot. Only free slots can be deleted. Staff only."""
+    require_staff(user)
+
+    await slot_service.delete_slot(db, slot_id=slot_id)
+    await db.commit()
+    return {"message": "Slot excluido com sucesso"}
 
 
 # ---------------------------------------------------------------------------
@@ -225,6 +290,27 @@ async def confirm_appointment(
 ) -> AppointmentResponse:
     """Confirm an appointment (scheduled → completed). Staff only."""
     result = await appointment_service.confirm_appointment(
+        db,
+        appointment_id=appointment_id,
+        user_id=user.id,
+        user_role=user.role,
+    )
+    await db.commit()
+    return result
+
+
+# ------------------------------------------------------------------
+# PUT /appointments/{id}/no-show — mark appointment as no_show
+# ------------------------------------------------------------------
+
+@appointments_router.put("/{appointment_id}/no-show", response_model=AppointmentResponse)
+async def mark_no_show(
+    appointment_id: UUID,
+    user: UserContext = Depends(get_current_user_or_service),
+    db: AsyncSession = Depends(get_db_session),
+) -> AppointmentResponse:
+    """Mark an appointment as no_show (scheduled -> no_show). Staff only."""
+    result = await appointment_service.mark_no_show(
         db,
         appointment_id=appointment_id,
         user_id=user.id,

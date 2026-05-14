@@ -23,6 +23,7 @@ from src.features.appointments.schemas import (
     AppointmentResponse,
     SlotCreate,
     SlotResponse,
+    SlotUpdate,
     StaffInfo,
 )
 from src.shared.exceptions import (
@@ -155,6 +156,141 @@ class SlotService:
         slots = list(result.scalars().unique().all())
 
         return [_build_slot_response(slot) for slot in slots]
+
+    # ------------------------------------------------------------------
+    # Staff: Get ALL slots (available + booked)
+    # ------------------------------------------------------------------
+
+    async def get_all_slots(
+        self,
+        db: AsyncSession,
+        date_from: date | None = None,
+        date_to: date | None = None,
+        resource_id: UUID | None = None,
+    ) -> list[SlotResponse]:
+        """Query all scheduling slots (available AND booked) for staff management.
+
+        Unlike get_available_slots, this does NOT filter by is_available.
+        """
+        today = date.today()
+        if date_from is None:
+            date_from = today - timedelta(days=7)
+        if date_to is None:
+            date_to = today + timedelta(days=30)
+
+        query = (
+            select(SchedulingSlot)
+            .options(joinedload(SchedulingSlot.resource))
+            .where(
+                and_(
+                    SchedulingSlot.date >= date_from,
+                    SchedulingSlot.date <= date_to,
+                )
+            )
+            .order_by(SchedulingSlot.date, SchedulingSlot.start_time)
+        )
+
+        if resource_id is not None:
+            query = query.where(SchedulingSlot.resource_id == resource_id)
+
+        result = await db.execute(query)
+        slots = list(result.scalars().unique().all())
+
+        return [_build_slot_response(slot) for slot in slots]
+
+    # ------------------------------------------------------------------
+    # Staff: Update a free slot
+    # ------------------------------------------------------------------
+
+    async def update_slot(
+        self,
+        db: AsyncSession,
+        slot_id: UUID,
+        data: SlotUpdate,
+    ) -> SlotResponse:
+        """Update a scheduling slot's date/time. Only free (is_available=True) slots can be edited."""
+        result = await db.execute(
+            select(SchedulingSlot)
+            .options(joinedload(SchedulingSlot.resource))
+            .where(SchedulingSlot.id == slot_id)
+        )
+        slot = result.scalar_one_or_none()
+
+        if slot is None:
+            raise NotFoundException("slot", slot_id)
+
+        if not slot.is_available:
+            raise ConflictException(
+                code="SLOT_RESERVADO",
+                message="Nao e possivel editar um slot que ja foi reservado.",
+            )
+
+        # Apply updates
+        new_date = data.date if data.date is not None else slot.date
+        new_start = _time_from_str(data.start_time) if data.start_time is not None else slot.start_time
+        new_end = _time_from_str(data.end_time) if data.end_time is not None else slot.end_time
+
+        if new_start >= new_end:
+            raise ValidationException(
+                message="start_time deve ser anterior a end_time",
+                details=[
+                    {"field": "start_time", "message": "Horario de inicio deve ser anterior ao horario de fim"}
+                ],
+            )
+
+        # Check overlap with other slots on same resource+date (exclude self)
+        existing_result = await db.execute(
+            select(SchedulingSlot).where(
+                and_(
+                    SchedulingSlot.resource_id == slot.resource_id,
+                    SchedulingSlot.date == new_date,
+                    SchedulingSlot.id != slot_id,
+                    SchedulingSlot.start_time < new_end,
+                    SchedulingSlot.end_time > new_start,
+                )
+            )
+        )
+        if existing_result.scalars().first() is not None:
+            raise ConflictException(
+                code="HORARIO_CONFLITANTE",
+                message="O novo horario conflita com outro slot existente.",
+            )
+
+        slot.date = new_date
+        slot.start_time = new_start
+        slot.end_time = new_end
+
+        await db.flush()
+        await db.refresh(slot)
+
+        return _build_slot_response(slot)
+
+    # ------------------------------------------------------------------
+    # Staff: Delete a free slot
+    # ------------------------------------------------------------------
+
+    async def delete_slot(
+        self,
+        db: AsyncSession,
+        slot_id: UUID,
+    ) -> None:
+        """Delete a scheduling slot. Only free (is_available=True) slots can be deleted."""
+        result = await db.execute(
+            select(SchedulingSlot).where(SchedulingSlot.id == slot_id)
+        )
+        slot = result.scalar_one_or_none()
+
+        if slot is None:
+            raise NotFoundException("slot", slot_id)
+
+        if not slot.is_available:
+            raise ConflictException(
+                code="SLOT_RESERVADO",
+                message="Nao e possivel excluir um slot que ja foi reservado.",
+            )
+
+        await db.delete(slot)
+        await db.flush()
 
     # ------------------------------------------------------------------
     # APPT-STAFF-01: Create scheduling slots from time range
@@ -438,6 +574,50 @@ class AppointmentService:
             )
 
         appointment.status = "completed"
+        await db.flush()
+        await db.refresh(appointment)
+
+        return _build_appointment_response(appointment)
+
+    # ------------------------------------------------------------------
+    # Mark appointment as no_show (scheduled → no_show)
+    # ------------------------------------------------------------------
+
+    async def mark_no_show(
+        self,
+        db: AsyncSession,
+        appointment_id: UUID,
+        user_id: UUID,
+        user_role: str,
+    ) -> AppointmentResponse:
+        """Mark an appointment as no_show (scheduled → no_show). Staff only."""
+        result = await db.execute(
+            select(Appointment)
+            .options(
+                joinedload(Appointment.slot).joinedload(SchedulingSlot.resource),
+            )
+            .where(Appointment.id == appointment_id)
+        )
+        appointment = result.scalar_one_or_none()
+
+        if appointment is None:
+            raise NotFoundException("appointment", appointment_id)
+
+        if user_role != "staff":
+            raise ForbiddenException(
+                "Apenas staff pode marcar ausencia",
+            )
+
+        if appointment.status != "scheduled":
+            raise ConflictException(
+                code="AUSENCIA_INVALIDA",
+                message=(
+                    f"Apenas agendamentos com status 'scheduled' podem ser marcados como ausente. "
+                    f"Status atual: '{appointment.status}'."
+                ),
+            )
+
+        appointment.status = "no_show"
         await db.flush()
         await db.refresh(appointment)
 

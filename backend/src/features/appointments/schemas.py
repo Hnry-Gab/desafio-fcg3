@@ -122,3 +122,19 @@ class AppointmentListItem(BaseModel):
     resource_name: str | None = None
 
     model_config = {"from_attributes": True}
+
+
+class SlotUpdate(BaseModel):
+    """PUT /scheduling/slots/{id} — edit a free slot's date/time."""
+
+    date: date | None = None
+    start_time: str | None = Field(
+        default=None,
+        description="Start time in HH:MM format",
+        pattern=r"^\d{2}:\d{2}$",
+    )
+    end_time: str | None = Field(
+        default=None,
+        description="End time in HH:MM format",
+        pattern=r"^\d{2}:\d{2}$",
+    )

@@ -89,27 +89,45 @@ class StaffAppointmentDetailScreen extends ConsumerWidget {
               const SizedBox(height: 32),
               // Action buttons
               if (appointment.isUpcoming)
-                Row(
+                Column(
                   children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => _cancelAction(context, ref),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: colors.error,
-                          side: BorderSide(color: colors.error),
-                          minimumSize: const Size(0, 48),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => _cancelAction(context, ref),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: colors.error,
+                              side: BorderSide(color: colors.error),
+                              minimumSize: const Size(0, 48),
+                            ),
+                            child: const Text('Cancelar'),
+                          ),
                         ),
-                        child: const Text('Cancelar'),
-                      ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => _confirmAction(context, ref),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(0, 48),
+                            ),
+                            child: const Text('Confirmar'),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => _confirmAction(context, ref),
-                        style: ElevatedButton.styleFrom(
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => _noShowAction(context, ref),
+                        icon: const Icon(Icons.person_off, size: 18),
+                        label: const Text('Marcar Ausente'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.orange.shade700,
+                          side: BorderSide(color: Colors.orange.shade700),
                           minimumSize: const Size(0, 48),
                         ),
-                        child: const Text('Confirmar'),
                       ),
                     ),
                   ],
@@ -212,6 +230,58 @@ class StaffAppointmentDetailScreen extends ConsumerWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Erro ao cancelar: $e'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _noShowAction(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Marcar Ausente'),
+        content: const Text(
+          'Confirma que o aluno não compareceu a este agendamento?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Voltar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.orange.shade700,
+            ),
+            child: const Text('Marcar Ausente'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      try {
+        await ref
+            .read(staffScheduleServiceProvider)
+            .markNoShow(appointment.id);
+        ref.invalidate(staffAppointmentsProvider);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Aluno marcado como ausente')),
+          );
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro ao marcar ausencia: $e'),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
