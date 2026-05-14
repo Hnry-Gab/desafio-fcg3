@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import '../../../core/network/dio_client.dart';
 import '../models/appointment_model.dart';
 import '../models/resource_model.dart';
@@ -54,18 +57,38 @@ class ResourceBookingService {
   }
 
   /// POST /appointments/{id}/authorization — upload authorization file.
+  ///
+  /// Always uses [fileBytes] for cross-platform compatibility (web has no
+  /// file-system access, so `MultipartFile.fromFile` would fail). The caller
+  /// must pick files with `withData: true` so that bytes are loaded in memory.
   Future<void> uploadAuthorization({
     required String appointmentId,
-    required String filePath,
     required String fileName,
+    required Uint8List fileBytes,
   }) async {
-    final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(filePath, filename: fileName),
-    });
+    final contentType = _mimeTypeFromExtension(fileName);
+    final multipartFile = MultipartFile.fromBytes(
+      fileBytes,
+      filename: fileName,
+      contentType: contentType,
+    );
+
+    final formData = FormData.fromMap({'file': multipartFile});
     await _client.dio.post(
       '/appointments/$appointmentId/authorization',
       data: formData,
     );
+  }
+
+  /// Map common file extensions to MIME types accepted by the backend.
+  static MediaType _mimeTypeFromExtension(String fileName) {
+    final ext = fileName.split('.').last.toLowerCase();
+    return switch (ext) {
+      'pdf' => MediaType('application', 'pdf'),
+      'jpg' || 'jpeg' => MediaType('image', 'jpeg'),
+      'png' => MediaType('image', 'png'),
+      _ => MediaType('application', 'octet-stream'),
+    };
   }
 
   /// PUT /appointments/{id}/cancel — cancel an appointment.

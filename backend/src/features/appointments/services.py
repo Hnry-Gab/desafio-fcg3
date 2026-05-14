@@ -574,7 +574,8 @@ class AppointmentService:
             raise NotFoundException("appointment", appointment_id)
 
         # T-03-28: ownership check — students can only cancel own appointments
-        if user_role != "staff" and appointment.student_id != user_id:
+        # D-04: Provider inherits staff permissions
+        if user_role not in ("staff", "provider") and appointment.student_id != user_id:
             raise ForbiddenException(
                 "Voce nao tem permissao para cancelar este agendamento",
             )
@@ -622,7 +623,8 @@ class AppointmentService:
         if appointment is None:
             raise NotFoundException("appointment", appointment_id)
 
-        if user_role != "staff":
+        # D-04: Provider inherits staff permissions
+        if user_role not in ("staff", "provider"):
             raise ForbiddenException(
                 "Apenas staff pode confirmar agendamentos",
             )
@@ -666,7 +668,8 @@ class AppointmentService:
         if appointment is None:
             raise NotFoundException("appointment", appointment_id)
 
-        if user_role != "staff":
+        # D-04: Provider inherits staff permissions
+        if user_role not in ("staff", "provider"):
             raise ForbiddenException(
                 "Apenas staff pode marcar ausencia",
             )

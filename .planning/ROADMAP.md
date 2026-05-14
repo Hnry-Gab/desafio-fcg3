@@ -293,3 +293,4 @@ Plans:
 | `feature/student-profile-screen` | `gsd/v3.0-group1-corrections-2` | 2026-05-14 | Phase 23: Student profile + professor field + staff student detail |
 | `feat/notifications-backend-persistence` | `fix/enrollment-draft-flow` | 2026-05-14 | Notification read status persisted server-side (replaced SharedPreferences with PostgreSQL) |
 | `feature/staff-schedule-tabs` | `feat/notifications-backend-persistence` | 2026-05-14 | Staff schedule management: TabBar, grouped slots with occupancy bar, batch delete, no-show, slot CRUD |
+| `fix/resource-booking-authorization` | `feature/staff-schedule-tabs` | 2026-05-14 | Fix resource booking authorization upload, provider 403 on appointment actions, staff authorization doc download |

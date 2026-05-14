@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../client/models/appointment_model.dart';
+import '../../client/screens/client_documents_screen.dart' show buildDownloadUrl;
 import '../../../shared/widgets/responsive_container.dart';
 import '../providers/staff_schedule_provider.dart';
 
@@ -86,6 +88,33 @@ class StaffAppointmentDetailScreen extends ConsumerWidget {
                 label: 'Motivo',
                 value: appointment.reason,
               ),
+              const SizedBox(height: 16),
+              // Authorization file
+              if (appointment.hasAuthorization) ...[
+                Text(
+                  'Documento de Autorização',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => launchUrl(
+                      Uri.parse(
+                        buildDownloadUrl(appointment.authorizationFileUrl!),
+                      ),
+                      mode: LaunchMode.externalApplication,
+                    ),
+                    icon: const Icon(Icons.download, size: 18),
+                    label: Text(
+                      _extractFileName(appointment.authorizationFileUrl!),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 32),
               // Action buttons
               if (appointment.isUpcoming)
@@ -295,6 +324,18 @@ class StaffAppointmentDetailScreen extends ConsumerWidget {
     final month = date.month.toString().padLeft(2, '0');
     final year = date.year.toString();
     return '$day/$month/$year';
+  }
+
+  /// Extracts a human-readable filename from the authorization file URL.
+  /// The backend stores files as `/uploads/authorizations/{uuid}_{original_name}`.
+  String _extractFileName(String url) {
+    final segment = url.split('/').last;
+    // Strip the leading UUID prefix (36 chars + underscore)
+    final underscoreIndex = segment.indexOf('_');
+    if (underscoreIndex > 0 && underscoreIndex < segment.length - 1) {
+      return segment.substring(underscoreIndex + 1);
+    }
+    return segment;
   }
 }
 

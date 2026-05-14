@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
 status: executing
-last_updated: "2026-05-14T23:30:00.000Z"
-last_activity: 2026-05-14 -- Staff schedule management with grouped slots (TabBar Agendamentos/Horarios, batch delete, no-show, slot CRUD)
+last_updated: "2026-05-14T23:59:00.000Z"
+last_activity: 2026-05-14 -- Fix resource booking authorization upload, provider 403 on actions, staff authorization download
 progress:
   total_phases: 8
   completed_phases: 7
@@ -17,18 +17,18 @@ progress:
 
 ## Current Position
 
-Phase: 23 (complete) + staff schedule management branch
-Plan: All 4 plans complete. Staff schedule screen refactored with full slot management.
+Phase: 23 (complete) + staff schedule management + resource booking authorization fix
+Plan: All 4 plans complete. Authorization upload and provider actions fixed.
 Status: Executing
-Last activity: 2026-05-14 -- Staff schedule management: TabBar with Agendamentos + Horarios sub-tabs, slots grouped by resource+date with occupancy bar, batch delete (available-only or all with appointment cancellation), individual slot edit/delete, no-show endpoint, 5 new backend endpoints.
+Last activity: 2026-05-14 -- Fix resource booking authorization: multipart upload using bytes+MIME type (web-compatible), provider role D-04 on cancel/confirm/no-show, authorization download button on staff detail screen.
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação acadêmica — com ações concretas executadas em tempo real.
-**Current focus:** Staff schedule management complete — Next: Phase 24 (UI Polish & Integration)
-**Branch:** `feature/staff-schedule-tabs` (from `feat/notifications-backend-persistence`)
+**Current focus:** Resource booking authorization fix complete — Next: Phase 24 (UI Polish & Integration)
+**Branch:** `fix/resource-booking-authorization` (from `feature/staff-schedule-tabs`)
 
 ## Milestones Shipped
 
@@ -92,6 +92,13 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **staff-schedule:** "Marcar Ausente" button on appointment detail screen (scheduled -> no_show transition)
 - **staff-schedule:** Edit slot sheet (edit_slot_sheet.dart) for individual slot date/time editing
 - **staff-schedule:** SlotUpdate schema uses Optional[] instead of `X | None` to avoid Pydantic+__future__ annotations runtime eval error
+- **auth-fix:** DioClient Content-Type changed from hardcoded `headers:` to `contentType: Headers.jsonContentType` — prevents interference with multipart FormData uploads
+- **auth-fix:** FilePicker uses `withData: true` to load file bytes in memory (required for web platform)
+- **auth-fix:** `uploadAuthorization` uses `MultipartFile.fromBytes` with explicit MIME type (via `http_parser MediaType`) instead of `fromFile` — cross-platform (web has no filesystem)
+- **auth-fix:** Upload error handled separately from booking error — slot not lost if upload fails
+- **auth-fix:** Provider role (D-04) added to cancel/confirm/no-show permission checks in `services.py` (was only "staff", now "staff" or "provider")
+- **auth-fix:** `AppointmentModel` extended with `authorizationFileUrl` field + `hasAuthorization` getter
+- **auth-fix:** Staff appointment detail screen shows authorization doc with download button via `url_launcher` + `buildDownloadUrl`
 - **18-05:** showAppointmentDetailSheet: reusable appointment detail bottom sheet widget
 - **18-05:** Refactored home screen inline sheet to use shared widget (DRY)
 - **18-05:** onDetailTap pattern: combined mark-as-read + open detail on notification tap
@@ -167,6 +174,7 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 | 2026-05-14 | gsd/v3.0-group1-corrections-2 | feature/student-profile-screen | — | Phase 23: Student profile + professor field + staff student detail |
 | 2026-05-14 | fix/enrollment-draft-flow | feat/notifications-backend-persistence | — | Notification read status persisted server-side (notifications table + REST API + Flutter) |
 | 2026-05-14 | feat/notifications-backend-persistence | feature/staff-schedule-tabs | — | Staff schedule management: TabBar, grouped slots, batch delete, no-show, slot CRUD |
+| 2026-05-14 | feature/staff-schedule-tabs | fix/resource-booking-authorization | — | Fix authorization upload (bytes+MIME), provider D-04 role on actions, staff authorization download |
 
 ## Session Continuity
 

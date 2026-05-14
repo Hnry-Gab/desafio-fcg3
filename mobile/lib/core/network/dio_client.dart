@@ -19,7 +19,11 @@ class DioClient {
       baseUrl: AppConfig.apiBaseUrl,
       connectTimeout: Duration(milliseconds: AppConfig.connectTimeoutMs),
       receiveTimeout: Duration(milliseconds: AppConfig.requestTimeoutMs),
-      headers: {'Content-Type': 'application/json'},
+      // Do NOT set a default Content-Type header here.
+      // Dio auto-sets 'application/json' for Map/List data and
+      // 'multipart/form-data' for FormData. A hardcoded default
+      // can interfere with multipart file uploads.
+      contentType: Headers.jsonContentType,
     ));
 
     dio.interceptors.addAll([
