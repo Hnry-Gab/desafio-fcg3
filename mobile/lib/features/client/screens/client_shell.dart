@@ -38,9 +38,11 @@ class _ClientShellState extends ConsumerState<ClientShell> {
     final location = GoRouterState.of(context).matchedLocation;
     if (location.startsWith(RoutePaths.clientChat)) return 1;
     if (location.startsWith(RoutePaths.clientDocuments)) return 2;
-    if (location.startsWith(RoutePaths.clientResources)) return 3;
-    if (location.startsWith(RoutePaths.clientSupport)) return 3; // fallback
-    if (location.startsWith(RoutePaths.clientProfile)) return 4;
+    if (location.startsWith(RoutePaths.clientSchedule)) return 3;
+    if (location.startsWith(RoutePaths.clientResources)) return 4;
+    if (location.startsWith(RoutePaths.clientSupport)) return 4; // fallback
+    if (location.startsWith(RoutePaths.clientEnrollment)) return 5; // sub-page of profile
+    if (location.startsWith(RoutePaths.clientProfile)) return 5;
     return 0;
   }
 
@@ -53,8 +55,10 @@ class _ClientShellState extends ConsumerState<ClientShell> {
       case 2:
         context.go(RoutePaths.clientDocuments);
       case 3:
-        context.go(RoutePaths.clientResources);
+        context.go(RoutePaths.clientSchedule);
       case 4:
+        context.go(RoutePaths.clientResources);
+      case 5:
         context.go(RoutePaths.clientProfile);
     }
   }
@@ -63,6 +67,7 @@ class _ClientShellState extends ConsumerState<ClientShell> {
     NavItem(icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Início'),
     NavItem(icon: Icons.chat_outlined, activeIcon: Icons.chat, label: 'Chat'),
     NavItem(icon: Icons.description_outlined, activeIcon: Icons.description, label: 'Docs'),
+    NavItem(icon: Icons.calendar_month_outlined, activeIcon: Icons.calendar_month, label: 'Grade'),
     NavItem(icon: Icons.meeting_room_outlined, activeIcon: Icons.meeting_room, label: 'Recursos'),
     NavItem(icon: Icons.person_outlined, activeIcon: Icons.person, label: 'Perfil'),
   ];
@@ -82,6 +87,11 @@ class _ClientShellState extends ConsumerState<ClientShell> {
       icon: Icon(Icons.description_outlined),
       selectedIcon: Icon(Icons.description),
       label: Text('Documentos'),
+    ),
+    NavigationRailDestination(
+      icon: Icon(Icons.calendar_month_outlined),
+      selectedIcon: Icon(Icons.calendar_month),
+      label: Text('Grade'),
     ),
     NavigationRailDestination(
       icon: Icon(Icons.meeting_room_outlined),

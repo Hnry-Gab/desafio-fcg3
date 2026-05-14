@@ -17,6 +17,7 @@ import '../../features/client/screens/client_support_screen.dart';
 import '../../features/client/screens/client_resources_screen.dart';
 import '../../features/client/screens/client_profile_screen.dart';
 import '../../features/client/screens/client_enrollment_screen.dart';
+import '../../features/client/screens/client_schedule_screen.dart';
 import '../../features/staff/screens/staff_shell.dart';
 import '../../features/staff/screens/staff_dashboard_screen.dart';
 import '../../features/staff/screens/staff_schedule_screen.dart';
@@ -210,6 +211,19 @@ GoRouter appRouter(Ref ref) {
               key: state.pageKey,
               child: const ClientSupportScreen(),
             ),
+          ),
+          GoRoute(
+            path: RoutePaths.clientSchedule,
+            name: RouteNames.clientSchedule,
+            pageBuilder: (context, state) {
+              final extra = state.extra as Map<String, dynamic>?;
+              return _fadeThroughPage(
+                key: state.pageKey,
+                child: ClientScheduleScreen(
+                  studentId: extra?['studentId'] as String?,
+                ),
+              );
+            },
           ),
           GoRoute(
             path: RoutePaths.clientResources,

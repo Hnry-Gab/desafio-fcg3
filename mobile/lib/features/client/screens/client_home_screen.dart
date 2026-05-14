@@ -78,7 +78,7 @@ class ClientHomeScreen extends ConsumerWidget {
                 AnimatedEntrance(
                   delay: AppAnimations.getEntranceDelay(0),
                   child: GlassCard(
-                    onTap: () => context.push(
+                    onTap: () => context.go(
                       RoutePaths.clientProfile,
                       extra: {
                         'studentId': userId,
@@ -301,8 +301,22 @@ class ClientHomeScreen extends ConsumerWidget {
         onTap: () {
           final authState = ref.read(authProvider);
           if (authState is AuthAuthenticated) {
-            context.push(
+            context.go(
               RoutePaths.clientEnrollment,
+              extra: {'studentId': authState.user.id},
+            );
+          }
+        },
+      ),
+      _QuickAction(
+        label: 'Grade semanal de aulas',
+        icon: Icons.calendar_month_outlined,
+        color: colors.tertiary,
+        onTap: () {
+          final authState = ref.read(authProvider);
+          if (authState is AuthAuthenticated) {
+            context.go(
+              RoutePaths.clientSchedule,
               extra: {'studentId': authState.user.id},
             );
           }

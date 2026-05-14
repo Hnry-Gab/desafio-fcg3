@@ -312,3 +312,33 @@ async def delete_fcm_token(
     )
     await db.commit()
     return {"message": "Token removido"}
+
+
+# ------------------------------------------------------------------
+# GRAD-01/02/03: GET /students/{id}/weekly-schedule — dual-auth (MCP)
+# ------------------------------------------------------------------
+
+@router.get(
+    "/{student_id}/weekly-schedule",
+    response_model=None,
+)
+async def get_weekly_schedule(
+    student_id: UUID,
+    user: UserContext = Depends(get_current_user_or_service),
+    db: AsyncSession = Depends(get_db_session),
+) -> dict:
+    """Weekly class schedule for a student's enrolled courses.
+
+    GRAD-01: Calendar view grouped by day of week.
+    GRAD-02: Each slot includes time, professor and course description.
+    GRAD-03: Only courses the student is enrolled in.
+
+    Accepts X-Service-Token for MCP.
+    """
+    if user.role != "staff":
+        check_ownership(student_id, user)
+
+    from src.features.courses.services import course_service
+
+    schedule = await course_service.get_weekly_schedule(db, student_id)
+    return schedule.model_dump()

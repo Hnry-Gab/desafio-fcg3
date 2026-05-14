@@ -33,6 +33,7 @@ from src.features.auth.models import Staff, Student
 # noqa: F401 — chat models must be imported so SQLAlchemy can resolve Student relationships.
 from src.features.chat.models import ChatMessage, ChatSession, McpActionLog  # noqa: F401
 from src.features.courses.models import Course, Curriculum, CurriculumCourse, Prerequisite
+from src.features.courses.models import ClassSchedule
 from src.features.documents.models import Document
 from src.features.enrollment.models import Enrollment, EnrollmentCourse, EnrollmentPeriod
 from src.features.scheduling.models import Appointment, Resource, SchedulingSlot
@@ -53,6 +54,7 @@ WARNING_TABLES = [
     "enrollment_periods",
     "scheduling_slots",
     "resources",
+    "class_schedules",
     "fcm_tokens",
     "sessions",
     "verification_codes",
@@ -138,6 +140,53 @@ PREREQUISITE_DATA = [
     ("SCC0702", "SCC0701"),
     ("SCC0703", "SCC0503"),
     ("SCC0705", "SCC0602"),
+]
+
+# Weekly class schedule data: (course_code, day_of_week, start_time, end_time, room)
+# day_of_week: 0=Monday, 1=Tuesday, 2=Wednesday, 3=Thursday, 4=Friday
+# Realistic timetable for a Computer Science program
+CLASS_SCHEDULE_DATA = [
+    # Semester 1 courses
+    ("SCC0101", 0, time(8, 0), time(10, 0), "Sala 101, Bloco 3"),     # Intro Computação — Seg 8-10
+    ("SCC0101", 2, time(8, 0), time(10, 0), "Sala 101, Bloco 3"),     # Intro Computação — Qua 8-10
+    ("SCC0102", 1, time(8, 0), time(10, 0), "Sala 102, Bloco 3"),     # Algoritmos I — Ter 8-10
+    ("SCC0102", 3, time(8, 0), time(10, 0), "Sala 102, Bloco 3"),     # Algoritmos I — Qui 8-10
+    ("SMA0300", 0, time(10, 0), time(12, 0), "Sala 201, Bloco 2"),    # Cálculo I — Seg 10-12
+    ("SMA0300", 2, time(10, 0), time(12, 0), "Sala 201, Bloco 2"),    # Cálculo I — Qua 10-12
+    ("SMA0354", 1, time(10, 0), time(12, 0), "Sala 202, Bloco 2"),    # Álgebra Linear — Ter 10-12
+    ("SMA0354", 3, time(10, 0), time(12, 0), "Sala 202, Bloco 2"),    # Álgebra Linear — Qui 10-12
+    ("SCC0103", 4, time(8, 0), time(10, 0), "Lab 01, Bloco 5"),       # Lab ICC I — Sex 8-10
+    ("SCC0103", 4, time(10, 0), time(11, 0), "Lab 01, Bloco 5"),      # Lab ICC I — Sex 10-11
+    # Semester 2 courses
+    ("SCC0201", 0, time(8, 0), time(10, 0), "Sala 103, Bloco 3"),     # Algoritmos II — Seg 8-10
+    ("SCC0201", 2, time(8, 0), time(10, 0), "Sala 103, Bloco 3"),     # Algoritmos II — Qua 8-10
+    ("SCC0202", 4, time(8, 0), time(10, 0), "Lab 02, Bloco 5"),       # Lab ICC II — Sex 8-10
+    ("SMA0301", 1, time(8, 0), time(10, 0), "Sala 203, Bloco 2"),     # Cálculo II — Ter 8-10
+    ("SMA0301", 3, time(8, 0), time(10, 0), "Sala 203, Bloco 2"),     # Cálculo II — Qui 8-10
+    ("SMA0355", 0, time(10, 0), time(12, 0), "Sala 204, Bloco 2"),    # Álgebra Linear II — Seg 10-12
+    ("SMA0355", 2, time(10, 0), time(12, 0), "Sala 204, Bloco 2"),    # Álgebra Linear II — Qua 10-12
+    ("SSC0101", 1, time(10, 0), time(12, 0), "Sala 104, Bloco 3"),    # Org. Computadores — Ter 10-12
+    ("SSC0101", 3, time(10, 0), time(12, 0), "Sala 104, Bloco 3"),    # Org. Computadores — Qui 10-12
+    # Semester 3 courses
+    ("SCC0210", 0, time(14, 0), time(16, 0), "Sala 105, Bloco 3"),    # Estruturas de Dados — Seg 14-16
+    ("SCC0210", 2, time(14, 0), time(16, 0), "Sala 105, Bloco 3"),    # Estruturas de Dados — Qua 14-16
+    ("SCC0211", 4, time(14, 0), time(16, 0), "Lab 03, Bloco 5"),      # Lab Org. Arq. — Sex 14-16
+    ("SMA0356", 1, time(14, 0), time(16, 0), "Sala 205, Bloco 2"),    # Prob. Estatística — Ter 14-16
+    ("SMA0356", 3, time(14, 0), time(16, 0), "Sala 205, Bloco 2"),    # Prob. Estatística — Qui 14-16
+    ("SSC0301", 0, time(16, 0), time(18, 0), "Sala 106, Bloco 3"),    # Arq. Computadores — Seg 16-18
+    ("SSC0301", 2, time(16, 0), time(18, 0), "Sala 106, Bloco 3"),    # Arq. Computadores — Qua 16-18
+    ("SCC0212", 1, time(16, 0), time(18, 0), "Lab 01, Bloco 5"),      # POO — Ter 16-18
+    ("SCC0212", 3, time(16, 0), time(18, 0), "Lab 01, Bloco 5"),      # POO — Qui 16-18
+    # Semester 4 courses
+    ("SCC0301", 0, time(8, 0), time(10, 0), "Sala 107, Bloco 3"),     # Prog. Funcional — Seg 8-10
+    ("SCC0301", 2, time(8, 0), time(10, 0), "Sala 107, Bloco 3"),     # Prog. Funcional — Qua 8-10
+    ("SCC0302", 1, time(8, 0), time(10, 0), "Sala 108, Bloco 3"),     # Análise Algoritmos — Ter 8-10
+    ("SCC0302", 3, time(8, 0), time(10, 0), "Sala 108, Bloco 3"),     # Análise Algoritmos — Qui 8-10
+    ("SCC0303", 0, time(10, 0), time(12, 0), "Sala 109, Bloco 3"),    # Bases de Dados — Seg 10-12
+    ("SCC0303", 2, time(10, 0), time(12, 0), "Sala 109, Bloco 3"),    # Bases de Dados — Qua 10-12
+    ("SSC0302", 1, time(10, 0), time(12, 0), "Sala 110, Bloco 3"),    # SO I — Ter 10-12
+    ("SSC0302", 3, time(10, 0), time(12, 0), "Sala 110, Bloco 3"),    # SO I — Qui 10-12
+    ("SCC0304", 4, time(8, 0), time(10, 0), "Lab 04, Bloco 5"),       # Lab BD — Sex 8-10
 ]
 
 ACTIVE_PERIOD_SEMESTER_YEAR = "2026.1"
@@ -454,6 +503,27 @@ async def seed_curriculum(session: AsyncSession) -> tuple[Curriculum, dict[str, 
     return curriculum, courses_by_code
 
 
+async def seed_class_schedules(
+    session: AsyncSession,
+    courses_by_code: dict[str, Course],
+) -> None:
+    """Seed weekly class schedule slots for all courses that have schedule data."""
+    for course_code, day_of_week, start, end, room in CLASS_SCHEDULE_DATA:
+        course = courses_by_code.get(course_code)
+        if course is None:
+            continue
+        session.add(
+            ClassSchedule(
+                course_id=course.id,
+                day_of_week=day_of_week,
+                start_time=start,
+                end_time=end,
+                room=room,
+            )
+        )
+    await session.commit()
+
+
 async def seed_active_period(session: AsyncSession) -> EnrollmentPeriod:
     today = date.today()
     active_period = EnrollmentPeriod(
@@ -683,6 +753,7 @@ async def print_summary(session: AsyncSession) -> None:
         "resources": "SELECT count(*) FROM resources",
         "scheduling_slots": "SELECT count(*) FROM scheduling_slots",
         "appointments": "SELECT count(*) FROM appointments",
+        "class_schedules": "SELECT count(*) FROM class_schedules",
     }
     for label, query in summary_queries.items():
         result = await session.execute(text(query))
@@ -726,6 +797,9 @@ async def main() -> None:
 
         curriculum, courses_by_code = await seed_curriculum(session)
         print(f"📚 Curriculum seeded: {curriculum.name} with {len(courses_by_code)} courses")
+
+        await seed_class_schedules(session, courses_by_code)
+        print(f"🗓️  Class schedules seeded: {len(CLASS_SCHEDULE_DATA)} weekly slots")
 
         active_period = await seed_active_period(session)
         print(f"🗓️  Active enrollment period seeded: {active_period.semester_year}")

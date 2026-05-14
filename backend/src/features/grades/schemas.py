@@ -21,6 +21,7 @@ class CourseInfo(BaseModel):
     code: str
     name: str
     professor: str | None = None
+    schedule_summary: str | None = None
 
 
 # ---------------------------------------------------------------------------

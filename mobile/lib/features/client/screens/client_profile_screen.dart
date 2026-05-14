@@ -293,12 +293,29 @@ class StudentProfileScreen extends ConsumerWidget {
                         child: SizedBox(
                           width: double.infinity,
                           child: FilledButton.icon(
-                            onPressed: () => context.push(
+                            onPressed: () => context.go(
                               RoutePaths.clientEnrollment,
                               extra: {'studentId': effectiveId},
                             ),
                             icon: const Icon(Icons.school_outlined),
                             label: const Text('Matricular em Disciplinas'),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: AppSpacing.sm),
+                    // === Weekly schedule button ===
+                    if (!isStaffView)
+                      AnimatedEntrance(
+                        delay: AppAnimations.getEntranceDelay(5),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () => context.go(
+                              RoutePaths.clientSchedule,
+                              extra: {'studentId': effectiveId},
+                            ),
+                            icon: const Icon(Icons.calendar_month_outlined),
+                            label: const Text('Ver Grade Semanal'),
                           ),
                         ),
                       ),
@@ -405,6 +422,7 @@ class _GradeCard extends StatelessWidget {
     final code = course['code'] ?? '';
     final name = course['name'] ?? '';
     final professor = course['professor'] as String?;
+    final scheduleSummary = course['schedule_summary'] as String?;
     final status = grade['status'] ?? 'in_progress';
     final grade1 = grade['grade_1'];
     final grade2 = grade['grade_2'];
@@ -473,6 +491,30 @@ class _GradeCard extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: isDark ? colors.onSurfaceVariant : colors.onSurface.withValues(alpha: 0.55),
                   ),
+            ),
+          ],
+          if (scheduleSummary != null) ...[
+            const SizedBox(height: 3),
+            Row(
+              children: [
+                Icon(
+                  Icons.schedule_outlined,
+                  size: 13,
+                  color: isDark ? colors.onSurfaceVariant : colors.onSurface.withValues(alpha: 0.45),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    scheduleSummary,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontSize: 11,
+                          color: isDark ? colors.onSurfaceVariant : colors.onSurface.withValues(alpha: 0.45),
+                        ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
           ],
           const SizedBox(height: AppSpacing.sm),

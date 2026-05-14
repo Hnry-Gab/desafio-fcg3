@@ -19,22 +19,28 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.features.courses.models import (
+    ClassSchedule,
     Course,
     Curriculum,
     CurriculumCourse,
     Prerequisite,
 )
 from src.features.courses.schemas import (
+    ClassScheduleSlot,
     CourseDetail,
     CurriculumCourseItem,
     CurriculumResponse,
     PrerequisiteItem,
     PrerequisiteTreeNode,
     SemesterGroup,
+    WeeklyScheduleDay,
+    WeeklyScheduleResponse,
 )
 from src.shared.base_service import BaseService
 from src.shared.exceptions import NotFoundException
 from src.shared.pagination import PaginationParams
+
+DAY_NAMES = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"]
 
 
 class CourseService(BaseService[Course]):
@@ -345,6 +351,81 @@ class CourseService(BaseService[Course]):
             year=curriculum.year,
             semesters=semesters,
         )
+
+    # ------------------------------------------------------------------
+    # GRAD-01/02/03: Weekly schedule for enrolled courses
+    # ------------------------------------------------------------------
+
+    async def get_weekly_schedule(
+        self,
+        db: AsyncSession,
+        student_id: UUID,
+    ) -> WeeklyScheduleResponse:
+        """Get weekly class schedule for a student's enrolled courses.
+
+        GRAD-01: Displays schedule as a weekly calendar.
+        GRAD-02: Each slot includes time, professor, and course description.
+        GRAD-03: Only shows courses in which the student is enrolled.
+
+        Joins enrollment_courses -> class_schedules -> courses to find
+        all schedule slots for the student's active enrolled courses.
+        """
+        from src.features.enrollment.models import Enrollment, EnrollmentCourse
+
+        # Find schedule slots for courses where the student has an active enrollment
+        result = await db.execute(
+            select(ClassSchedule, Course)
+            .join(Course, ClassSchedule.course_id == Course.id)
+            .join(EnrollmentCourse, EnrollmentCourse.course_id == Course.id)
+            .join(Enrollment, EnrollmentCourse.enrollment_id == Enrollment.id)
+            .where(
+                and_(
+                    Enrollment.student_id == student_id,
+                    Enrollment.status.in_(["confirmed", "draft"]),
+                    EnrollmentCourse.status == "enrolled",
+                )
+            )
+            .order_by(ClassSchedule.day_of_week.asc(), ClassSchedule.start_time.asc())
+        )
+        rows = result.all()
+
+        # Group by day_of_week
+        day_map: dict[int, list[ClassScheduleSlot]] = defaultdict(list)
+        seen: set[UUID] = set()  # deduplicate (student may have multiple enrollments)
+
+        for schedule, course in rows:
+            if schedule.id in seen:
+                continue
+            seen.add(schedule.id)
+            day_map[schedule.day_of_week].append(
+                ClassScheduleSlot(
+                    id=schedule.id,
+                    course_id=course.id,
+                    course_code=course.code,
+                    course_name=course.name,
+                    professor=course.professor,
+                    description=course.description,
+                    day_of_week=schedule.day_of_week,
+                    start_time=schedule.start_time,
+                    end_time=schedule.end_time,
+                    room=schedule.room,
+                )
+            )
+
+        # Build response for all weekdays (Mon-Fri = 0-4), include Sat/Sun only if they have slots
+        days: list[WeeklyScheduleDay] = []
+        for day in range(7):
+            slots = day_map.get(day, [])
+            if day < 5 or slots:  # Always include Mon-Fri; Sat/Sun only if populated
+                days.append(
+                    WeeklyScheduleDay(
+                        day_of_week=day,
+                        day_name=DAY_NAMES[day],
+                        slots=slots,
+                    )
+                )
+
+        return WeeklyScheduleResponse(days=days)
 
 
 # Module-level singleton for convenience

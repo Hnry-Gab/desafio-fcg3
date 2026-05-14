@@ -15,6 +15,7 @@ class RouteNames {
   static const String clientResources = 'client-resources';
   static const String clientProfile = 'client-profile';
   static const String clientEnrollment = 'client-enrollment';
+  static const String clientSchedule = 'client-schedule';
 
   // Staff tabs
   static const String staffDashboard = 'staff-dashboard';
@@ -49,6 +50,7 @@ class RoutePaths {
   static const String clientResources = '/client/resources';
   static const String clientProfile = '/client/profile';
   static const String clientEnrollment = '/client/enrollment';
+  static const String clientSchedule = '/client/schedule';
 
   // Staff
   static const String staffDashboard = '/staff';

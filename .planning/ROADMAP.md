@@ -204,22 +204,25 @@ Plans:
 
 ### Phase 23: New Features
 
-**Goal**: Students can view their academic profile; staff/provider can view student details; courses include professor info
+**Goal**: Students can view their academic profile; staff/provider can view student details; courses include professor info; students can view weekly class timetable
 **Depends on**: Nothing (independent screens with new backend endpoints)
-**Requirements**: PROF-01, PROF-02, PERF-01, PERF-02, PERF-03, STDET-01, STDET-02
+**Requirements**: PROF-01, PROF-02, PERF-01, PERF-02, PERF-03, STDET-01, STDET-02, GRAD-01, GRAD-02, GRAD-03
 **Success Criteria** (what must be TRUE):
   1. Course model includes professor field; seed data populates professors; grades/curriculum endpoints return professor
   2. Student can tap greeting card on home screen to open profile with personal data, academic summary, and current semester grades
   3. Staff/provider can tap any student in cadastro/gestão to see full student detail (same structure as student profile)
   4. Profile screen shows: avatar, name, email, RA, phone, semester, enrollment year, status, CRA, progress, grades with professor
-**Plans**: In progress
-**Branch**: `feature/student-profile-screen`
+  5. Student can view weekly class schedule in a tabbed calendar view (Mon-Fri); each slot shows time, professor, room; only enrolled courses shown
+  6. Grade tab in bottom nav provides direct access to weekly timetable
+  7. Grade cards on profile/detail screens show schedule summary (day/time) per course
+**Plans**: Complete
+**Branch**: `feature/weekly-class-schedule`
 
 Plans:
 - [x] 23-01 — Backend: professor field on Course model + migration + schemas + seed
 - [x] 23-02 — Frontend: student profile screen + provider + route + home card + bottom nav tab
 - [x] 23-03 — Frontend: enrollment screen + staff student detail + integration
-- [ ] 23-04 — Weekly class schedule (class_schedules table + timetable screen)
+- [x] 23-04 — Weekly class schedule (class_schedules table + timetable screen + Grade tab + schedule summary in grade cards)
 
 **UI hint**: yes
 
