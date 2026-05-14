@@ -123,15 +123,18 @@ class NotificationHandler extends _$NotificationHandler {
     switch (event) {
       case 'document_ready':
         ref.invalidate(documentsProvider);
-        ref.invalidate(derivedNotificationsProvider);
+        ref.invalidate(notificationsProvider);
         break;
       case 'enrollment_confirmed':
-        // Enrollment data refreshed via derived notifications
-        ref.invalidate(derivedNotificationsProvider);
+        // Notification list refreshed from server
+        ref.invalidate(notificationsProvider);
         break;
       case 'appointment_confirmed':
+      case 'appointment_completed':
+      case 'appointment_cancelled':
+      case 'appointment_no_show':
         ref.invalidate(appointmentsProvider);
-        ref.invalidate(derivedNotificationsProvider);
+        ref.invalidate(notificationsProvider);
         break;
     }
   }

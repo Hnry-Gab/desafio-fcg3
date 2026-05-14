@@ -10,7 +10,7 @@ API note: docs/api.md exposes "staff" in slot responses, but the DB uses
 from __future__ import annotations
 
 from datetime import date, datetime, time
-from typing import Literal
+from typing import Literal, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -122,3 +122,31 @@ class AppointmentListItem(BaseModel):
     resource_name: str | None = None
 
     model_config = {"from_attributes": True}
+
+
+class SlotUpdate(BaseModel):
+    """PUT /scheduling/slots/{id} — edit a free slot's date/time."""
+
+    date: Optional[date] = None
+    start_time: Optional[str] = Field(
+        default=None,
+        description="Start time in HH:MM format",
+        pattern=r"^\d{2}:\d{2}$",
+    )
+    end_time: Optional[str] = Field(
+        default=None,
+        description="End time in HH:MM format",
+        pattern=r"^\d{2}:\d{2}$",
+    )
+
+
+class SlotBatchDelete(BaseModel):
+    """DELETE /scheduling/slots/batch — delete slots in bulk."""
+
+    resource_id: UUID
+    date: date
+    only_available: bool = Field(
+        default=True,
+        description="If True, only delete available (unbooked) slots. "
+        "If False, delete all slots and cancel associated appointments.",
+    )

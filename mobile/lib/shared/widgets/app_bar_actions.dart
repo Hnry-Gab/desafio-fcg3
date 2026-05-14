@@ -5,6 +5,7 @@ import '../../core/router/route_names.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/providers/auth_state.dart';
+import '../../features/client/providers/notification_provider.dart';
 
 /// Standard app bar actions (support + theme toggle + logout) used across all screens.
 ///
@@ -21,6 +22,13 @@ class AppBarActions extends ConsumerWidget {
     final isStudent =
         authState is AuthAuthenticated && authState.user.isStudent;
 
+    // Unread notification count for badge
+    final unreadCount = isStudent
+        ? ref.watch(notificationsProvider).whenOrNull(
+              data: (list) => list.where((n) => !n.isRead).length,
+            ) ?? 0
+        : 0;
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -31,7 +39,14 @@ class AppBarActions extends ConsumerWidget {
             tooltip: 'Suporte',
           ),
           IconButton(
-            icon: Icon(Icons.notifications_outlined, color: colors.primary),
+            icon: Badge(
+              isLabelVisible: unreadCount > 0,
+              label: Text(
+                unreadCount > 9 ? '9+' : '$unreadCount',
+                style: const TextStyle(fontSize: 10),
+              ),
+              child: Icon(Icons.notifications_outlined, color: colors.primary),
+            ),
             onPressed: () =>
                 GoRouter.of(context).go(RoutePaths.clientNotifications),
             tooltip: 'Notificações',

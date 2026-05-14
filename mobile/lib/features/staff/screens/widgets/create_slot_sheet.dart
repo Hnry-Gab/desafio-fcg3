@@ -149,6 +149,7 @@ class _CreateSlotSheetState extends ConsumerState<_CreateSlotSheet> {
             slotDurationMinutes: _slotDuration,
           );
       ref.invalidate(staffSlotsProvider);
+      ref.invalidate(staffAllSlotsProvider);
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(

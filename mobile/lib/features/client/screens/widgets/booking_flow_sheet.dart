@@ -76,6 +76,7 @@ class _BookingFlowSheetState extends ConsumerState<_BookingFlowSheet> {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+      withData: true, // Required for web — loads bytes into memory
     );
 
     if (result == null || result.files.isEmpty) return;
@@ -105,19 +106,31 @@ class _BookingFlowSheetState extends ConsumerState<_BookingFlowSheet> {
     try {
       final service = ref.read(resourceBookingServiceProvider);
 
-      // Book the slot
+      // Step 1: Book the slot
       final appointment = await service.bookSlot(
         slotId: _selectedSlotId!,
         reason: _reasonController.text.trim(),
       );
 
-      // Upload authorization file if required
+      // Step 2: Upload authorization file if required.
+      // This runs AFTER the booking succeeded, so we handle its failure
+      // separately — the appointment already exists.
+      bool uploadFailed = false;
       if (widget.resource.requiresAuthorization && _selectedFile != null) {
-        await service.uploadAuthorization(
-          appointmentId: appointment.id,
-          filePath: _selectedFile!.path!,
-          fileName: _selectedFile!.name,
-        );
+        try {
+          final bytes = _selectedFile!.bytes;
+          if (bytes == null || bytes.isEmpty) {
+            throw Exception('File bytes not available');
+          }
+          await service.uploadAuthorization(
+            appointmentId: appointment.id,
+            fileName: _selectedFile!.name,
+            fileBytes: bytes,
+          );
+        } catch (uploadError) {
+          uploadFailed = true;
+          debugPrint('[BOOKING] Authorization upload failed: $uploadError');
+        }
       }
 
       // Invalidate caches
@@ -127,17 +140,25 @@ class _BookingFlowSheetState extends ConsumerState<_BookingFlowSheet> {
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Agendamento confirmado!')),
+          SnackBar(
+            content: Text(
+              uploadFailed
+                  ? 'Agendamento criado, mas falha ao enviar autorização. '
+                    'Tente reenviar pelo detalhe do agendamento.'
+                  : 'Agendamento confirmado!',
+            ),
+            duration: Duration(seconds: uploadFailed ? 5 : 3),
+          ),
         );
       }
     } catch (e) {
+      debugPrint('[BOOKING] Booking failed: $e');
       if (mounted) {
+        final message = e.toString().contains('409')
+            ? 'Horário já reservado'
+            : 'Tente novamente';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Erro ao agendar: ${e.toString().contains('409') ? 'Horário já reservado' : 'Tente novamente'}',
-            ),
-          ),
+          SnackBar(content: Text('Erro ao agendar: $message')),
         );
       }
     } finally {

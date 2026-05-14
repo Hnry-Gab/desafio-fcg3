@@ -28,6 +28,16 @@ Future<List<SchedulingSlotModel>> staffSlots(Ref ref) async {
   return service.getSlots();
 }
 
+/// Provider for ALL slots (available + booked) — used in staff "Horarios" tab
+@riverpod
+Future<List<SchedulingSlotModel>> staffAllSlots(Ref ref) async {
+  final service = ref.watch(staffScheduleServiceProvider);
+  final resourceId = ref.watch(staffSlotResourceFilterProvider);
+  final slots = await service.getAllSlots(resourceId: resourceId);
+  CacheTTL.schedule(ref, 'staffAllSlots');
+  return slots;
+}
+
 @riverpod
 class StaffScheduleFilter extends _$StaffScheduleFilter {
   @override
@@ -38,6 +48,24 @@ class StaffScheduleFilter extends _$StaffScheduleFilter {
 
 @riverpod
 class StaffScheduleSearch extends _$StaffScheduleSearch {
+  @override
+  String build() => '';
+
+  void setQuery(String query) => state = query;
+}
+
+/// Filter for slots tab: resource ID
+@riverpod
+class StaffSlotResourceFilter extends _$StaffSlotResourceFilter {
+  @override
+  String? build() => null; // null = all resources
+
+  void setResourceId(String? id) => state = id;
+}
+
+/// Search for slots tab
+@riverpod
+class StaffSlotSearch extends _$StaffSlotSearch {
   @override
   String build() => '';
 

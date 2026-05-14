@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
 status: executing
-last_updated: "2026-05-14T22:00:00.000Z"
-last_activity: 2026-05-14 -- Fix enrollment draft flow: backend flush race condition, GET /enrollments/{id} detail endpoint, draft detection via semester_year, pre-selection of draft courses, pending banner, error code parsing, back navigation
+last_updated: "2026-05-15T01:00:00.000Z"
+last_activity: 2026-05-15 -- Descriptive notifications with resource details, new appointment events, correct tap navigation
 progress:
   total_phases: 8
   completed_phases: 7
@@ -17,18 +17,18 @@ progress:
 
 ## Current Position
 
-Phase: 23 (complete) + enrollment bugfix branch
-Plan: All 4 plans complete. Enrollment draft flow bugs fixed.
+Phase: 23 (complete) + staff schedule management + resource booking fix + notification details
+Plan: All 4 plans complete. Notifications now descriptive with correct navigation.
 Status: Executing
-Last activity: 2026-05-14 -- Fixed enrollment draft flow (7 bugs: UniqueViolation flush, draft detection, pre-selection, pending banner, error codes, nav, back button)
+Last activity: 2026-05-15 -- Descriptive notifications: 3 new events (cancelled/completed/no_show), body includes resource name+date+time, tap navigates to Meus Agendamentos, distinct icons/colors per event.
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação acadêmica — com ações concretas executadas em tempo real.
-**Current focus:** Enrollment bugfix complete — Next: Phase 24 (UI Polish & Integration)
-**Branch:** `fix/enrollment-draft-flow` (from `feature/weekly-class-schedule`)
+**Current focus:** Notification details complete — Next: Phase 24 (UI Polish & Integration)
+**Branch:** `feature/notification-details-and-navigation` (from `fix/resource-booking-authorization`)
 
 ## Milestones Shipped
 
@@ -75,9 +75,39 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **18-02:** ChatFilterNotifier pattern for client-side filtering (no extra API call)
 - **18-03:** Document cards show date+time (DD/MM/YYYY HH:MM), tap opens detail bottom sheet
 - **18-03:** showDocumentDetailSheet pattern with _DetailRow for key-value display in sheets
-- **18-04:** Notifications: read/unread state via client-side Set<String> (ReadNotificationIds provider)
+- **18-04:** Notifications: read/unread state via server-side `notifications` table (replaced client-side SharedPreferences)
 - **18-04:** Filter tabs (Todas/Não lidas/Lidas) and "Visualizar todos" bulk mark-as-read
 - **18-04:** Individual notification marked as read only on direct tap (not on scroll/view)
+- **22-05:** Notification persistence: Alembic 019a `notifications` table with `read_at` column
+- **22-05:** 3 REST endpoints: GET /notifications, PUT /notifications/read, PUT /notifications/read-all
+- **22-05:** send_push now persists notification row before dispatching FCM (even if FCM disabled)
+- **22-05:** Flutter NotificationService + notificationsProvider + NotificationActions (API-driven)
+- **22-05:** Unread badge (Badge widget) on bell icon in AppBarActions, count from notificationsProvider
+- **22-05:** 44 new tests: 24 backend (persistence + endpoints + IDOR) + 20 Flutter (service + provider + model)
+- **staff-schedule:** TabBar refactor: Agenda screen split into Agendamentos (appointments) + Horarios (slots) sub-tabs
+- **staff-schedule:** 5 new backend endpoints: GET /scheduling/slots/all, PUT /scheduling/slots/{id}, DELETE /scheduling/slots/{id}, DELETE /scheduling/slots/batch, PUT /appointments/{id}/no-show
+- **staff-schedule:** Slots grouped by resource+date: compact card with occupancy bar (LinearProgressIndicator), livres/reservados badges, expandable detail rows
+- **staff-schedule:** Batch delete: only_available flag deletes free slots or all slots (cancelling associated appointments)
+- **staff-schedule:** Appointment filters expanded: added Concluidos and Ausentes tabs (was Todos/Agendados/Cancelados)
+- **staff-schedule:** "Marcar Ausente" button on appointment detail screen (scheduled -> no_show transition)
+- **staff-schedule:** Edit slot sheet (edit_slot_sheet.dart) for individual slot date/time editing
+- **staff-schedule:** SlotUpdate schema uses Optional[] instead of `X | None` to avoid Pydantic+__future__ annotations runtime eval error
+- **auth-fix:** DioClient Content-Type changed from hardcoded `headers:` to `contentType: Headers.jsonContentType` — prevents interference with multipart FormData uploads
+- **auth-fix:** FilePicker uses `withData: true` to load file bytes in memory (required for web platform)
+- **auth-fix:** `uploadAuthorization` uses `MultipartFile.fromBytes` with explicit MIME type (via `http_parser MediaType`) instead of `fromFile` — cross-platform (web has no filesystem)
+- **auth-fix:** Upload error handled separately from booking error — slot not lost if upload fails
+- **auth-fix:** Provider role (D-04) added to cancel/confirm/no-show permission checks in `services.py` (was only "staff", now "staff" or "provider")
+- **auth-fix:** `AppointmentModel` extended with `authorizationFileUrl` field + `hasAuthorization` getter
+- **auth-fix:** Staff appointment detail screen shows authorization doc with download button via `url_launcher` + `buildDownloadUrl`
+- **notif-detail:** 3 new NotificationEvent values: `appointment_cancelled`, `appointment_completed`, `appointment_no_show`
+- **notif-detail:** Notification body now includes resource name, date, and time (e.g., "Seu agendamento para Quadra Poliesportiva em 2026-05-14 08:00 foi cancelado")
+- **notif-detail:** Cancel, confirm, and no-show endpoints now dispatch FCM notifications via `asyncio.create_task`
+- **notif-detail:** `notify_appointment_confirmed` renamed to "Agendamento criado" (was "Agendamento confirmado") to differentiate from staff confirm
+- **notif-detail:** New `_appointment_detail()` helper builds human-readable detail fragment for all appointment notification bodies
+- **notif-detail:** NotificationRouter routes all `appointment_*` events to `/client/resources?tab=1` (Meus Agendamentos) instead of `/client/support`
+- **notif-detail:** notification_provider.dart: distinct icons (check_circle/cancel/person_off) and colors (green/red/orange) per appointment event
+- **notif-detail:** notification_handler_provider.dart: invalidates `appointmentsProvider` on all 4 appointment event types
+- **notif-detail:** Notification tap navigates via `context.go(NotificationRouter.routeFor(...))` for all events (not just appointment_confirmed)
 - **18-05:** showAppointmentDetailSheet: reusable appointment detail bottom sheet widget
 - **18-05:** Refactored home screen inline sheet to use shared widget (DRY)
 - **18-05:** onDetailTap pattern: combined mark-as-read + open detail on notification tap
@@ -151,6 +181,10 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 | 2026-05-12 | feature/improve-chatbot-ux | gsd/v3.0-group1-corrections | #15 | Phase 25 chatbot interaction polish, persona rewrite, WhatsApp formatting, knowledge base expansion |
 | 2026-05-12 | gsd/v3.0-group1-corrections | gsd/v3.0-group1-corrections-2 | — | New stable baseline branch for continued development |
 | 2026-05-14 | gsd/v3.0-group1-corrections-2 | feature/student-profile-screen | — | Phase 23: Student profile + professor field + staff student detail |
+| 2026-05-14 | fix/enrollment-draft-flow | feat/notifications-backend-persistence | — | Notification read status persisted server-side (notifications table + REST API + Flutter) |
+| 2026-05-14 | feat/notifications-backend-persistence | feature/staff-schedule-tabs | — | Staff schedule management: TabBar, grouped slots, batch delete, no-show, slot CRUD |
+| 2026-05-14 | feature/staff-schedule-tabs | fix/resource-booking-authorization | — | Fix authorization upload (bytes+MIME), provider D-04 role on actions, staff authorization download |
+| 2026-05-14 | fix/resource-booking-authorization | feature/notification-details-and-navigation | — | Descriptive notifications with resource/date/time, 3 new events, correct navigation to Meus Agendamentos |
 
 ## Session Continuity
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/providers/notification_routes.dart';
 import '../../../core/theme/app_animations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/widgets/animated_entrance.dart';
@@ -10,27 +12,19 @@ import '../../../shared/widgets/app_error_state.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/responsive_container.dart';
 import '../providers/notification_provider.dart';
-import '../providers/document_provider.dart';
-import '../providers/appointment_provider.dart';
-import 'widgets/appointment_detail_sheet.dart';
 
 class ClientNotificationsScreen extends ConsumerWidget {
   const ClientNotificationsScreen({super.key});
 
   Future<void> _onRefresh(WidgetRef ref) async {
-    ref.invalidate(documentsProvider);
-    ref.invalidate(appointmentsProvider);
-    await Future.wait([
-      ref.read(documentsProvider.future),
-      ref.read(appointmentsProvider.future),
-    ]);
+    ref.invalidate(notificationsProvider);
+    await ref.read(notificationsProvider.future);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notificationsAsync = ref.watch(derivedNotificationsProvider);
+    final notificationsAsync = ref.watch(notificationsProvider);
     final filter = ref.watch(notificationFilterNotifierProvider);
-    final readIds = ref.watch(readNotificationIdsProvider);
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -69,14 +63,14 @@ class ClientNotificationsScreen extends ConsumerWidget {
             }
 
             final unreadCount =
-                notifications.where((n) => !readIds.contains(n.id)).length;
+                notifications.where((n) => !n.isRead).length;
 
             final filtered = switch (filter) {
               NotificationFilter.all => notifications,
               NotificationFilter.unread =>
-                notifications.where((n) => !readIds.contains(n.id)).toList(),
+                notifications.where((n) => !n.isRead).toList(),
               NotificationFilter.read =>
-                notifications.where((n) => readIds.contains(n.id)).toList(),
+                notifications.where((n) => n.isRead).toList(),
             };
 
             return Column(
@@ -148,13 +142,10 @@ class ClientNotificationsScreen extends ConsumerWidget {
                       TextButton(
                         onPressed: unreadCount > 0
                             ? () {
-                                final allIds = notifications
-                                    .map((n) => n.id)
-                                    .toList();
                                 ref
                                     .read(
-                                        readNotificationIdsProvider.notifier)
-                                    .markAllAsRead(allIds);
+                                        notificationActionsProvider.notifier)
+                                    .markAllAsRead();
                               }
                             : null,
                         child: const Text('Visualizar todos'),
@@ -188,29 +179,21 @@ class ClientNotificationsScreen extends ConsumerWidget {
                                 delay: AppAnimations.getEntranceDelay(index),
                                 child: _NotificationCard(
                                   notification: notification,
-                                  isRead: readIds.contains(notification.id),
-                                  onTap: () => ref
-                                      .read(readNotificationIdsProvider
-                                          .notifier)
-                                      .markAsRead(notification.id),
-                                  onDetailTap: notification.type ==
-                                          NotificationType.appointmentReminder
-                                      ? () {
-                                          final appointments = ref
-                                                  .read(appointmentsProvider)
-                                                  .valueOrNull ??
-                                              [];
-                                          final aptId = notification.id
-                                              .replaceFirst('apt-', '');
-                                          final apt = appointments
-                                              .where((a) => a.id == aptId)
-                                              .firstOrNull;
-                                          if (apt != null) {
-                                            showAppointmentDetailSheet(
-                                                context, apt);
-                                          }
-                                        }
-                                      : null,
+                                  onTap: () {
+                                    if (!notification.isRead) {
+                                      ref
+                                          .read(notificationActionsProvider
+                                              .notifier)
+                                          .markAsRead(notification.id);
+                                    }
+                                  },
+                                  onDetailTap: () {
+                                    // Navigate to the relevant tab for this event
+                                    final route = NotificationRouter.routeFor(
+                                      {'event': notification.event},
+                                    );
+                                    context.go(route);
+                                  },
                                 ),
                               );
                             },
@@ -227,14 +210,12 @@ class ClientNotificationsScreen extends ConsumerWidget {
 }
 
 class _NotificationCard extends StatelessWidget {
-  final DerivedNotification notification;
-  final bool isRead;
+  final ServerNotification notification;
   final VoidCallback onTap;
   final VoidCallback? onDetailTap;
 
   const _NotificationCard({
     required this.notification,
-    required this.isRead,
     required this.onTap,
     this.onDetailTap,
   });
@@ -242,6 +223,7 @@ class _NotificationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final isRead = notification.isRead;
 
     return Opacity(
       opacity: isRead ? 0.6 : 1.0,
@@ -301,7 +283,7 @@ class _NotificationCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        _formatRelativeTime(notification.timestamp),
+                        _formatRelativeTime(notification.createdAt),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context)
@@ -336,7 +318,7 @@ class _NotificationCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    notification.subtitle,
+                    notification.body,
                     style:
                         Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: colors.onSurfaceVariant,
@@ -353,11 +335,16 @@ class _NotificationCard extends StatelessWidget {
     );
   }
 
-  String _categoryLabel(DerivedNotification n) {
-    if (n.icon == Icons.description_outlined) return 'DOCUMENTO';
-    if (n.icon == Icons.calendar_today) return 'EVENTO';
-    return 'ALERTA';
-  }
+  String _categoryLabel(ServerNotification n) => switch (n.event) {
+        'document_ready' => 'DOCUMENTO',
+        'enrollment_confirmed' => 'MATRÍCULA',
+        'appointment_confirmed' ||
+        'appointment_completed' ||
+        'appointment_cancelled' ||
+        'appointment_no_show' =>
+          'AGENDAMENTO',
+        _ => 'ALERTA',
+      };
 }
 
 class _FilterTab extends StatelessWidget {
