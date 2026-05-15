@@ -167,6 +167,9 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **26-01:** Banner feature slice: Banner model (image_url, is_enabled, display_order), Alembic 021a migration, BannerService singleton, 5 REST endpoints
 - **26-01:** GET /banners is public (no auth) for student carousel; GET /banners/all is staff-only
 - **26-01:** POST /banners/upload validates content-type (jpeg/png/webp) and enforces 2MB limit; UUID-prefix filenames
+- **26-02:** Staff BannerModel, BannerService, BannersNotifier (AsyncNotifierProvider with optimistic toggle/delete)
+- **26-02:** StaffBannerManagementScreen: GridView with GlassCard thumbnails, Switch toggle, delete dialog, FAB upload via FilePicker
+- **26-02:** Route /staff/banners registered; "Gerenciar Banners" card in staff dashboard Acoes Rapidas section
 - **26-03:** BannerItem lightweight model in client providers (decoupled from staff BannerModel for parallel plan execution)
 - **26-03:** BannerCarousel: auto-scroll 4s, swipe pause/resume 6s, expanding-dot indicators, 0/1 banner edge cases
 - **26-03:** Image URL from AppConfig.apiBaseUrl with /api/v1 stripped for /uploads/ path; silent failure on load/error
