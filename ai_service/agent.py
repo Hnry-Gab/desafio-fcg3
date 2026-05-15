@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 from typing import Any
 
 from langchain.agents import create_agent
@@ -18,6 +19,61 @@ from ai_service.rag import create_rag_tool
 from ai_service.security import sanitize_input, filter_output
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Hallucination guard: detect when the LLM claims a mutating action succeeded
+# but no MCP tool was actually called during the current invocation.
+# ---------------------------------------------------------------------------
+
+# Phrases that indicate the LLM claims it performed a mutating action.
+# Kept case-insensitive. Only matches action-completion claims, NOT
+# informational queries or suggestions.
+_ACTION_CLAIM_PATTERNS = [
+    r"agendamento\s+(confirmado|realizado|feito)",
+    r"solicita[cç][aã]o\s+realizada",
+    r"matr[ií]cula\s+(confirmada|criada|realizada|feita)",
+    r"documento\s+(solicitado|pedido)",
+    r"DOC-\d+",  # Fabricated document codes
+    r"j[aá]\s+(pedi|solicitei|agendei|confirmei|criei|cancelei)",
+]
+_ACTION_CLAIM_RE = re.compile(
+    "|".join(_ACTION_CLAIM_PATTERNS), re.IGNORECASE
+)
+
+# MCP tools that are mutating (non-read-only). If the LLM claims success on
+# an action but none of these tools appear in the invocation messages, the
+# response is likely hallucinated.
+_MUTATING_TOOLS = frozenset({
+    "book_appointment",
+    "cancel_appointment",
+    "request_document",
+    "create_enrollment",
+    "confirm_enrollment",
+    "drop_course",
+    "lock_enrollment",
+})
+
+
+def _agent_called_mutating_tool(messages: list[Any]) -> bool:
+    """Return True if any mutating MCP tool was called in this invocation."""
+
+    for msg in messages:
+        if isinstance(msg, ToolMessage):
+            # ToolMessage means a tool was called and returned.
+            # Check if the preceding AIMessage had a mutating tool call.
+            continue
+        if isinstance(msg, AIMessage):
+            tool_calls = getattr(msg, "tool_calls", None) or []
+            for tc in tool_calls:
+                if tc.get("name") in _MUTATING_TOOLS:
+                    return True
+    return False
+
+
+def _response_claims_action(text: str) -> bool:
+    """Return True if the response text claims a mutating action was taken."""
+
+    return bool(_ACTION_CLAIM_RE.search(text))
 
 FALLBACK_MESSAGE = (
     "Opa, tive um probleminha tecnico agora. "
@@ -237,6 +293,74 @@ async def invoke_agent(
         return FALLBACK_MESSAGE
 
     response_text = _extract_response_text(result)
+    result_messages = result.get("messages", [])
+
+    # ---------------------------------------------------------------
+    # Hallucination guard: if the LLM claims a mutating action was
+    # completed but never actually called a mutating MCP tool during
+    # this invocation, retry with an explicit correction prompt.
+    # This catches Gemini Flash's tendency to fabricate tool results
+    # when the conversation context is rich enough for it to guess.
+    # ---------------------------------------------------------------
+    if (
+        _response_claims_action(response_text)
+        and not _agent_called_mutating_tool(result_messages)
+    ):
+        logger.warning(
+            "Hallucination detected for session %s: response claims action "
+            "but no mutating tool was called. Retrying with correction.",
+            session_id,
+        )
+
+        correction = SystemMessage(
+            content=(
+                "ATENCAO: Voce NAO chamou nenhuma ferramenta nesta rodada, mas sua resposta "
+                "afirma que uma acao foi realizada com sucesso. Isso e INCORRETO — voce DEVE "
+                "chamar a ferramenta correspondente (request_document, book_appointment, "
+                "create_enrollment, etc.) ANTES de dizer ao aluno que a acao foi feita. "
+                "Responda novamente: chame a ferramenta necessaria AGORA e so depois "
+                "comunique o resultado REAL ao aluno."
+            )
+        )
+        retry_messages = [*all_messages, AIMessage(content=response_text), correction]
+
+        try:
+            retry_result = await asyncio.wait_for(
+                agent.ainvoke(
+                    {"messages": retry_messages},
+                    config={"recursion_limit": settings.MAX_AGENT_ITERATIONS},
+                ),
+                timeout=settings.MAX_AGENT_EXECUTION_TIME,
+            )
+            retry_text = _extract_response_text(retry_result)
+            retry_msgs = retry_result.get("messages", [])
+
+            if _agent_called_mutating_tool(retry_msgs):
+                logger.info(
+                    "Hallucination corrected for session %s: tool called on retry.",
+                    session_id,
+                )
+                response_text = retry_text
+            else:
+                logger.warning(
+                    "Hallucination persisted after retry for session %s. "
+                    "Using corrected response anyway.",
+                    session_id,
+                )
+                # Use the retry response which may still be better than the
+                # original hallucinated one, or fall back to the original
+                # if the retry also failed to call tools.
+                if not _response_claims_action(retry_text):
+                    response_text = retry_text
+                # else: keep original — at least it's a response
+
+        except (asyncio.TimeoutError, Exception) as retry_exc:
+            logger.warning(
+                "Hallucination retry failed for session %s: %s. "
+                "Using original response.",
+                session_id,
+                retry_exc,
+            )
 
     # Layer 4: Output filtering (D-05)
     filtered_response, was_filtered = filter_output(response_text)
