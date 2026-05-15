@@ -33,6 +33,7 @@ from src.features.auth.models import Staff, Student
 # noqa: F401 — chat models must be imported so SQLAlchemy can resolve Student relationships.
 from src.features.chat.models import ChatMessage, ChatSession, McpActionLog  # noqa: F401
 from src.features.courses.models import Course, Curriculum, CurriculumCourse, Prerequisite
+from src.features.courses.models import ClassSchedule
 from src.features.documents.models import Document
 from src.features.enrollment.models import Enrollment, EnrollmentCourse, EnrollmentPeriod
 from src.features.scheduling.models import Appointment, Resource, SchedulingSlot
@@ -53,6 +54,7 @@ WARNING_TABLES = [
     "enrollment_periods",
     "scheduling_slots",
     "resources",
+    "class_schedules",
     "fcm_tokens",
     "sessions",
     "verification_codes",
@@ -65,46 +67,46 @@ WARNING_TABLES = [
 ]
 
 COURSES_DATA = [
-    ("SCC0101", "Introdução à Computação", 4, 60, 1, True),
-    ("SCC0102", "Algoritmos e Estruturas de Dados I", 4, 60, 1, True),
-    ("SMA0300", "Cálculo I", 4, 60, 1, True),
-    ("SMA0354", "Álgebra Linear e Geometria Analítica", 4, 60, 1, True),
-    ("SCC0103", "Laboratório de Introdução à Ciência da Computação I", 2, 30, 1, True),
-    ("SCC0201", "Algoritmos e Estruturas de Dados II", 4, 60, 2, True),
-    ("SCC0202", "Laboratório de Introdução à Ciência da Computação II", 2, 30, 2, True),
-    ("SMA0301", "Cálculo II", 4, 60, 2, True),
-    ("SMA0355", "Álgebra Linear II", 4, 60, 2, True),
-    ("SSC0101", "Organização de Computadores Digitais", 4, 60, 2, True),
-    ("SCC0210", "Estruturas de Dados", 4, 60, 3, True),
-    ("SCC0211", "Laboratório de Organização e Arquitetura de Computadores", 2, 30, 3, True),
-    ("SMA0356", "Probabilidade e Estatística", 4, 60, 3, True),
-    ("SSC0301", "Arquitetura de Computadores", 4, 60, 3, True),
-    ("SCC0212", "Programação Orientada a Objetos", 4, 60, 3, True),
-    ("SCC0301", "Programação Funcional", 4, 60, 4, True),
-    ("SCC0302", "Análise e Projeto de Algoritmos", 4, 60, 4, True),
-    ("SCC0303", "Bases de Dados", 4, 60, 4, True),
-    ("SSC0302", "Sistemas Operacionais I", 4, 60, 4, True),
-    ("SCC0304", "Laboratório de Bases de Dados", 2, 30, 4, True),
-    ("SCC0401", "Compiladores", 4, 60, 5, True),
-    ("SCC0402", "Teoria dos Grafos", 4, 60, 5, True),
-    ("SCC0403", "Redes de Computadores", 4, 60, 5, True),
-    ("SSC0401", "Sistemas Operacionais II", 4, 60, 5, True),
-    ("SCC0404", "Linguagens Formais e Autômatos", 4, 60, 5, True),
-    ("SCC0501", "Inteligência Artificial", 4, 60, 6, True),
-    ("SCC0502", "Computação Gráfica", 4, 60, 6, True),
-    ("SCC0503", "Engenharia de Software I", 4, 60, 6, True),
-    ("SSC0501", "Segurança da Computação", 4, 60, 6, True),
-    ("SCC0504", "Sistemas Distribuídos I", 4, 60, 6, True),
-    ("SCC0601", "Processamento de Linguagem Natural", 4, 60, 7, True),
-    ("SCC0602", "Aprendizado de Máquina", 4, 60, 7, True),
-    ("SCC0603", "Engenharia de Software II", 4, 60, 7, True),
-    ("SCC0604", "Interação Humano-Computador", 4, 60, 7, False),
-    ("SCC0605", "Tópicos Avançados em Ciência da Computação", 4, 60, 7, False),
-    ("SCC0701", "Trabalho de Conclusão de Curso I", 4, 60, 8, True),
-    ("SCC0702", "Trabalho de Conclusão de Curso II", 4, 60, 8, True),
-    ("SCC0703", "Estágio Supervisionado", 4, 60, 8, True),
-    ("SCC0704", "Empreendedorismo em Software", 4, 60, 8, False),
-    ("SCC0705", "Ciência de Dados", 4, 60, 8, False),
+    ("SCC0101", "Introdução à Computação", 4, 60, 1, True, "Prof. Dr. João Silva"),
+    ("SCC0102", "Algoritmos e Estruturas de Dados I", 4, 60, 1, True, "Prof. Dr. Maria Santos"),
+    ("SMA0300", "Cálculo I", 4, 60, 1, True, "Prof. Dr. Carlos Mendes"),
+    ("SMA0354", "Álgebra Linear e Geometria Analítica", 4, 60, 1, True, "Prof. Dr. Ana Ferreira"),
+    ("SCC0103", "Laboratório de Introdução à Ciência da Computação I", 2, 30, 1, True, "Prof. Dr. João Silva"),
+    ("SCC0201", "Algoritmos e Estruturas de Dados II", 4, 60, 2, True, "Prof. Dr. Maria Santos"),
+    ("SCC0202", "Laboratório de Introdução à Ciência da Computação II", 2, 30, 2, True, "Prof. Dr. Pedro Almeida"),
+    ("SMA0301", "Cálculo II", 4, 60, 2, True, "Prof. Dr. Carlos Mendes"),
+    ("SMA0355", "Álgebra Linear II", 4, 60, 2, True, "Prof. Dr. Ana Ferreira"),
+    ("SSC0101", "Organização de Computadores Digitais", 4, 60, 2, True, "Prof. Dr. Roberto Lima"),
+    ("SCC0210", "Estruturas de Dados", 4, 60, 3, True, "Prof. Dr. Marcos Oliveira"),
+    ("SCC0211", "Laboratório de Organização e Arquitetura de Computadores", 2, 30, 3, True, "Prof. Dr. Roberto Lima"),
+    ("SMA0356", "Probabilidade e Estatística", 4, 60, 3, True, "Prof. Dra. Luciana Costa"),
+    ("SSC0301", "Arquitetura de Computadores", 4, 60, 3, True, "Prof. Dr. Roberto Lima"),
+    ("SCC0212", "Programação Orientada a Objetos", 4, 60, 3, True, "Prof. Dr. Pedro Almeida"),
+    ("SCC0301", "Programação Funcional", 4, 60, 4, True, "Prof. Dr. Marcos Oliveira"),
+    ("SCC0302", "Análise e Projeto de Algoritmos", 4, 60, 4, True, "Prof. Dr. Maria Santos"),
+    ("SCC0303", "Bases de Dados", 4, 60, 4, True, "Prof. Dra. Fernanda Ribeiro"),
+    ("SSC0302", "Sistemas Operacionais I", 4, 60, 4, True, "Prof. Dr. Roberto Lima"),
+    ("SCC0304", "Laboratório de Bases de Dados", 2, 30, 4, True, "Prof. Dra. Fernanda Ribeiro"),
+    ("SCC0401", "Compiladores", 4, 60, 5, True, "Prof. Dr. Marcos Oliveira"),
+    ("SCC0402", "Teoria dos Grafos", 4, 60, 5, True, "Prof. Dr. Maria Santos"),
+    ("SCC0403", "Redes de Computadores", 4, 60, 5, True, "Prof. Dr. Thiago Souza"),
+    ("SSC0401", "Sistemas Operacionais II", 4, 60, 5, True, "Prof. Dr. Roberto Lima"),
+    ("SCC0404", "Linguagens Formais e Autômatos", 4, 60, 5, True, "Prof. Dr. Marcos Oliveira"),
+    ("SCC0501", "Inteligência Artificial", 4, 60, 6, True, "Prof. Dr. André Carvalho"),
+    ("SCC0502", "Computação Gráfica", 4, 60, 6, True, "Prof. Dr. Pedro Almeida"),
+    ("SCC0503", "Engenharia de Software I", 4, 60, 6, True, "Prof. Dra. Renata Vieira"),
+    ("SSC0501", "Segurança da Computação", 4, 60, 6, True, "Prof. Dr. Thiago Souza"),
+    ("SCC0504", "Sistemas Distribuídos I", 4, 60, 6, True, "Prof. Dr. Thiago Souza"),
+    ("SCC0601", "Processamento de Linguagem Natural", 4, 60, 7, True, "Prof. Dr. André Carvalho"),
+    ("SCC0602", "Aprendizado de Máquina", 4, 60, 7, True, "Prof. Dr. André Carvalho"),
+    ("SCC0603", "Engenharia de Software II", 4, 60, 7, True, "Prof. Dra. Renata Vieira"),
+    ("SCC0604", "Interação Humano-Computador", 4, 60, 7, False, "Prof. Dra. Renata Vieira"),
+    ("SCC0605", "Tópicos Avançados em Ciência da Computação", 4, 60, 7, False, "Prof. Dr. João Silva"),
+    ("SCC0701", "Trabalho de Conclusão de Curso I", 4, 60, 8, True, "Prof. Dr. João Silva"),
+    ("SCC0702", "Trabalho de Conclusão de Curso II", 4, 60, 8, True, "Prof. Dr. João Silva"),
+    ("SCC0703", "Estágio Supervisionado", 4, 60, 8, True, "Prof. Dra. Renata Vieira"),
+    ("SCC0704", "Empreendedorismo em Software", 4, 60, 8, False, "Prof. Dra. Fernanda Ribeiro"),
+    ("SCC0705", "Ciência de Dados", 4, 60, 8, False, "Prof. Dr. André Carvalho"),
 ]
 
 PREREQUISITE_DATA = [
@@ -138,6 +140,53 @@ PREREQUISITE_DATA = [
     ("SCC0702", "SCC0701"),
     ("SCC0703", "SCC0503"),
     ("SCC0705", "SCC0602"),
+]
+
+# Weekly class schedule data: (course_code, day_of_week, start_time, end_time, room)
+# day_of_week: 0=Monday, 1=Tuesday, 2=Wednesday, 3=Thursday, 4=Friday
+# Realistic timetable for a Computer Science program
+CLASS_SCHEDULE_DATA = [
+    # Semester 1 courses
+    ("SCC0101", 0, time(8, 0), time(10, 0), "Sala 101, Bloco 3"),     # Intro Computação — Seg 8-10
+    ("SCC0101", 2, time(8, 0), time(10, 0), "Sala 101, Bloco 3"),     # Intro Computação — Qua 8-10
+    ("SCC0102", 1, time(8, 0), time(10, 0), "Sala 102, Bloco 3"),     # Algoritmos I — Ter 8-10
+    ("SCC0102", 3, time(8, 0), time(10, 0), "Sala 102, Bloco 3"),     # Algoritmos I — Qui 8-10
+    ("SMA0300", 0, time(10, 0), time(12, 0), "Sala 201, Bloco 2"),    # Cálculo I — Seg 10-12
+    ("SMA0300", 2, time(10, 0), time(12, 0), "Sala 201, Bloco 2"),    # Cálculo I — Qua 10-12
+    ("SMA0354", 1, time(10, 0), time(12, 0), "Sala 202, Bloco 2"),    # Álgebra Linear — Ter 10-12
+    ("SMA0354", 3, time(10, 0), time(12, 0), "Sala 202, Bloco 2"),    # Álgebra Linear — Qui 10-12
+    ("SCC0103", 4, time(8, 0), time(10, 0), "Lab 01, Bloco 5"),       # Lab ICC I — Sex 8-10
+    ("SCC0103", 4, time(10, 0), time(11, 0), "Lab 01, Bloco 5"),      # Lab ICC I — Sex 10-11
+    # Semester 2 courses
+    ("SCC0201", 0, time(8, 0), time(10, 0), "Sala 103, Bloco 3"),     # Algoritmos II — Seg 8-10
+    ("SCC0201", 2, time(8, 0), time(10, 0), "Sala 103, Bloco 3"),     # Algoritmos II — Qua 8-10
+    ("SCC0202", 4, time(8, 0), time(10, 0), "Lab 02, Bloco 5"),       # Lab ICC II — Sex 8-10
+    ("SMA0301", 1, time(8, 0), time(10, 0), "Sala 203, Bloco 2"),     # Cálculo II — Ter 8-10
+    ("SMA0301", 3, time(8, 0), time(10, 0), "Sala 203, Bloco 2"),     # Cálculo II — Qui 8-10
+    ("SMA0355", 0, time(10, 0), time(12, 0), "Sala 204, Bloco 2"),    # Álgebra Linear II — Seg 10-12
+    ("SMA0355", 2, time(10, 0), time(12, 0), "Sala 204, Bloco 2"),    # Álgebra Linear II — Qua 10-12
+    ("SSC0101", 1, time(10, 0), time(12, 0), "Sala 104, Bloco 3"),    # Org. Computadores — Ter 10-12
+    ("SSC0101", 3, time(10, 0), time(12, 0), "Sala 104, Bloco 3"),    # Org. Computadores — Qui 10-12
+    # Semester 3 courses
+    ("SCC0210", 0, time(14, 0), time(16, 0), "Sala 105, Bloco 3"),    # Estruturas de Dados — Seg 14-16
+    ("SCC0210", 2, time(14, 0), time(16, 0), "Sala 105, Bloco 3"),    # Estruturas de Dados — Qua 14-16
+    ("SCC0211", 4, time(14, 0), time(16, 0), "Lab 03, Bloco 5"),      # Lab Org. Arq. — Sex 14-16
+    ("SMA0356", 1, time(14, 0), time(16, 0), "Sala 205, Bloco 2"),    # Prob. Estatística — Ter 14-16
+    ("SMA0356", 3, time(14, 0), time(16, 0), "Sala 205, Bloco 2"),    # Prob. Estatística — Qui 14-16
+    ("SSC0301", 0, time(16, 0), time(18, 0), "Sala 106, Bloco 3"),    # Arq. Computadores — Seg 16-18
+    ("SSC0301", 2, time(16, 0), time(18, 0), "Sala 106, Bloco 3"),    # Arq. Computadores — Qua 16-18
+    ("SCC0212", 1, time(16, 0), time(18, 0), "Lab 01, Bloco 5"),      # POO — Ter 16-18
+    ("SCC0212", 3, time(16, 0), time(18, 0), "Lab 01, Bloco 5"),      # POO — Qui 16-18
+    # Semester 4 courses
+    ("SCC0301", 0, time(8, 0), time(10, 0), "Sala 107, Bloco 3"),     # Prog. Funcional — Seg 8-10
+    ("SCC0301", 2, time(8, 0), time(10, 0), "Sala 107, Bloco 3"),     # Prog. Funcional — Qua 8-10
+    ("SCC0302", 1, time(8, 0), time(10, 0), "Sala 108, Bloco 3"),     # Análise Algoritmos — Ter 8-10
+    ("SCC0302", 3, time(8, 0), time(10, 0), "Sala 108, Bloco 3"),     # Análise Algoritmos — Qui 8-10
+    ("SCC0303", 0, time(10, 0), time(12, 0), "Sala 109, Bloco 3"),    # Bases de Dados — Seg 10-12
+    ("SCC0303", 2, time(10, 0), time(12, 0), "Sala 109, Bloco 3"),    # Bases de Dados — Qua 10-12
+    ("SSC0302", 1, time(10, 0), time(12, 0), "Sala 110, Bloco 3"),    # SO I — Ter 10-12
+    ("SSC0302", 3, time(10, 0), time(12, 0), "Sala 110, Bloco 3"),    # SO I — Qui 10-12
+    ("SCC0304", 4, time(8, 0), time(10, 0), "Lab 04, Bloco 5"),       # Lab BD — Sex 8-10
 ]
 
 ACTIVE_PERIOD_SEMESTER_YEAR = "2026.1"
@@ -348,15 +397,15 @@ STUDENTS_DATA: tuple[StudentSeed, ...] = (
 
 STAFF_DATA = (
     {
-        "name": "Henry (Staff)",
+        "name": "Henry (Provider)",
         "email": "universalblackout1@gmail.com",
-        "role": "secretary",
+        "role": "provider",
     },
 )
 
 
 def validate_seed_shapes() -> None:
-    semesters = {semester for *_prefix, semester, _required in COURSES_DATA}
+    semesters = {semester for *_prefix, semester, _required, _professor in COURSES_DATA}
     if len(COURSES_DATA) != 40:
         raise ValueError(f"Expected 40 seeded courses, found {len(COURSES_DATA)}")
     if semesters != set(range(1, 9)):
@@ -422,12 +471,13 @@ async def seed_curriculum(session: AsyncSession) -> tuple[Curriculum, dict[str, 
     await session.flush()
 
     courses_by_code: dict[str, Course] = {}
-    for code, name, credits, workload_hours, semester, is_required in COURSES_DATA:
+    for code, name, credits, workload_hours, semester, is_required, professor in COURSES_DATA:
         course = Course(
             code=code,
             name=name,
             credits=credits,
             workload_hours=workload_hours,
+            professor=professor,
         )
         session.add(course)
         await session.flush()
@@ -453,6 +503,27 @@ async def seed_curriculum(session: AsyncSession) -> tuple[Curriculum, dict[str, 
     return curriculum, courses_by_code
 
 
+async def seed_class_schedules(
+    session: AsyncSession,
+    courses_by_code: dict[str, Course],
+) -> None:
+    """Seed weekly class schedule slots for all courses that have schedule data."""
+    for course_code, day_of_week, start, end, room in CLASS_SCHEDULE_DATA:
+        course = courses_by_code.get(course_code)
+        if course is None:
+            continue
+        session.add(
+            ClassSchedule(
+                course_id=course.id,
+                day_of_week=day_of_week,
+                start_time=start,
+                end_time=end,
+                room=room,
+            )
+        )
+    await session.commit()
+
+
 async def seed_active_period(session: AsyncSession) -> EnrollmentPeriod:
     today = date.today()
     active_period = EnrollmentPeriod(
@@ -470,6 +541,15 @@ async def seed_active_period(session: AsyncSession) -> EnrollmentPeriod:
 
 async def seed_scheduling(session: AsyncSession) -> None:
     resources_data = [
+        {
+            "name": "Atendimento na Secretaria",
+            "resource_type": "room",
+            "description": "Atendimento presencial na secretaria acadêmica para dúvidas, documentos e orientação",
+            "capacity": 1,
+            "location": "Bloco Administrativo, Térreo, Sala 01",
+            "is_available": True,
+            "requires_authorization": False,
+        },
         {
             "name": "Sala de Coordenação",
             "resource_type": "room",
@@ -544,37 +624,58 @@ async def seed_scheduling(session: AsyncSession) -> None:
         },
     ]
 
-    created_resources = []
+    created_resources: list[Resource] = []
     for res_data in resources_data:
         resource = Resource(**res_data)
         session.add(resource)
         await session.flush()
         created_resources.append(resource)
 
-    # Create scheduling slots only for the first resource (coordination room)
+    secretaria_resource = created_resources[0]  # "Atendimento na Secretaria"
+    coordination_resource = created_resources[1]  # "Sala de Coordenação"
+
+    # Create scheduling slots for "Atendimento na Secretaria" (used by appointment seeds)
     base_day = date.today() + timedelta(days=1)
-    slot_specs = [
+    secretaria_slot_specs = [
         (base_day, time(9, 0), time(10, 0)),
         (base_day, time(10, 0), time(11, 0)),
+        (base_day, time(11, 0), time(12, 0)),
+        (base_day + timedelta(days=1), time(9, 0), time(10, 0)),
         (base_day + timedelta(days=1), time(14, 0), time(15, 0)),
         (base_day + timedelta(days=2), time(9, 0), time(10, 0)),
         (base_day + timedelta(days=2), time(10, 0), time(11, 0)),
     ]
-    slots: list[SchedulingSlot] = []
-    for slot_date, start_time, end_time in slot_specs:
+    secretaria_slots: list[SchedulingSlot] = []
+    for slot_date, start_time, end_time in secretaria_slot_specs:
         slot = SchedulingSlot(
-            resource_id=resource.id,
+            resource_id=secretaria_resource.id,
             date=slot_date,
             start_time=start_time,
             end_time=end_time,
             is_available=True,
         )
         session.add(slot)
-        slots.append(slot)
+        secretaria_slots.append(slot)
+
+    # Create scheduling slots for coordination room
+    coordination_slot_specs = [
+        (base_day, time(14, 0), time(15, 0)),
+        (base_day + timedelta(days=1), time(10, 0), time(11, 0)),
+        (base_day + timedelta(days=2), time(14, 0), time(15, 0)),
+    ]
+    for slot_date, start_time, end_time in coordination_slot_specs:
+        slot = SchedulingSlot(
+            resource_id=coordination_resource.id,
+            date=slot_date,
+            start_time=start_time,
+            end_time=end_time,
+            is_available=True,
+        )
+        session.add(slot)
 
     await session.flush()
     await session.commit()
-    return slots
+    return secretaria_slots
 
 
 async def seed_users_and_current_period(
@@ -664,6 +765,21 @@ async def seed_users_and_current_period(
                 )
             )
 
+        # Appointments
+        for appt in student_seed.appointments:
+            if appt.slot_index < len(slots):
+                target_slot = slots[appt.slot_index]
+                session.add(
+                    Appointment(
+                        student_id=student.id,
+                        slot_id=target_slot.id,
+                        reason=appt.reason,
+                        status=appt.status,
+                    )
+                )
+                # Mark slot as no longer available since it's booked
+                target_slot.is_available = False
+
     await session.commit()
 
 
@@ -682,6 +798,7 @@ async def print_summary(session: AsyncSession) -> None:
         "resources": "SELECT count(*) FROM resources",
         "scheduling_slots": "SELECT count(*) FROM scheduling_slots",
         "appointments": "SELECT count(*) FROM appointments",
+        "class_schedules": "SELECT count(*) FROM class_schedules",
     }
     for label, query in summary_queries.items():
         result = await session.execute(text(query))
@@ -725,6 +842,9 @@ async def main() -> None:
 
         curriculum, courses_by_code = await seed_curriculum(session)
         print(f"📚 Curriculum seeded: {curriculum.name} with {len(courses_by_code)} courses")
+
+        await seed_class_schedules(session, courses_by_code)
+        print(f"🗓️  Class schedules seeded: {len(CLASS_SCHEDULE_DATA)} weekly slots")
 
         active_period = await seed_active_period(session)
         print(f"🗓️  Active enrollment period seeded: {active_period.semester_year}")

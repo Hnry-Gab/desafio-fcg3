@@ -145,6 +145,7 @@ void main() {
       mockInterceptor.responseFactory = (_) => {};
 
       await service.createSlots(
+        resourceId: 'res-001',
         date: '2026-06-01',
         startTime: '10:00',
         endTime: '12:00',

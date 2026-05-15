@@ -33,6 +33,7 @@ class ChatSession(Base):
     student_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("students.id"), nullable=False)
     whatsapp_phone: Mapped[str] = mapped_column(String(20), nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, server_default=text("'active'"))
+    name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     verification_state: Mapped[str] = mapped_column(String(20), nullable=False, server_default=text("'unverified'"))
     assigned_staff_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("staff.id"), nullable=True)
     escalated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -73,7 +74,7 @@ class McpActionLog(Base):
     __tablename__ = "mcp_action_logs"
     __table_args__ = (
         CheckConstraint(
-            "status IN ('success', 'error', 'retry_success')",
+            "status IN ('success', 'error', 'retry_success', 'blocked_verification')",
             name="ck_mcp_action_logs_status",
         ),
         Index("idx_mcp_logs_session", "chat_session_id", "created_at"),

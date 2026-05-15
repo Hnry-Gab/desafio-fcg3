@@ -1,11 +1,10 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/router/route_names.dart';
 import '../../../core/responsive/breakpoints.dart';
-import '../../../core/theme/app_spacing.dart';
 import '../../../shared/widgets/app_offline_banner.dart';
+import '../../../shared/widgets/glass_bottom_nav.dart';
 import '../providers/chat_provider.dart';
 import '../providers/document_provider.dart';
 import '../providers/appointment_provider.dart';
@@ -39,9 +38,11 @@ class _ClientShellState extends ConsumerState<ClientShell> {
     final location = GoRouterState.of(context).matchedLocation;
     if (location.startsWith(RoutePaths.clientChat)) return 1;
     if (location.startsWith(RoutePaths.clientDocuments)) return 2;
-    if (location.startsWith(RoutePaths.clientNotifications)) return 3;
+    if (location.startsWith(RoutePaths.clientSchedule)) return 3;
     if (location.startsWith(RoutePaths.clientResources)) return 4;
-    if (location.startsWith(RoutePaths.clientSupport)) return 5;
+    if (location.startsWith(RoutePaths.clientSupport)) return 0; // sub-page of home
+    if (location.startsWith(RoutePaths.clientEnrollment)) return 5; // sub-page of profile
+    if (location.startsWith(RoutePaths.clientProfile)) return 5;
     return 0;
   }
 
@@ -54,20 +55,21 @@ class _ClientShellState extends ConsumerState<ClientShell> {
       case 2:
         context.go(RoutePaths.clientDocuments);
       case 3:
-        context.go(RoutePaths.clientNotifications);
+        context.go(RoutePaths.clientSchedule);
       case 4:
         context.go(RoutePaths.clientResources);
       case 5:
-        context.go(RoutePaths.clientSupport);
+        context.go(RoutePaths.clientProfile);
     }
   }
 
-  static const _destinations = <_NavItem>[
-    _NavItem(icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Início'),
-    _NavItem(icon: Icons.chat_outlined, activeIcon: Icons.chat, label: 'Chat'),
-    _NavItem(icon: Icons.description_outlined, activeIcon: Icons.description, label: 'Docs'),
-    _NavItem(icon: Icons.notifications_outlined, activeIcon: Icons.notifications, label: 'Avisos'),
-    _NavItem(icon: Icons.meeting_room_outlined, activeIcon: Icons.meeting_room, label: 'Recursos'),
+  static const _destinations = <NavItem>[
+    NavItem(icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Início'),
+    NavItem(icon: Icons.chat_outlined, activeIcon: Icons.chat, label: 'Chat'),
+    NavItem(icon: Icons.description_outlined, activeIcon: Icons.description, label: 'Docs'),
+    NavItem(icon: Icons.calendar_month_outlined, activeIcon: Icons.calendar_month, label: 'Grade'),
+    NavItem(icon: Icons.meeting_room_outlined, activeIcon: Icons.meeting_room, label: 'Recursos'),
+    NavItem(icon: Icons.person_outlined, activeIcon: Icons.person, label: 'Perfil'),
   ];
 
   static const _railDestinations = [
@@ -87,14 +89,19 @@ class _ClientShellState extends ConsumerState<ClientShell> {
       label: Text('Documentos'),
     ),
     NavigationRailDestination(
-      icon: Icon(Icons.notifications_outlined),
-      selectedIcon: Icon(Icons.notifications),
-      label: Text('Notificações'),
+      icon: Icon(Icons.calendar_month_outlined),
+      selectedIcon: Icon(Icons.calendar_month),
+      label: Text('Grade'),
     ),
     NavigationRailDestination(
       icon: Icon(Icons.meeting_room_outlined),
       selectedIcon: Icon(Icons.meeting_room),
       label: Text('Recursos'),
+    ),
+    NavigationRailDestination(
+      icon: Icon(Icons.person_outlined),
+      selectedIcon: Icon(Icons.person),
+      label: Text('Perfil'),
     ),
   ];
 
@@ -112,7 +119,7 @@ class _ClientShellState extends ConsumerState<ClientShell> {
                 Expanded(child: widget.child),
               ],
             ),
-            bottomNavigationBar: _GlassBottomNav(
+            bottomNavigationBar: GlassBottomNav(
               currentIndex: _currentIndex(context),
               destinations: _destinations,
               onTap: (index) => _onTap(context, index),
@@ -153,113 +160,3 @@ class _ClientShellState extends ConsumerState<ClientShell> {
   }
 }
 
-// Internal nav item data class
-class _NavItem {
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-  const _NavItem({required this.icon, required this.activeIcon, required this.label});
-}
-
-/// Glass-panel bottom navigation matching alpha-connect prototype.
-class _GlassBottomNav extends StatelessWidget {
-  final int currentIndex;
-  final List<_NavItem> destinations;
-  final ValueChanged<int> onTap;
-
-  const _GlassBottomNav({
-    required this.currentIndex,
-    required this.destinations,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
-
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: Container(
-          height: 80 + bottomPadding,
-          padding: EdgeInsets.only(bottom: bottomPadding),
-          decoration: BoxDecoration(
-            color: isDark
-                ? colors.surfaceContainerLowest.withValues(alpha: 0.7)
-                : Colors.white.withValues(alpha: 0.7),
-            border: Border(
-              top: BorderSide(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.white.withValues(alpha: 0.4),
-              ),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: isDark
-                    ? Colors.black.withValues(alpha: 0.3)
-                    : colors.primary.withValues(alpha: 0.06),
-                blurRadius: 16,
-                offset: const Offset(0, -4),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(destinations.length, (index) {
-              final item = destinations[index];
-              final isSelected = index == currentIndex;
-
-              return GestureDetector(
-                onTap: () => onTap(index),
-                behavior: HitTestBehavior.opaque,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeInOut,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected ? colors.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        isSelected ? item.activeIcon : item.icon,
-                        size: 24,
-                        color: isSelected
-                            ? colors.onPrimary
-                            : colors.onSurfaceVariant,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        item.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
-                          color: isSelected
-                              ? colors.onPrimary
-                              : colors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }),
-          ),
-        ),
-      ),
-    );
-  }
-}

@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../../core/models/user_model.dart';
+import '../../../core/providers/fcm_provider.dart';
+import '../../../core/providers/notification_handler_provider.dart';
 import '../../../core/providers/storage_provider.dart';
 import '../../../core/providers/dio_provider.dart';
+import '../../../core/router/app_router.dart';
 import '../services/auth_service.dart';
 import 'auth_state.dart';
 
@@ -34,6 +36,15 @@ class Auth extends _$Auth {
 
     try {
       final user = await _authService.getMe();
+      // Block inactive students from accessing the app
+      if (user.isStudent && !user.isActive) {
+        await storage.delete(key: _accessTokenKey);
+        await storage.delete(key: _refreshTokenKey);
+        state = const AuthError(
+          message: 'Sua conta está inativa. Entre em contato com a secretaria.',
+        );
+        return;
+      }
       state = AuthAuthenticated(user: user);
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
@@ -48,12 +59,17 @@ class Auth extends _$Auth {
     }
   }
 
-  /// Request OTP code for email
+  /// Request OTP code for email.
+  /// Returns the success message, or an error string starting with 'ERROR:'
+  /// if the email is not registered, or null on network failure.
   Future<String?> requestCode(String email) async {
     try {
       final response = await _authService.requestCode(email: email);
       return response.message;
-    } on DioException catch (_) {
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return 'ERROR:USER_NOT_FOUND';
+      }
       return null;
     }
   }
@@ -71,7 +87,34 @@ class Auth extends _$Auth {
 
       try {
         final user = await _authService.getMe();
+        // Block inactive students from accessing the app
+        if (user.isStudent && !user.isActive) {
+          await storage.delete(key: _accessTokenKey);
+          await storage.delete(key: _refreshTokenKey);
+          state = const AuthError(
+            message:
+                'Sua conta está inativa. Entre em contato com a secretaria.',
+          );
+          return AuthVerifyResult.networkError;
+        }
         state = AuthAuthenticated(user: user);
+
+        // Register FCM token (immediately after login)
+        if (user.isStudent) {
+          ref.read(fcmServiceProvider.notifier).registerToken(user.id);
+        }
+
+        // D-18: Navigate to pending deep-link from notification tap during expired JWT
+        final pendingLink = ref
+            .read(notificationHandlerProvider.notifier)
+            .consumePendingDeepLink();
+        if (pendingLink != null) {
+          // Small delay so router redirect completes first
+          Future.delayed(const Duration(milliseconds: 300), () {
+            ref.read(appRouterProvider).go(pendingLink);
+          });
+        }
+
         return AuthVerifyResult.success;
       } catch (_) {
         await storage.delete(key: _accessTokenKey);
@@ -92,7 +135,8 @@ class Auth extends _$Auth {
               final firstDetail = details[0];
               if (firstDetail is Map<String, dynamic>) {
                 remaining = int.tryParse(
-                    firstDetail['message']?.toString() ?? '');
+                  firstDetail['message']?.toString() ?? '',
+                );
               }
             }
           } catch (_) {
@@ -119,6 +163,14 @@ class Auth extends _$Auth {
 
   /// Logout — clear tokens and reset state
   Future<void> logout() async {
+    // Unregister FCM token before clearing auth state
+    final currentState = state;
+    if (currentState is AuthAuthenticated && currentState.user.isStudent) {
+      await ref
+          .read(fcmServiceProvider.notifier)
+          .unregisterToken(currentState.user.id);
+    }
+
     try {
       await _authService.logout();
     } catch (_) {
@@ -129,16 +181,6 @@ class Auth extends _$Auth {
     await storage.delete(key: _refreshTokenKey);
     state = const AuthUnauthenticated();
   }
-
-  /// Set a demo user for previewing screens without backend.
-  void setDemoUser(UserModel user) {
-    state = AuthAuthenticated(user: user);
-  }
 }
 
-enum AuthVerifyResult {
-  success,
-  invalidCode,
-  maxAttempts,
-  networkError,
-}
+enum AuthVerifyResult { success, invalidCode, maxAttempts, networkError }

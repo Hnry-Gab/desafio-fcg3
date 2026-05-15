@@ -1,6 +1,6 @@
 """Route handlers for the Appointments feature slice.
 
-5 endpoints covering all APPT-* requirements:
+6 endpoints covering all APPT-* requirements:
 
 Scheduling (dual-auth for MCP access):
 - GET /scheduling/slots — available slots with date/resource filters (APPT-01)
@@ -10,11 +10,13 @@ Appointments (dual-auth for MCP access):
 - POST /appointments — book a slot with SELECT FOR UPDATE (APPT-02)
 - GET /appointments — list appointments with status filter (APPT-04)
 - PUT /appointments/{id}/cancel — cancel appointment (APPT-03)
+- PUT /appointments/{id}/confirm — confirm appointment (scheduled → completed)
 - POST /appointments/{id}/authorization — upload authorization file
 """
 
 from __future__ import annotations
 
+import asyncio
 import os
 import uuid as uuid_mod
 from datetime import date
@@ -24,6 +26,7 @@ from fastapi import APIRouter, Depends, Query, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.infrastructure.database import get_db_session
+from src.features.notifications.services import notification_service
 from src.shared.dependencies import (
     UserContext,
     get_current_user_or_service,
@@ -40,8 +43,10 @@ from src.features.appointments.schemas import (
     AppointmentCreate,
     AppointmentListItem,
     AppointmentResponse,
+    SlotBatchDelete,
     SlotCreate,
     SlotResponse,
+    SlotUpdate,
 )
 from src.features.appointments.services import appointment_service, slot_service
 
@@ -103,6 +108,93 @@ async def create_slots(
     return slots
 
 
+# ------------------------------------------------------------------
+# GET /scheduling/slots/all — staff sees ALL slots (available + booked)
+# ------------------------------------------------------------------
+
+@scheduling_router.get("/slots/all", response_model=list[SlotResponse])
+async def get_all_slots(
+    date_from: date | None = Query(default=None, description="Start date filter"),
+    date_to: date | None = Query(default=None, description="End date filter"),
+    resource_id: UUID | None = Query(default=None, description="Filter by resource ID"),
+    user: UserContext = Depends(get_current_user_or_service),
+    db: AsyncSession = Depends(get_db_session),
+) -> list[SlotResponse]:
+    """Get ALL scheduling slots (available and booked) for staff management.
+
+    Unlike GET /slots, this endpoint does not filter by is_available.
+    Staff only.
+    """
+    require_staff(user)
+
+    return await slot_service.get_all_slots(
+        db,
+        date_from=date_from,
+        date_to=date_to,
+        resource_id=resource_id,
+    )
+
+
+# ------------------------------------------------------------------
+# PUT /scheduling/slots/{id} — edit a free slot
+# ------------------------------------------------------------------
+
+@scheduling_router.put("/slots/{slot_id}", response_model=SlotResponse)
+async def update_slot(
+    slot_id: UUID,
+    data: SlotUpdate,
+    user: UserContext = Depends(get_current_user_or_service),
+    db: AsyncSession = Depends(get_db_session),
+) -> SlotResponse:
+    """Update a scheduling slot's date/time. Only free slots can be edited. Staff only."""
+    require_staff(user)
+
+    result = await slot_service.update_slot(db, slot_id=slot_id, data=data)
+    await db.commit()
+    return result
+
+
+# ------------------------------------------------------------------
+# DELETE /scheduling/slots/{id} — delete a free slot
+# ------------------------------------------------------------------
+
+@scheduling_router.delete("/slots/{slot_id}", status_code=200)
+async def delete_slot(
+    slot_id: UUID,
+    user: UserContext = Depends(get_current_user_or_service),
+    db: AsyncSession = Depends(get_db_session),
+) -> dict:
+    """Delete a scheduling slot. Only free slots can be deleted. Staff only."""
+    require_staff(user)
+
+    await slot_service.delete_slot(db, slot_id=slot_id)
+    await db.commit()
+    return {"message": "Slot excluido com sucesso"}
+
+
+# ------------------------------------------------------------------
+# DELETE /scheduling/slots/batch — batch delete slots by resource+date
+# ------------------------------------------------------------------
+
+@scheduling_router.delete("/slots/batch", status_code=200)
+async def batch_delete_slots(
+    data: SlotBatchDelete,
+    user: UserContext = Depends(get_current_user_or_service),
+    db: AsyncSession = Depends(get_db_session),
+) -> dict:
+    """Batch delete slots for a resource on a specific date.
+
+    If only_available=True, deletes only free slots.
+    If only_available=False, deletes all and cancels associated appointments.
+    Staff only.
+    """
+    require_staff(user)
+
+    result = await slot_service.batch_delete_slots(db, data=data)
+    await db.commit()
+    return result
+
+
 # ---------------------------------------------------------------------------
 # Appointments router
 # ---------------------------------------------------------------------------
@@ -132,6 +224,32 @@ async def book_appointment(
         db, student_id=user.id, data=data,
     )
     await db.commit()
+
+    # Capture details for notification before background task
+    _notif_student_id = user.id
+    _notif_appt_id = result.id
+    _notif_resource = result.slot.staff.name if result.slot else ""
+    _notif_date = str(result.slot.date) if result.slot else ""
+    _notif_time = result.slot.start_time if result.slot else ""
+
+    # FCM: Notify student that appointment was booked
+    async def _send_notification():
+        async for fresh_db in get_db_session():
+            try:
+                await notification_service.notify_appointment_confirmed(
+                    fresh_db, _notif_student_id, _notif_appt_id,
+                    resource_name=_notif_resource,
+                    slot_date=_notif_date,
+                    slot_time=_notif_time,
+                )
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).error(
+                    "FCM notification failed in background task: %s", exc
+                )
+
+    asyncio.create_task(_send_notification())
+
     return result
 
 
@@ -153,8 +271,9 @@ async def list_appointments(
     Staff can view all or filter by student_id.
     """
     # IDOR-safe: force students/service to see only their own appointments
+    # D-04: Provider inherits staff permissions
     effective_student_id = student_id
-    if user.role != "staff":
+    if user.role not in ("staff", "provider"):
         effective_student_id = user.id
 
     items, total = await appointment_service.list_appointments(
@@ -190,6 +309,123 @@ async def cancel_appointment(
         user_role=user.role,
     )
     await db.commit()
+
+    # FCM: Notify student that appointment was cancelled
+    _notif_student_id = result.student_id
+    _notif_appt_id = result.id
+    _notif_resource = result.slot.staff.name if result.slot else ""
+    _notif_date = str(result.slot.date) if result.slot else ""
+    _notif_time = result.slot.start_time if result.slot else ""
+
+    async def _send_cancel_notification():
+        async for fresh_db in get_db_session():
+            try:
+                await notification_service.notify_appointment_cancelled(
+                    fresh_db, _notif_student_id, _notif_appt_id,
+                    resource_name=_notif_resource,
+                    slot_date=_notif_date,
+                    slot_time=_notif_time,
+                )
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).error(
+                    "FCM notification failed in background task: %s", exc
+                )
+
+    asyncio.create_task(_send_cancel_notification())
+
+    return result
+
+
+# ------------------------------------------------------------------
+# PUT /appointments/{id}/confirm — staff confirms appointment
+# ------------------------------------------------------------------
+
+@appointments_router.put("/{appointment_id}/confirm", response_model=AppointmentResponse)
+async def confirm_appointment(
+    appointment_id: UUID,
+    user: UserContext = Depends(get_current_user_or_service),
+    db: AsyncSession = Depends(get_db_session),
+) -> AppointmentResponse:
+    """Confirm an appointment (scheduled → completed). Staff only."""
+    result = await appointment_service.confirm_appointment(
+        db,
+        appointment_id=appointment_id,
+        user_id=user.id,
+        user_role=user.role,
+    )
+    await db.commit()
+
+    # FCM: Notify student that appointment was confirmed by staff
+    _notif_student_id = result.student_id
+    _notif_appt_id = result.id
+    _notif_resource = result.slot.staff.name if result.slot else ""
+    _notif_date = str(result.slot.date) if result.slot else ""
+    _notif_time = result.slot.start_time if result.slot else ""
+
+    async def _send_confirm_notification():
+        async for fresh_db in get_db_session():
+            try:
+                await notification_service.notify_appointment_completed(
+                    fresh_db, _notif_student_id, _notif_appt_id,
+                    resource_name=_notif_resource,
+                    slot_date=_notif_date,
+                    slot_time=_notif_time,
+                )
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).error(
+                    "FCM notification failed in background task: %s", exc
+                )
+
+    asyncio.create_task(_send_confirm_notification())
+
+    return result
+
+
+# ------------------------------------------------------------------
+# PUT /appointments/{id}/no-show — mark appointment as no_show
+# ------------------------------------------------------------------
+
+@appointments_router.put("/{appointment_id}/no-show", response_model=AppointmentResponse)
+async def mark_no_show(
+    appointment_id: UUID,
+    user: UserContext = Depends(get_current_user_or_service),
+    db: AsyncSession = Depends(get_db_session),
+) -> AppointmentResponse:
+    """Mark an appointment as no_show (scheduled -> no_show). Staff only."""
+    result = await appointment_service.mark_no_show(
+        db,
+        appointment_id=appointment_id,
+        user_id=user.id,
+        user_role=user.role,
+    )
+    await db.commit()
+
+    # FCM: Notify student they were marked as no-show
+    _notif_student_id = result.student_id
+    _notif_appt_id = result.id
+    _notif_resource = result.slot.staff.name if result.slot else ""
+    _notif_date = str(result.slot.date) if result.slot else ""
+    _notif_time = result.slot.start_time if result.slot else ""
+
+    async def _send_noshow_notification():
+        async for fresh_db in get_db_session():
+            try:
+                await notification_service.notify_appointment_no_show(
+                    fresh_db, _notif_student_id, _notif_appt_id,
+                    resource_name=_notif_resource,
+                    slot_date=_notif_date,
+                    slot_time=_notif_time,
+                )
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).error(
+                    "FCM notification failed in background task: %s", exc
+                )
+
+    asyncio.create_task(_send_noshow_notification())
+
     return result
 
 
@@ -253,7 +489,8 @@ async def upload_authorization(
         raise NotFoundException("appointment", appointment_id)
 
     # IDOR check: student can only upload to own appointment
-    if user.role != "staff" and result.student_id != user.id:
+    # D-04: Provider inherits staff permissions
+    if user.role not in ("staff", "provider") and result.student_id != user.id:
         raise ForbiddenException(
             "Voce nao tem permissao para enviar arquivos para este agendamento",
         )

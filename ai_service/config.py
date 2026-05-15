@@ -14,7 +14,8 @@ class Settings:
 
     DATABASE_URL: str = os.environ.get("DATABASE_URL", "")
     LLM_PROVIDER: str = os.environ.get("LLM_PROVIDER", "openai")
-    LLM_MODEL: str = os.environ.get("LLM_MODEL", "gpt-4o")
+    LLM_MODEL: str = os.environ.get("LLM_MODEL", "gpt-4o-mini")
+    LLM_TEMPERATURE: float = float(os.environ.get("LLM_TEMPERATURE", "0.7"))
     MCP_SERVICE_TOKEN: str | None = os.environ.get("MCP_SERVICE_TOKEN")
     OPENAI_API_KEY: str | None = os.environ.get("OPENAI_API_KEY")
     GEMINI_API_KEY: str | None = os.environ.get("GEMINI_API_KEY")
@@ -37,6 +38,11 @@ class Settings:
     RAG_SIMILARITY_THRESHOLD: float = float(
         os.environ.get("RAG_SIMILARITY_THRESHOLD", "0.45")
     )
+
+    # LangSmith tracing (optional — non-blocking if not configured)
+    LANGSMITH_API_KEY: str | None = os.environ.get("LANGSMITH_API_KEY")
+    LANGCHAIN_TRACING_V2: str = os.environ.get("LANGCHAIN_TRACING_V2", "false")
+    LANGCHAIN_PROJECT: str = os.environ.get("LANGCHAIN_PROJECT", "fcg3-ai-service")
 
     def __post_init__(self) -> None:
         if not self.DATABASE_URL:

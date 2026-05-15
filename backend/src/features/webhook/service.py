@@ -1,8 +1,12 @@
 """Webhook business logic: phone lookup, session management, verification state machine.
 
 This module contains the core webhook processing logic that runs BEFORE any
-LangChain agent involvement. The verification state machine gates access to the
-agent — unverified students NEVER reach the AI service (D-02).
+LangChain agent involvement. With lazy OTP (D-13/D-14), unverified students
+CAN reach the AI agent for read-only operations — verification is only triggered
+mid-conversation when a mutating action is needed (D-15/D-16).
+
+The verification state machine handles OTP flow once initiated (awaiting_email,
+awaiting_code states).
 """
 
 from __future__ import annotations
@@ -10,7 +14,7 @@ from __future__ import annotations
 import logging
 import re
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from sqlalchemy import select, update, and_
@@ -24,14 +28,14 @@ from src.infrastructure.whatsapp_client import WhatsAppClient
 
 logger = logging.getLogger(__name__)
 
-# Media type responses per docs/chatbot.md — hardcoded, no LLM
+# Media type responses — hardcoded, no LLM. Tone matches Alpha persona (D-17, D-24).
 MEDIA_RESPONSES: dict[str, str] = {
-    "audio": "Nao consigo processar audios ainda. Por favor, descreva sua duvida em texto.",
-    "image": "Nao consigo analisar imagens ainda. Por favor, descreva o que precisa em texto.",
-    "document": "Recebi um documento, mas nao consigo processa-lo ainda. Descreva sua solicitacao em texto.",
-    "sticker": "Por favor, descreva sua duvida em texto para que eu possa te ajudar.",
-    "location": "Nao preciso da sua localizacao. Como posso te ajudar? Digite sua duvida.",
-    "video": "Nao consigo processar videos. Por favor, descreva sua solicitacao em texto.",
+    "audio": "Ainda nao consigo ouvir audios, mas estou aqui para te ajudar! Descreva sua duvida em texto e vou resolver.",
+    "image": "Nao tenho como analisar imagens por enquanto. Me conta em texto o que voce precisa e vamos resolver juntos!",
+    "document": "Recebi seu documento, mas nao consigo processa-lo diretamente. Me descreva a solicitacao em texto — se precisar enviar documentos oficiais, posso te orientar pelo processo correto.",
+    "sticker": "Haha, entendi o sentimento! Mas para te ajudar melhor, me conta em texto o que precisa.",
+    "location": "Obrigado pela localizacao, mas nao preciso dela para te ajudar. Me diz: o que posso fazer por voce hoje?",
+    "video": "Videos ainda nao estao no meu repertorio. Descreve em texto o que precisa e eu te ajudo!",
 }
 
 # Session close keywords per D-11.
@@ -118,12 +122,16 @@ class WebhookService:
 
     async def get_or_create_session(
         self, student_id: uuid.UUID, phone: str, db: AsyncSession
-    ) -> ChatSession:
+    ) -> tuple[ChatSession, bool]:
         """Reuse active session or create new one per D-10.
 
         D-10: Reuse active session per phone number.
         D-13: Closed session → new session, verification_state starts unverified.
         Updates updated_at on reuse for pg_cron auto-close tracking.
+
+        Returns:
+            Tuple of (session, is_new) where is_new=True if session was just created.
+            Used by router to trigger welcome message generation (D-01).
         """
         result = await db.execute(
             select(ChatSession).where(
@@ -135,10 +143,21 @@ class WebhookService:
         )
         session = result.scalar_one_or_none()
         if session is not None:
+            # Reset stale OTP state — if student abandoned verification and returns
+            # after OTP TTL (5 min), they should not be trapped in awaiting_* state.
+            # This fixes UAT test 4: unverified students getting pulled into OTP.
+            if session.verification_state in ("awaiting_email", "awaiting_code"):
+                otp_ttl = timedelta(minutes=5)
+                now = datetime.now(timezone.utc)
+                updated_at = session.updated_at
+                if updated_at.tzinfo is None:
+                    updated_at = updated_at.replace(tzinfo=timezone.utc)
+                if updated_at < (now - otp_ttl):
+                    session.verification_state = "unverified"
             # Touch updated_at for auto-close tracking (D-12)
             session.updated_at = datetime.now(timezone.utc)
             await db.flush()
-            return session
+            return session, False
 
         # Create new session — starts unverified (D-13)
         session = ChatSession(
@@ -149,7 +168,7 @@ class WebhookService:
         )
         db.add(session)
         await db.flush()
-        return session
+        return session, True
 
     async def save_message(
         self,
@@ -196,6 +215,19 @@ class WebhookService:
         session.ended_at = datetime.now(timezone.utc)
         await db.flush()
 
+    async def initiate_mid_conversation_verification(
+        self, session: ChatSession, db: AsyncSession
+    ) -> None:
+        """Transition session to awaiting_email state for mid-conversation OTP.
+
+        Called when the agent requests verification for a mutating action.
+        The student's next message will be processed by the verification flow.
+        Per D-15: Agent naturally asks for email when mutating action is needed.
+        Per D-16: Once OTP is completed, verification persists for entire session.
+        """
+        session.verification_state = "awaiting_email"
+        await db.flush()
+
     async def handle_verification_flow(
         self,
         session: ChatSession,
@@ -204,26 +236,21 @@ class WebhookService:
         db: AsyncSession,
         wa_client: WhatsAppClient,
     ) -> None:
-        """Implement the verification state machine per D-02.
+        """Implement the verification state machine for OTP in progress.
 
-        States:
-        - unverified: Ask for institutional email
+        With lazy OTP (D-13/D-14), this method is only called when OTP is
+        already in progress (awaiting_email or awaiting_code). The "unverified"
+        state no longer routes here — unverified students go directly to the
+        AI agent for read-only operations.
+
+        States handled:
         - awaiting_email: Validate email, send OTP
         - awaiting_code: Validate 6-digit code
         - verified: Message goes to agent (handled in router, not here)
         """
         state = session.verification_state
 
-        if state == "unverified":
-            # First message from unverified user — ask for email
-            session.verification_state = "awaiting_email"
-            await db.flush()
-            await wa_client.send_text_message(
-                phone,
-                "Preciso verificar sua identidade. Qual seu email institucional?",
-            )
-
-        elif state == "awaiting_email":
+        if state == "awaiting_email":
             await self._handle_awaiting_email(
                 session, message_text, phone, db, wa_client
             )
@@ -390,8 +417,39 @@ class WebhookService:
 
         await wa_client.send_text_message(
             phone,
-            f"Identidade verificada! Ola, {student.name}. Como posso ajudar?",
+            f"Identidade verificada com sucesso, {student.name}! ✅ "
+            "Vou prosseguir com o que você pediu...",
         )
+
+        # Phase 25: Auto-continue — re-dispatch to AI agent so it picks up
+        # where it left off. The agent has full chat history and is now verified,
+        # so it can execute the pending mutating action automatically.
+        # WR-05: Save as system message for audit trail (not user input).
+        await self.save_message(
+            session_id=session.id,
+            role="system",
+            content="[Verificação concluída — retomando ação pendente]",
+            media_type=None,
+            wamid=None,
+            db=db,
+        )
+        await db.flush()
+
+        import asyncio
+        from src.features.webhook.background import process_message
+
+        task = asyncio.create_task(
+            process_message(
+                session_id=session.id,
+                message_text="O aluno acabou de verificar sua identidade com sucesso. Olhe o historico da conversa, identifique a ultima acao que ele pediu antes da verificacao (ex: matricula, documento, agendamento) e execute automaticamente. Nao peca para ele repetir.",
+                phone=phone,
+                wa_client=wa_client,
+                is_new_session=False,
+                student_name=student.name,
+                verification_state="verified",
+            )
+        )
+        task.add_done_callback(lambda t: t.exception() if not t.cancelled() else None)
 
     def get_media_response(self, media_type: str) -> str:
         """Return exact Portuguese response for media type per docs/chatbot.md.

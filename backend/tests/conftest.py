@@ -58,6 +58,7 @@ import src.features.documents.models  # noqa: F401,E402
 import src.features.scheduling.models  # noqa: F401,E402
 import src.features.chat.models  # noqa: F401,E402
 import src.features.knowledge_base.models  # noqa: F401,E402
+import src.features.notifications.models  # noqa: F401,E402
 
 # Tables that SQLite can handle (excludes those using JSONB/Vector: mcp_action_logs, knowledge_base_chunks)
 # chat_sessions and chat_messages use only standard column types (VARCHAR, Text, DateTime, UUID)

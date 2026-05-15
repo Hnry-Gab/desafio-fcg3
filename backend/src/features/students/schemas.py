@@ -65,6 +65,7 @@ class StudentListItem(BaseModel):
     id: UUID
     name: str
     email: str
+    phone: str | None = None
     registration_number: str
     semester: int
     status: str
@@ -111,6 +112,7 @@ class AvailableCourseItem(BaseModel):
     code: str
     name: str
     credits: int
+    professor: str | None = None
     prerequisites_met: bool
     semester: int
 

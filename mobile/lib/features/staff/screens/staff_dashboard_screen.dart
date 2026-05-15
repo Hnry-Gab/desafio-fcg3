@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/router/route_names.dart';
+import '../../../core/theme/app_animations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/widgets/animated_entrance.dart';
 import '../../../shared/widgets/app_bar_actions.dart';
 import '../../../shared/widgets/app_skeleton_card.dart';
 import '../../../shared/widgets/app_error_state.dart';
@@ -65,78 +67,126 @@ class StaffDashboardScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Header
-                          Text(
-                            'Visão estratégica da instituição.',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
-                                  color: colors.onSurfaceVariant,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                          AnimatedEntrance(
+                            delay: AppAnimations.getEntranceDelay(0),
+                            child: Text(
+                              'Visão estratégica da instituição.',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: colors.onSurfaceVariant,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                            ),
                           ),
                           const SizedBox(height: AppSpacing.lg),
 
                           // Enrollment Period Banner
                           if (dashboard.enrollmentPeriod != null &&
                               dashboard.enrollmentPeriod!.isActive) ...[
-                            _EnrollmentBanner(
-                                period: dashboard.enrollmentPeriod!),
+                            AnimatedEntrance(
+                              delay: AppAnimations.getEntranceDelay(1),
+                              child: _EnrollmentBanner(
+                                  period: dashboard.enrollmentPeriod!),
+                            ),
                             const SizedBox(height: AppSpacing.lg),
                           ],
 
                           // KPI Grid
-                          GridView.count(
-                            crossAxisCount: crossAxisCount,
-                            crossAxisSpacing: AppSpacing.md,
-                            mainAxisSpacing: AppSpacing.md,
-                            childAspectRatio: 1.3,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            children: [
-                              _KpiCard(
-                                icon: Icons.people_outlined,
-                                iconColor: colors.primary,
-                                containerColor: colors.primaryContainer,
-                                value: dashboard.totalStudents.toString(),
-                                label: 'Alunos',
-                                onTap: null,
-                              ),
-                              _KpiCard(
-                                icon: Icons.chat_bubble_outlined,
-                                iconColor: colors.secondary,
-                                containerColor: colors.secondaryContainer,
-                                value:
-                                    dashboard.activeChatSessions.toString(),
-                                label: 'Chats Hoje',
-                                onTap: () => context.go(RoutePaths.staffAI),
-                              ),
-                              _KpiCard(
-                                icon: Icons.warning_amber_outlined,
-                                iconColor: colors.error,
-                                containerColor: colors.errorContainer,
-                                value:
-                                    dashboard.pendingDocuments.toString(),
-                                label: 'Docs Pendentes',
-                                onTap: () =>
-                                    context.go(RoutePaths.staffDocuments),
-                              ),
-                              _KpiCard(
-                                icon: Icons.calendar_today_outlined,
-                                iconColor: colors.tertiary,
-                                containerColor: colors.tertiaryContainer,
-                                value: dashboard.upcomingAppointments
-                                    .toString(),
-                                label: 'Agendamentos',
-                                onTap: () =>
-                                    context.go(RoutePaths.staffSchedule),
-                              ),
-                            ],
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final gap = AppSpacing.md;
+                              final childWidth = (constraints.maxWidth -
+                                      gap * (crossAxisCount - 1)) /
+                                  crossAxisCount;
+
+                              return Wrap(
+                                spacing: gap,
+                                runSpacing: gap,
+                                children: [
+                                  SizedBox(
+                                    width: childWidth,
+                                    child: AnimatedEntrance(
+                                      delay:
+                                          AppAnimations.getEntranceDelay(2),
+                                      child: _KpiCard(
+                                        icon: Icons.people_outlined,
+                                        iconColor: colors.primary,
+                                        containerColor:
+                                            colors.primaryContainer,
+                                        value: dashboard.totalStudents
+                                            .toString(),
+                                        label: 'Alunos',
+                                        onTap: null,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: childWidth,
+                                    child: AnimatedEntrance(
+                                      delay:
+                                          AppAnimations.getEntranceDelay(3),
+                                      child: _KpiCard(
+                                        icon: Icons.chat_bubble_outlined,
+                                        iconColor: colors.secondary,
+                                        containerColor:
+                                            colors.secondaryContainer,
+                                        value: dashboard.activeChatSessions
+                                            .toString(),
+                                        label: 'Chats Hoje',
+                                        onTap: () => context.go(
+                                            '${RoutePaths.staffChats}?filter=hoje'),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: childWidth,
+                                    child: AnimatedEntrance(
+                                      delay:
+                                          AppAnimations.getEntranceDelay(4),
+                                      child: _KpiCard(
+                                        icon: Icons.warning_amber_outlined,
+                                        iconColor: colors.error,
+                                        containerColor:
+                                            colors.errorContainer,
+                                        value: dashboard.pendingDocuments
+                                            .toString(),
+                                        label: 'Docs Pendentes',
+                                        onTap: () => context.go(
+                                            '${RoutePaths.staffDocuments}?filter=pendentes'),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: childWidth,
+                                    child: AnimatedEntrance(
+                                      delay:
+                                          AppAnimations.getEntranceDelay(5),
+                                      child: _KpiCard(
+                                        icon: Icons.calendar_today_outlined,
+                                        iconColor: colors.tertiary,
+                                        containerColor:
+                                            colors.tertiaryContainer,
+                                        value: dashboard
+                                            .upcomingAppointments
+                                            .toString(),
+                                        label: 'Agendamentos',
+                                        onTap: () => context
+                                            .go(RoutePaths.staffSchedule),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                           const SizedBox(height: AppSpacing.lg),
 
                           // AI Insights section
-                          GlassCard(
+                          AnimatedEntrance(
+                            delay: AppAnimations.getEntranceDelay(5),
+                            child: GlassCard(
                             padding: const EdgeInsets.all(AppSpacing.lg),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,6 +252,111 @@ class StaffDashboardScreen extends ConsumerWidget {
                               ],
                             ),
                           ),
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+
+                          // Ações Rápidas section
+                          AnimatedEntrance(
+                            delay: AppAnimations.getEntranceDelay(6),
+                            child: Text(
+                              'Ações Rápidas',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: colors.onSurface,
+                                  ),
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          AnimatedEntrance(
+                            delay: AppAnimations.getEntranceDelay(7),
+                            child: GlassCard(
+                              onTap: () => context.go(RoutePaths.staffCadastro),
+                              padding: const EdgeInsets.all(AppSpacing.md),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.people_outlined,
+                                      color: colors.primary),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Gerenciar Alunos',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleSmall
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                        Text(
+                                          'Cadastrar, editar e gerenciar alunos',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                color:
+                                                    colors.onSurfaceVariant,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(Icons.chevron_right,
+                                      color: colors.onSurfaceVariant),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          AnimatedEntrance(
+                            delay: AppAnimations.getEntranceDelay(8),
+                            child: GlassCard(
+                              onTap: () => context.go(RoutePaths.staffBanners),
+                              padding: const EdgeInsets.all(AppSpacing.md),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.photo_library_outlined,
+                                      color: colors.secondary),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Gerenciar Banners',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleSmall
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                        Text(
+                                          'Upload e gerenciamento de banners',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                color:
+                                                    colors.onSurfaceVariant,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(Icons.chevron_right,
+                                      color: colors.onSurfaceVariant),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -218,7 +373,7 @@ class StaffDashboardScreen extends ConsumerWidget {
   double _calculateAiRate(StaffDashboardModel dashboard) {
     final total = dashboard.activeChatSessions + 10; // mock baseline
     if (total == 0) return 0;
-    return ((total - 1) / total * 100).clamp(0, 100);
+    return double.parse(((total - 1) / total * 100).clamp(0, 100).toStringAsFixed(1));
   }
 }
 
@@ -299,22 +454,30 @@ class _KpiCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // In light mode the theme containers are very dark (e.g. #004D57),
+    // so we use a light tint of the icon color instead.
+    final effectiveContainerColor = isDark
+        ? containerColor
+        : iconColor.withValues(alpha: 0.12);
 
     return GlassCard(
       onTap: onTap,
+      glowColor: iconColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: containerColor,
+              color: effectiveContainerColor,
               borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
             ),
             child: Icon(icon, color: iconColor, size: 20),
           ),
-          const Spacer(),
+          const SizedBox(height: AppSpacing.sm),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
@@ -335,7 +498,7 @@ class _KpiCard extends StatelessWidget {
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.5,
-                    color: colors.onSurfaceVariant,
+                    color: isDark ? colors.onSurfaceVariant : colors.onSurface.withValues(alpha: 0.6),
                   ),
             ),
           ),

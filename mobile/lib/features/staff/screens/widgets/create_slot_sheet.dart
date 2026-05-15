@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/staff_resource_provider.dart';
 import '../../providers/staff_schedule_provider.dart';
 
 /// Shows the create slot bottom sheet. Called from ScheduleScreen FAB.
@@ -31,6 +32,7 @@ class _CreateSlotSheetState extends ConsumerState<_CreateSlotSheet> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedStartTime;
   TimeOfDay? _selectedEndTime;
+  String? _selectedResourceId;
   int _slotDuration = 30;
   bool _isLoading = false;
 
@@ -98,6 +100,36 @@ class _CreateSlotSheetState extends ConsumerState<_CreateSlotSheet> {
     }
   }
 
+  Widget _buildResourceDropdown() {
+    final resourcesAsync = ref.watch(staffResourcesProvider);
+
+    return resourcesAsync.when(
+      loading: () => const LinearProgressIndicator(),
+      error: (_, __) => const Text('Erro ao carregar recursos'),
+      data: (resources) {
+        final available = resources.where((r) => r.isAvailable).toList();
+        return DropdownButtonFormField<String>(
+          decoration: const InputDecoration(
+            labelText: 'Recurso *',
+            prefixIcon: Icon(Icons.meeting_room),
+          ),
+          value: _selectedResourceId,
+          items: available
+              .map((r) => DropdownMenuItem(
+                    value: r.id,
+                    child: Text('${r.name} (${r.typeLabel})'),
+                  ))
+              .toList(),
+          onChanged: (value) {
+            setState(() => _selectedResourceId = value);
+          },
+          validator: (value) =>
+              value == null ? 'Selecione um recurso' : null,
+        );
+      },
+    );
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -110,12 +142,14 @@ class _CreateSlotSheetState extends ConsumerState<_CreateSlotSheet> {
       final endStr = _endTimeController.text;
 
       await ref.read(staffScheduleServiceProvider).createSlots(
+            resourceId: _selectedResourceId!,
             date: dateStr,
             startTime: startStr,
             endTime: endStr,
             slotDurationMinutes: _slotDuration,
           );
       ref.invalidate(staffSlotsProvider);
+      ref.invalidate(staffAllSlotsProvider);
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -160,6 +194,9 @@ class _CreateSlotSheetState extends ConsumerState<_CreateSlotSheet> {
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 24),
+            // Resource selector
+            _buildResourceDropdown(),
+            const SizedBox(height: 16),
             // Date field
             TextFormField(
               controller: _dateController,

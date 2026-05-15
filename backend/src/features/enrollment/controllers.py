@@ -19,12 +19,14 @@ Staff:
 
 from __future__ import annotations
 
+import asyncio
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.infrastructure.database import get_db_session
+from src.features.notifications.services import notification_service
 from src.shared.dependencies import (
     UserContext,
     check_ownership,
@@ -133,7 +135,29 @@ async def confirm_enrollment(
     result = await enrollment_service.confirm_enrollment(
         db, enrollment_id=enrollment_id, student_id=user.id,
     )
+
+    # Capture values before commit to avoid lazy-load issues (WR-01)
+    student_id_for_notification = user.id
+    enrollment_id_for_notification = enrollment_id
+
     await db.commit()
+
+    # FCM: Notify student that enrollment was confirmed
+
+    async def _send_notification():
+        async for fresh_db in get_db_session():
+            try:
+                await notification_service.notify_enrollment_confirmed(
+                    fresh_db, student_id_for_notification, enrollment_id_for_notification
+                )
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).error(
+                    "FCM notification failed in background task: %s", exc
+                )
+
+    asyncio.create_task(_send_notification())
+
     return result
 
 
@@ -220,6 +244,31 @@ async def lock_enrollment(
 
 
 # ------------------------------------------------------------------
+# GET /enrollments/{id} — dual-auth, enrollment detail with courses
+# ------------------------------------------------------------------
+
+@enrollments_router.get(
+    "/{enrollment_id}",
+    response_model=EnrollmentResponse,
+)
+async def get_enrollment_detail(
+    enrollment_id: UUID,
+    user: UserContext = Depends(get_current_user_or_service),
+    db: AsyncSession = Depends(get_db_session),
+) -> EnrollmentResponse:
+    """Get enrollment detail with courses. IDOR-safe.
+
+    Students can only view their own enrollments.
+    Staff/provider can view any enrollment.
+    Accepts X-Service-Token for MCP access.
+    """
+    result = await enrollment_service.get_enrollment_detail(
+        db, enrollment_id=enrollment_id, student_id=user.id, role=user.role,
+    )
+    return result
+
+
+# ------------------------------------------------------------------
 # ENROLL-07: GET /enrollments — dual-auth
 # ------------------------------------------------------------------
 
@@ -238,8 +287,9 @@ async def list_enrollments(
     Staff can view all or filter by student_id.
     """
     # IDOR-safe: force student to see only their own enrollments
+    # D-04: Provider inherits staff permissions
     effective_student_id = student_id
-    if user.role != "staff":
+    if user.role not in ("staff", "provider"):
         effective_student_id = user.id
 
     items, total = await enrollment_service.list_enrollments(

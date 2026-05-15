@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import datetime, time as time_type
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func, text
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Integer, String, Text, Time, UniqueConstraint, func, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -22,11 +22,13 @@ class Course(Base):
     credits: Mapped[int] = mapped_column(Integer, nullable=False)
     workload_hours: Mapped[int] = mapped_column(Integer, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
+    professor: Mapped[str | None] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     curriculum_courses: Mapped[list["CurriculumCourse"]] = relationship(back_populates="course")
     enrollment_courses: Mapped[list["EnrollmentCourse"]] = relationship(back_populates="course")
     grades: Mapped[list["Grade"]] = relationship(back_populates="course")
+    class_schedules: Mapped[list["ClassSchedule"]] = relationship(back_populates="course")
     prerequisites: Mapped[list["Prerequisite"]] = relationship(
         back_populates="course",
         foreign_keys="Prerequisite.course_id",
@@ -77,3 +79,33 @@ class CurriculumCourse(Base):
 
     curriculum: Mapped[Curriculum] = relationship(back_populates="curriculum_courses")
     course: Mapped[Course] = relationship(back_populates="curriculum_courses")
+
+
+class ClassSchedule(Base):
+    """Weekly class schedule slot for a course.
+
+    day_of_week: 0=Monday .. 6=Sunday (ISO weekday convention).
+    Each row represents one recurring weekly time slot for a course.
+    """
+
+    __tablename__ = "class_schedules"
+    __table_args__ = (
+        CheckConstraint(
+            "day_of_week >= 0 AND day_of_week <= 6",
+            name="ck_class_schedules_day_of_week",
+        ),
+        UniqueConstraint(
+            "course_id", "day_of_week", "start_time",
+            name="uq_class_schedules_course_day_start",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    course_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("courses.id"), nullable=False)
+    day_of_week: Mapped[int] = mapped_column(Integer, nullable=False)
+    start_time: Mapped[time_type] = mapped_column(Time, nullable=False)
+    end_time: Mapped[time_type] = mapped_column(Time, nullable=False)
+    room: Mapped[str | None] = mapped_column(String(100))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    course: Mapped[Course] = relationship(back_populates="class_schedules")

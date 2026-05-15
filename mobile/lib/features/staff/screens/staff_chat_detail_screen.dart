@@ -1,9 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../shared/utils/mcp_log_formatter.dart';
 import '../../../shared/widgets/app_skeleton_chat.dart';
 import '../../../shared/widgets/app_skeleton_list.dart';
+import '../../client/models/chat_session_model.dart';
 import '../../client/models/chat_message_model.dart';
 import '../../client/models/action_log_model.dart';
 import '../providers/staff_chat_provider.dart';
@@ -34,11 +34,27 @@ class _StaffChatDetailScreenState extends ConsumerState<StaffChatDetailScreen>
     super.dispose();
   }
 
+  /// Find the session from the sessions list
+  ChatSessionModel? _findSession(List<ChatSessionModel> sessions) {
+    try {
+      return sessions.firstWhere((s) => s.id == widget.sessionId);
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final sessionsAsync = ref.watch(staffChatSessionsProvider);
+    final session = sessionsAsync.valueOrNull != null
+        ? _findSession(sessionsAsync.valueOrNull!)
+        : null;
+
+    final studentName = session?.studentName ?? session?.name ?? 'Chat';
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Conversa'),
+        title: Text(studentName),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -47,14 +63,122 @@ class _StaffChatDetailScreenState extends ConsumerState<StaffChatDetailScreen>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          _StaffMessagesTab(sessionId: widget.sessionId),
-          _StaffActionsTab(sessionId: widget.sessionId),
+          // Informative header with student context
+          _ChatInfoHeader(session: session),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _StaffMessagesTab(sessionId: widget.sessionId),
+                _StaffActionsTab(sessionId: widget.sessionId),
+              ],
+            ),
+          ),
         ],
       ),
     );
+  }
+}
+
+/// Informative header showing student name, RA, session date and status
+class _ChatInfoHeader extends StatelessWidget {
+  final ChatSessionModel? session;
+
+  const _ChatInfoHeader({required this.session});
+
+  @override
+  Widget build(BuildContext context) {
+    if (session == null) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final studentName = session!.studentName ?? session!.name ?? 'Aluno';
+    final studentRa = session!.studentRa;
+    final formattedDate = _formatDateTime(session!.startedAt);
+    final status = session!.status;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(12),
+          bottomRight: Radius.circular(12),
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              // CircleAvatar with initial
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: colors.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Center(
+                  child: Text(
+                    studentName.isNotEmpty
+                        ? studentName[0].toUpperCase()
+                        : '?',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colors.primary,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Student info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      studentName,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colors.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'RA: ${studentRa ?? 'N/A'}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Início: $formattedDate \u2022 $status',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Divider(height: 1),
+        ],
+      ),
+    );
+  }
+
+  String _formatDateTime(DateTime dt) {
+    final day = dt.day.toString().padLeft(2, '0');
+    final month = dt.month.toString().padLeft(2, '0');
+    final year = dt.year;
+    final hour = dt.hour.toString().padLeft(2, '0');
+    final minute = dt.minute.toString().padLeft(2, '0');
+    return '$day/$month/$year $hour:$minute';
   }
 }
 
@@ -250,45 +374,33 @@ class _ActionLogTile extends StatelessWidget {
     return isDark ? const Color(0xFF81C784) : const Color(0xFF4CAF50);
   }
 
+  String _formatTime(DateTime dt) {
+    final h = dt.hour.toString().padLeft(2, '0');
+    final m = dt.minute.toString().padLeft(2, '0');
+    return '$h:$m';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final inputText = McpLogFormatter.formatInput(log.toolName, log.inputParams);
+    final outputText = McpLogFormatter.formatOutput(log.toolName, log.outputResult);
 
     return ExpansionTile(
       leading: Icon(_statusIcon(), color: _statusColor(context)),
-      title: Text(log.toolName),
-      subtitle: Text('${_formatTime(log.createdAt)} \u2022 ${log.latencyMs ?? '?'}ms'),
+      title: Text(McpLogFormatter.toolLabel(log.toolName)),
+      subtitle: Text(
+        '${_formatTime(log.createdAt)} \u2022 ${McpLogFormatter.statusLabel(log.status)} \u2022 ${log.latencyMs ?? '?'}ms',
+      ),
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Input:',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  jsonEncode(log.inputParams),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontFamily: 'monospace',
-                  ),
-                ),
-              ),
-              if (log.outputResult != null) ...[
-                const SizedBox(height: 12),
+              if (inputText != null) ...[
                 Text(
-                  'Output:',
+                  'Parametros:',
                   style: theme.textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -302,17 +414,35 @@ class _ActionLogTile extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    jsonEncode(log.outputResult!),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontFamily: 'monospace',
-                    ),
+                    inputText,
+                    style: theme.textTheme.bodySmall,
                   ),
                 ),
+                const SizedBox(height: 12),
               ],
+              Text(
+                'Resultado:',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  outputText ?? 'Sem resultado',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ),
               if (log.reasoning != null) ...[
                 const SizedBox(height: 12),
                 Text(
-                  'Reasoning:',
+                  'Raciocinio da IA:',
                   style: theme.textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -330,11 +460,5 @@ class _ActionLogTile extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  String _formatTime(DateTime dt) {
-    final h = dt.hour.toString().padLeft(2, '0');
-    final m = dt.minute.toString().padLeft(2, '0');
-    return '$h:$m';
   }
 }

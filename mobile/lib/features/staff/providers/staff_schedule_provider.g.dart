@@ -61,6 +61,27 @@ final staffSlotsProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef StaffSlotsRef = AutoDisposeFutureProviderRef<List<SchedulingSlotModel>>;
+String _$staffAllSlotsHash() => r'888b40a6f7ceb8968e0cd9add0f6dc66e59ad304';
+
+/// Provider for ALL slots (available + booked) — used in staff "Horarios" tab
+///
+/// Copied from [staffAllSlots].
+@ProviderFor(staffAllSlots)
+final staffAllSlotsProvider =
+    AutoDisposeFutureProvider<List<SchedulingSlotModel>>.internal(
+      staffAllSlots,
+      name: r'staffAllSlotsProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$staffAllSlotsHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef StaffAllSlotsRef =
+    AutoDisposeFutureProviderRef<List<SchedulingSlotModel>>;
 String _$staffScheduleFilterHash() =>
     r'2b42f967be1550e1c7d9e1128300a0367aa3b214';
 
@@ -78,5 +99,59 @@ final staffScheduleFilterProvider =
     );
 
 typedef _$StaffScheduleFilter = AutoDisposeNotifier<String?>;
+String _$staffScheduleSearchHash() =>
+    r'e5a32ce4c1c7c9f9769b29f1ddb59de89b6cc04e';
+
+/// See also [StaffScheduleSearch].
+@ProviderFor(StaffScheduleSearch)
+final staffScheduleSearchProvider =
+    AutoDisposeNotifierProvider<StaffScheduleSearch, String>.internal(
+      StaffScheduleSearch.new,
+      name: r'staffScheduleSearchProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$staffScheduleSearchHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$StaffScheduleSearch = AutoDisposeNotifier<String>;
+String _$staffSlotResourceFilterHash() =>
+    r'5184cee1fd4ab2fc945c25c6d4b772373d6c56ff';
+
+/// Filter for slots tab: resource ID
+///
+/// Copied from [StaffSlotResourceFilter].
+@ProviderFor(StaffSlotResourceFilter)
+final staffSlotResourceFilterProvider =
+    AutoDisposeNotifierProvider<StaffSlotResourceFilter, String?>.internal(
+      StaffSlotResourceFilter.new,
+      name: r'staffSlotResourceFilterProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$staffSlotResourceFilterHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$StaffSlotResourceFilter = AutoDisposeNotifier<String?>;
+String _$staffSlotSearchHash() => r'c127d8348b4bd30b089bc5441e05fb14378c7e7a';
+
+/// Search for slots tab
+///
+/// Copied from [StaffSlotSearch].
+@ProviderFor(StaffSlotSearch)
+final staffSlotSearchProvider =
+    AutoDisposeNotifierProvider<StaffSlotSearch, String>.internal(
+      StaffSlotSearch.new,
+      name: r'staffSlotSearchProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$staffSlotSearchHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$StaffSlotSearch = AutoDisposeNotifier<String>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

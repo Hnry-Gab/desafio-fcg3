@@ -37,9 +37,37 @@ Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação 
 
 ### Active
 
-- [ ] Webhook WhatsApp: validação HMAC-SHA256 end-to-end (parcial)
-- [ ] Push notifications via FCM (registro de token, envio por tipo de evento)
-- [ ] Testes: cobertura dos fluxos críticos (matrícula, webhook, middleware IDOR)
+**Correções Imediatas:**
+- [ ] Correções de navegação e ações rápidas (Student: agendamentos, documentos, mentor)
+- [ ] Chat: rename sessão, filtro ativas/inativas, ordenação por data
+- [ ] Documentos: drawer para detalhes, tipo/data visíveis, drawer para adicionar
+- [ ] Avisos: estado lido/não lido, filtro, marcar todos, reposicionar no header
+- [ ] Recursos Student: detalhes via drawer
+- [ ] Suporte: acesso via header
+- [x] Staff Dashboard: truncamento, filtros docs pendentes e chats hoje — Validated in Phase 19
+- [x] Staff Agendamentos: detalhamento, card corrigido, confirm fix, search — Validated in Phase 19
+- [x] Staff Chats: tab navegação, identificação aluno, header informativo — Validated in Phase 19
+- [x] Staff Intervenção: padrão visual, search, tab concluídos — Validated in Phase 19 (merged into unified Chats)
+- [x] Staff Documentos: tabs estado, filtro tipo, visualização dados, drawer padrão, mensagem erro — Validated in Phase 19
+- [x] Staff Recursos: toggle ativar/desativar, opção deletar — Validated in Phase 19
+- [x] Staff Cadastro de Alunos: tela CRUD completa (novo) — Validated in Phase 19
+
+**Pontos Importantes Pendentes:**
+- [x] Workflow LangChain completo (welcome/goodbye, RAG, MCP, off-scope, falha, intervenção) — Validated in Phase 20
+- [x] System prompt finalizado (persona + instruções operacionais) — Validated in Phase 20
+- [x] Tratamento de mídia recebida (rejeição educada) — Validated in Phase 20
+- [x] Proteção contra prompt injection — Validated in Phase 20
+- [x] Logging/debug RAG + MCP + fluxo LangChain — Validated in Phase 20
+- [ ] Expansão de roles: student/staff/provider com CRUDs hierárquicos
+- [x] Lazy loading OTP no WhatsApp — Validated in Phase 20
+- [x] Log do RAG nos chats (chunks, similarity score) — Validated in Phase 20
+- [ ] Splash screen customizada
+- [ ] FCM push notifications (registro token, envio por evento, barra do celular)
+
+**Features Novas:**
+- [ ] Cardápio semanal (texto, visualização por dia, staff/provider cadastra)
+- [ ] Perfil (dados app + dados acadêmicos)
+- [ ] Grade curricular (horário, professor, descrição, integração Google Calendar)
 
 ### Out of Scope
 
@@ -87,16 +115,48 @@ Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação 
 | DEV_MASTER_OTP bypass | Dev/testing sem dependência Resend | ✓ Validated v2.0 |
 | Derived notifications (no backend endpoint) | Aggregates from documents + appointments | ✓ Validated v2.0 |
 
+## Current Milestone: v3.0 Correções, Melhorias & Features
+
+**Goal:** Corrigir navegação e UX quebrados em ambas as visões, completar workflow LangChain, expandir roles para provider, implementar FCM push notifications, e adicionar features novas (cardápio, perfil, grade curricular).
+
+**Target features:**
+- Correções imediatas de navegação e UX (Student + Staff, ~40 itens)
+- Workflow LangChain completo com sessões, defesas e intervenção humana
+- Expansão de roles (student/staff/provider) com CRUDs hierárquicos
+- FCM push notifications end-to-end
+- Cardápio semanal, perfil do aluno, grade curricular com Google Calendar
+
 ## Current State
 
-**Both milestones delivered:**
+**Milestones delivered:**
 - v1.0 (Backend + AI + MCP): 6 phases, 47 plans — shipped 2026-05-04
 - v2.0 (Flutter Frontend): 11 phases, 30 plans — shipped 2026-05-07
 
-**Total:** 17 phases, 77 plans, ~557 commits across 30 days.
+**v3.0 in progress:**
+- Phase 18 (Student UX Corrections): Complete
+- Phase 19 (Staff UX Corrections): Complete — 9 plans (6 original + 3 gap closure), all 25 SFUX requirements satisfied
 
-Project is feature-complete for the desafio scope. No active milestone.
+**Total:** 19 phases, 86 plans executed.
+
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd-transition`):
+
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd-complete-milestone`):
+
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
 
 ---
 
-_Last updated: 2026-05-07 after v2.0 milestone_
+_Last updated: 2026-05-10 after Phase 19 gap closure (Staff UX Corrections) completed_

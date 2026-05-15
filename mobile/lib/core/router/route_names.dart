@@ -13,21 +13,28 @@ class RouteNames {
   // Client detail
   static const String clientChatDetail = 'client-chat-detail';
   static const String clientResources = 'client-resources';
+  static const String clientProfile = 'client-profile';
+  static const String clientEnrollment = 'client-enrollment';
+  static const String clientSchedule = 'client-schedule';
 
   // Staff tabs
   static const String staffDashboard = 'staff-dashboard';
   static const String staffSchedule = 'staff-schedule';
   static const String staffAI = 'staff-ai';
+  static const String staffChats = 'staff-chats';
   static const String staffDocuments = 'staff-documents';
 
   // Staff tabs (continued)
   static const String staffResources = 'staff-resources';
   static const String staffIntervention = 'staff-intervention';
+  static const String staffCadastro = 'staff-cadastro';
+  static const String staffBanners = 'staff-banners';
 
   // Staff detail
   static const String staffAppointmentDetail = 'staff-appointment-detail';
   static const String staffChatDetail = 'staff-chat-detail';
   static const String staffInterventionChat = 'staff-intervention-chat';
+  static const String staffStudentDetail = 'staff-student-detail';
 }
 
 class RoutePaths {
@@ -42,19 +49,26 @@ class RoutePaths {
   static const String clientNotifications = '/client/notifications';
   static const String clientSupport = '/client/support';
   static const String clientResources = '/client/resources';
+  static const String clientProfile = '/client/profile';
+  static const String clientEnrollment = '/client/enrollment';
+  static const String clientSchedule = '/client/schedule';
 
   // Staff
   static const String staffDashboard = '/staff';
   static const String staffSchedule = '/staff/schedule';
   static const String staffAI = '/staff/ai';
+  static const String staffChats = '/staff/chats';
   static const String staffDocuments = '/staff/documents';
 
   // Staff tabs (continued)
   static const String staffResources = '/staff/resources';
   static const String staffIntervention = '/staff/intervention';
+  static const String staffCadastro = '/staff/cadastro';
+  static const String staffBanners = '/staff/banners';
 
   // Staff detail
   static const String staffAppointmentDetail = '/staff/schedule/:appointmentId';
   static const String staffChatDetail = '/staff/ai/:sessionId';
   static const String staffInterventionChat = '/staff/intervention/:sessionId';
+  static const String staffStudentDetail = '/staff/students/:studentId';
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_animations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/widgets/animated_entrance.dart';
 import '../../../shared/widgets/app_bar_actions.dart';
 import '../../../shared/widgets/app_skeleton_list.dart';
 import '../../../shared/widgets/app_empty_state.dart';
@@ -147,15 +149,16 @@ class StaffResourcesScreen extends ConsumerWidget {
                             separatorBuilder: (_, _) =>
                                 const SizedBox(height: AppSpacing.md),
                             itemBuilder: (context, index) =>
-                                _ResourceCard(
-                              resource: filtered[index],
-                              onEdit: () => showResourceFormSheet(
-                                context,
-                                ref,
+                                AnimatedEntrance(
+                              delay: AppAnimations.getEntranceDelay(index),
+                              child: _ResourceCard(
                                 resource: filtered[index],
+                                onEdit: () => showResourceFormSheet(
+                                  context,
+                                  ref,
+                                  resource: filtered[index],
+                                ),
                               ),
-                              onDeactivate: () =>
-                                  _deactivateResource(context, ref, filtered[index]),
                             ),
                           ),
                         ),
@@ -175,53 +178,13 @@ class StaffResourcesScreen extends ConsumerWidget {
     List<ResourceModel> resources,
     String? filter,
   ) {
-    if (filter == null) return resources;
-    return resources.where((r) => r.resourceType == filter).toList();
-  }
-
-  Future<void> _deactivateResource(
-    BuildContext context,
-    WidgetRef ref,
-    ResourceModel resource,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Desativar Recurso'),
-        content: Text('Deseja desativar "${resource.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Desativar'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      try {
-        await ref.read(staffResourceServiceProvider).deleteResource(resource.id);
-        ref.invalidate(staffResourcesProvider);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Recurso desativado com sucesso')),
-          );
-        }
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Erro ao desativar recurso. Tente novamente.'),
-            ),
-          );
-        }
-      }
-    }
+    final filtered =
+        filter == null ? resources : resources.where((r) => r.resourceType == filter).toList();
+    // Sort: available resources first, then unavailable at the bottom
+    return [...filtered]..sort((a, b) {
+        if (a.isAvailable == b.isAvailable) return 0;
+        return a.isAvailable ? -1 : 1;
+      });
   }
 }
 
@@ -274,19 +237,17 @@ class _FilterTab extends StatelessWidget {
   }
 }
 
-class _ResourceCard extends StatelessWidget {
+class _ResourceCard extends ConsumerWidget {
   final ResourceModel resource;
   final VoidCallback onEdit;
-  final VoidCallback onDeactivate;
 
   const _ResourceCard({
     required this.resource,
     required this.onEdit,
-    required this.onDeactivate,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -312,32 +273,15 @@ class _ResourceCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        resource.name,
-                        style:
-                            Theme.of(context).textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: colors.onSurface,
-                                ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    // Availability indicator
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: resource.isAvailable
-                            ? (isDark ? const Color(0xFF81C784) : const Color(0xFF4CAF50))
-                            : colors.outlineVariant,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ],
+                Text(
+                  resource.name,
+                  style:
+                      Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colors.onSurface,
+                          ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -354,11 +298,15 @@ class _ResourceCard extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: colors.errorContainer.withValues(alpha: 0.3),
+                      color: isDark
+                          ? colors.errorContainer.withValues(alpha: 0.3)
+                          : Colors.orange.withValues(alpha: 0.12),
                       borderRadius:
                           BorderRadius.circular(AppSpacing.radiusFull),
                       border: Border.all(
-                        color: colors.error.withValues(alpha: 0.2),
+                        color: isDark
+                            ? colors.error.withValues(alpha: 0.2)
+                            : Colors.orange.shade700.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Text(
@@ -368,7 +316,7 @@ class _ResourceCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: colors.error,
+                        color: isDark ? colors.error : Colors.orange.shade800,
                       ),
                     ),
                   ),
@@ -376,13 +324,22 @@ class _ResourceCard extends StatelessWidget {
               ],
             ),
           ),
+          // Toggle availability switch
+          Switch(
+            value: resource.isAvailable,
+            onChanged: (value) => _handleToggle(context, ref, resource, value),
+            activeColor: colors.primary,
+          ),
           PopupMenuButton<String>(
-            onSelected: (value) {
+            onSelected: (value) async {
               switch (value) {
                 case 'edit':
                   onEdit();
-                case 'deactivate':
-                  onDeactivate();
+                case 'toggle':
+                  await _handleToggle(
+                      context, ref, resource, !resource.isAvailable);
+                case 'delete':
+                  await _handleDelete(context, ref, resource);
               }
             },
             itemBuilder: (context) => [
@@ -390,15 +347,92 @@ class _ResourceCard extends StatelessWidget {
                 value: 'edit',
                 child: Text('Editar'),
               ),
-              const PopupMenuItem(
-                value: 'deactivate',
-                child: Text('Desativar'),
+              PopupMenuItem(
+                value: 'toggle',
+                child: Text(resource.isAvailable ? 'Desativar' : 'Ativar'),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Text(
+                  'Deletar',
+                  style: TextStyle(color: colors.error),
+                ),
               ),
             ],
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _handleToggle(
+    BuildContext context,
+    WidgetRef ref,
+    ResourceModel resource,
+    bool value,
+  ) async {
+    try {
+      await ref
+          .read(staffResourceServiceProvider)
+          .toggleAvailability(resource.id, value);
+      ref.invalidate(staffResourcesProvider);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao alterar disponibilidade: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleDelete(
+    BuildContext context,
+    WidgetRef ref,
+    ResourceModel resource,
+  ) async {
+    final colors = Theme.of(context).colorScheme;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Deletar Recurso'),
+        content: Text(
+            'Tem certeza que deseja deletar "${resource.name}"? Esta ação não pode ser desfeita.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: colors.error),
+            child: const Text('Deletar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      try {
+        await ref.read(staffResourceServiceProvider).deleteResource(resource.id);
+        ref.invalidate(staffResourcesProvider);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Recurso deletado')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro ao deletar recurso: $e'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
+      }
+    }
   }
 
   String _buildSubtitle() {

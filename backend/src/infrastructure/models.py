@@ -4,7 +4,7 @@ try:
     from infrastructure.database import Base
     from features.auth.models import FcmToken, Session, Staff, Student, VerificationCode
     from features.chat.models import ChatMessage, ChatSession, McpActionLog
-    from features.courses.models import Course, Curriculum, CurriculumCourse, Prerequisite
+    from features.courses.models import ClassSchedule, Course, Curriculum, CurriculumCourse, Prerequisite
     from features.documents.models import Document
     from features.enrollment.models import Enrollment, EnrollmentCourse, EnrollmentPeriod
     from features.knowledge_base.models import KnowledgeBaseChunk
@@ -13,7 +13,7 @@ try:
 except ModuleNotFoundError:  # pragma: no cover
     from src.features.auth.models import FcmToken, Session, Staff, Student, VerificationCode
     from src.features.chat.models import ChatMessage, ChatSession, McpActionLog
-    from src.features.courses.models import Course, Curriculum, CurriculumCourse, Prerequisite
+    from src.features.courses.models import ClassSchedule, Course, Curriculum, CurriculumCourse, Prerequisite
     from src.features.documents.models import Document
     from src.features.enrollment.models import Enrollment, EnrollmentCourse, EnrollmentPeriod
     from src.features.knowledge_base.models import KnowledgeBaseChunk
@@ -27,6 +27,7 @@ __all__ = [
     "Base",
     "ChatMessage",
     "ChatSession",
+    "ClassSchedule",
     "Course",
     "Curriculum",
     "CurriculumCourse",

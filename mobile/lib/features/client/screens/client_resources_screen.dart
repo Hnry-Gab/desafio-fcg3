@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_animations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/widgets/animated_entrance.dart';
 import '../../../shared/widgets/app_bar_actions.dart';
 import '../../../shared/widgets/app_skeleton_list.dart';
 import '../../../shared/widgets/app_empty_state.dart';
@@ -12,14 +14,17 @@ import '../models/appointment_model.dart';
 import '../providers/resource_booking_provider.dart';
 import '../providers/appointment_provider.dart';
 import 'widgets/booking_flow_sheet.dart';
+import 'widgets/appointment_detail_sheet.dart';
 
 class ClientResourcesScreen extends ConsumerWidget {
-  const ClientResourcesScreen({super.key});
+  final int initialTabIndex;
+  const ClientResourcesScreen({super.key, this.initialTabIndex = 0});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return DefaultTabController(
       length: 2,
+      initialIndex: initialTabIndex,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Recursos'),
@@ -170,12 +175,15 @@ class _AvailableResourcesTab extends ConsumerWidget {
                           itemCount: resources.length,
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: AppSpacing.md),
-                          itemBuilder: (context, index) => _ResourceCard(
-                            resource: resources[index],
-                            onTap: () => showBookingFlowSheet(
-                              context,
-                              ref,
-                              resources[index],
+                          itemBuilder: (context, index) => AnimatedEntrance(
+                            delay: AppAnimations.getEntranceDelay(index),
+                            child: _ResourceCard(
+                              resource: resources[index],
+                              onTap: () => showBookingFlowSheet(
+                                context,
+                                ref,
+                                resources[index],
+                              ),
                             ),
                           ),
                         ),
@@ -347,11 +355,14 @@ class _MyAppointmentsTab extends ConsumerWidget {
                     itemCount: appointments.length,
                     separatorBuilder: (_, __) =>
                         const SizedBox(height: AppSpacing.md),
-                    itemBuilder: (context, index) => _AppointmentCard(
-                      appointment: appointments[index],
-                      onCancel: appointments[index].isUpcoming
-                          ? () => _confirmCancel(context, ref, appointments[index])
-                          : null,
+                    itemBuilder: (context, index) => AnimatedEntrance(
+                      delay: AppAnimations.getEntranceDelay(index),
+                      child: _AppointmentCard(
+                        appointment: appointments[index],
+                        onCancel: appointments[index].isUpcoming
+                            ? () => _confirmCancel(context, ref, appointments[index])
+                            : null,
+                      ),
                     ),
                   ),
                 ),
@@ -427,6 +438,7 @@ class _AppointmentCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return GlassCard(
+      onTap: () => showAppointmentDetailSheet(context, appointment),
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Row(
         children: [

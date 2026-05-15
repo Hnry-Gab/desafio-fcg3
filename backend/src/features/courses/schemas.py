@@ -5,6 +5,7 @@ Shapes match docs/api.md exactly (Courses & Curriculum section).
 
 from __future__ import annotations
 
+from datetime import time
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -22,6 +23,7 @@ class CourseListItem(BaseModel):
     name: str
     credits: int
     workload_hours: int
+    professor: str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -48,6 +50,7 @@ class CourseDetail(BaseModel):
     credits: int
     workload_hours: int
     description: str | None
+    professor: str | None = None
     prerequisites: list[PrerequisiteItem]
 
     model_config = {"from_attributes": True}
@@ -84,6 +87,7 @@ class CurriculumCourseItem(BaseModel):
     name: str
     credits: int
     is_required: bool
+    professor: str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -107,3 +111,44 @@ class CurriculumResponse(BaseModel):
     semesters: list[SemesterGroup]
 
     model_config = {"from_attributes": True}
+
+
+# ---------------------------------------------------------------------------
+# Weekly schedule schemas (GRAD-01, GRAD-02, GRAD-03)
+# ---------------------------------------------------------------------------
+
+
+class ClassScheduleSlot(BaseModel):
+    """Single time slot in the weekly timetable."""
+
+    id: UUID
+    course_id: UUID
+    course_code: str
+    course_name: str
+    professor: str | None = None
+    description: str | None = None
+    day_of_week: int
+    start_time: time
+    end_time: time
+    room: str | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class WeeklyScheduleDay(BaseModel):
+    """All classes for a single day of the week."""
+
+    day_of_week: int
+    day_name: str
+    slots: list[ClassScheduleSlot]
+
+
+class WeeklyScheduleResponse(BaseModel):
+    """GET /students/{id}/weekly-schedule response.
+
+    Groups enrolled class slots by day of week (GRAD-01).
+    Each slot includes professor and description (GRAD-02).
+    Only enrolled courses are included (GRAD-03).
+    """
+
+    days: list[WeeklyScheduleDay]

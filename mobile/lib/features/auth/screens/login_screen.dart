@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/models/user_model.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../providers/auth_provider.dart';
@@ -72,16 +71,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     setState(() => _isSubmitting = false);
 
-    if (result != null) {
+    if (result != null && !result.startsWith('ERROR:')) {
       setState(() => _isOtpStep = true);
       _startResendCountdown();
       _codeFocusNodes.first.requestFocus();
     } else {
       if (mounted) {
+        final message = result == 'ERROR:USER_NOT_FOUND'
+            ? 'E-mail não cadastrado. Verifique o endereço ou entre em contato com a secretaria.'
+            : 'Erro ao enviar código. Tente novamente.';
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao enviar código. Tente novamente.'),
-            duration: Duration(seconds: 4),
+          SnackBar(
+            content: Text(message),
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -140,17 +142,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _startResendCountdown();
   }
 
-  /// Enter demo mode with a fake user (no backend needed).
-  void _enterDemoMode(String role) {
-    final demoUser = UserModel(
-      id: 'demo-${role}-001',
-      name: role == 'student' ? 'João Demo' : 'Admin Demo',
-      email: role == 'student' ? 'joao@universidade.edu' : 'admin@universidade.edu',
-      role: role,
-    );
-    ref.read(authProvider.notifier).setDemoUser(demoUser);
-  }
-
   void _onCodeDigitChanged(int index, String value) {
     if (value.length > 1) {
       // Handle paste
@@ -189,7 +180,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: colors.surfaceContainerLow,
+      backgroundColor: colors.surfaceContainerLowest,
       floatingActionButton: FloatingActionButton.small(
         onPressed: () {
           final next = isDark ? ThemeMode.light : ThemeMode.dark;
@@ -204,37 +195,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xl,
+            vertical: AppSpacing.lg,
+          ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 400),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.xl),
-                  decoration: BoxDecoration(
-                    color: colors.surfaceContainerLowest.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-                    border: Border.all(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white.withValues(alpha: 0.1)
-                          : Colors.white.withValues(alpha: 0.4),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: colors.primary.withValues(alpha: 0.08),
-                        blurRadius: 32,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: _isOtpStep ? _buildOtpStep() : _buildEmailStep(),
-                  ),
-                ),
-              ),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _isOtpStep ? _buildOtpStep() : _buildEmailStep(),
             ),
           ),
         ),
@@ -244,6 +213,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Widget _buildEmailStep() {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Form(
       key: _emailFormKey,
@@ -251,32 +221,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         key: const ValueKey('email_step'),
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Icon badge
-          Transform.rotate(
-            angle: 0.05,
-            child: Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: colors.primaryContainer,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              ),
-              child: Icon(
-                Icons.school_rounded,
-                size: 48,
-                color: colors.onPrimaryContainer,
-              ),
+          // Full logo — new branded SVG with theme-conditional color
+          SvgPicture.asset(
+            'assets/logos/logo_light_editado.svg',
+            height: 180,
+            colorFilter: ColorFilter.mode(
+              isDark
+                  ? const Color(0xFF1ED7E1) // Bright cyan for dark mode
+                  : const Color(0xFF0D4B5C), // Deep teal for light mode
+              BlendMode.srcIn,
             ),
+            semanticsLabel: 'Alpha Connect Logo',
           ),
           const SizedBox(height: AppSpacing.md),
-          Text(
-            'ALPHA CONNECT',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: colors.primary,
-              letterSpacing: 3,
-            ),
-          ),
           const SizedBox(height: AppSpacing.xl),
 
           // Heading
@@ -347,36 +304,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-
-          // Demo mode buttons (for preview without backend)
-          Divider(color: colors.outlineVariant.withValues(alpha: 0.3)),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'MODO DEMONSTRAÇÃO',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                  letterSpacing: 1.5,
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => _enterDemoMode('student'),
-                  child: const Text('Aluno', style: TextStyle(fontSize: 13)),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => _enterDemoMode('staff'),
-                  child: const Text('Gestor', style: TextStyle(fontSize: 13)),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -390,25 +317,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         // Icon badge
-        Transform.rotate(
-          angle: 0.05,
-          child: Container(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            decoration: BoxDecoration(
-              color: colors.primaryContainer,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            ),
-            child: Icon(
-              Icons.email_outlined,
-              size: 48,
-              color: colors.onPrimaryContainer,
-            ),
+        Container(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          decoration: BoxDecoration(
+            color: colors.primaryContainer,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          ),
+          child: Icon(
+            Icons.email_outlined,
+            size: 48,
+            color: colors.onPrimaryContainer,
           ),
         ),
         const SizedBox(height: AppSpacing.md),
         Text(
           'CÓDIGO DE ACESSO',
-          style: GoogleFonts.plusJakartaSans(
+          style: GoogleFonts.montserrat(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: colors.primary,

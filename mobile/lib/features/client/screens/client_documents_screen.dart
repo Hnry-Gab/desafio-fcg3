@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/config/env_config.dart';
+import '../../../core/theme/app_animations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/widgets/animated_entrance.dart';
 import '../../../shared/widgets/app_bar_actions.dart';
 import '../../../shared/widgets/app_skeleton_list.dart';
 import '../../../shared/widgets/app_empty_state.dart';
@@ -10,13 +13,45 @@ import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/responsive_container.dart';
 import '../models/document_model.dart';
 import '../providers/document_provider.dart';
+import 'widgets/document_detail_sheet.dart';
 import 'widgets/document_request_sheet.dart';
 
-class ClientDocumentsScreen extends ConsumerWidget {
+/// Builds a full download URL from a relative file path.
+/// The backend returns paths like `/uploads/documents/uuid_file.pdf`
+/// which need the server origin prepended for download.
+String buildDownloadUrl(String relativePath) {
+  if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
+    return relativePath; // Already absolute
+  }
+  // Extract server origin from API base URL (strip /api/v1 suffix)
+  final apiBase = Uri.parse(AppConfig.apiBaseUrl);
+  final origin = '${apiBase.scheme}://${apiBase.host}${apiBase.hasPort ? ':${apiBase.port}' : ''}';
+  return '$origin$relativePath';
+}
+
+class ClientDocumentsScreen extends ConsumerStatefulWidget {
   const ClientDocumentsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ClientDocumentsScreen> createState() =>
+      _ClientDocumentsScreenState();
+}
+
+class _ClientDocumentsScreenState extends ConsumerState<ClientDocumentsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final autoOpen = ref.read(documentAutoOpenDrawerProvider);
+      if (autoOpen) {
+        ref.read(documentAutoOpenDrawerProvider.notifier).state = false;
+        showDocumentRequestSheet(context, ref);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final filter = ref.watch(documentFilterProvider);
     final documentsAsync = ref.watch(documentsProvider);
     final colors = Theme.of(context).colorScheme;
@@ -33,7 +68,7 @@ class ClientDocumentsScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          // Segmented filter control
+          // Status filter tabs
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 20,
@@ -45,30 +80,50 @@ class ClientDocumentsScreen extends ConsumerWidget {
                 color: colors.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
               ),
-              child: Row(
-                children: [
-                  _FilterTab(
-                    label: 'Ver todos',
-                    isSelected: filter == null,
-                    onTap: () => ref
-                        .read(documentFilterProvider.notifier)
-                        .setFilter(null),
-                  ),
-                  _FilterTab(
-                    label: 'Pendentes',
-                    isSelected: filter == 'pending',
-                    onTap: () => ref
-                        .read(documentFilterProvider.notifier)
-                        .setFilter(filter == 'pending' ? null : 'pending'),
-                  ),
-                  _FilterTab(
-                    label: 'Prontos',
-                    isSelected: filter == 'ready',
-                    onTap: () => ref
-                        .read(documentFilterProvider.notifier)
-                        .setFilter(filter == 'ready' ? null : 'ready'),
-                  ),
-                ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _FilterTab(
+                      label: 'Todos',
+                      isSelected: filter == null,
+                      onTap: () => ref
+                          .read(documentFilterProvider.notifier)
+                          .setFilter(null),
+                    ),
+                    _FilterTab(
+                      label: 'Solicitados',
+                      isSelected: filter == 'requested',
+                      onTap: () => ref
+                          .read(documentFilterProvider.notifier)
+                          .setFilter(
+                              filter == 'requested' ? null : 'requested'),
+                    ),
+                    _FilterTab(
+                      label: 'Processando',
+                      isSelected: filter == 'processing',
+                      onTap: () => ref
+                          .read(documentFilterProvider.notifier)
+                          .setFilter(
+                              filter == 'processing' ? null : 'processing'),
+                    ),
+                    _FilterTab(
+                      label: 'Prontos',
+                      isSelected: filter == 'ready',
+                      onTap: () => ref
+                          .read(documentFilterProvider.notifier)
+                          .setFilter(filter == 'ready' ? null : 'ready'),
+                    ),
+                    _FilterTab(
+                      label: 'Entregues',
+                      isSelected: filter == 'delivered',
+                      onTap: () => ref
+                          .read(documentFilterProvider.notifier)
+                          .setFilter(
+                              filter == 'delivered' ? null : 'delivered'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -112,14 +167,17 @@ class ClientDocumentsScreen extends ConsumerWidget {
                             itemCount: filtered.length,
                             separatorBuilder: (_, __) =>
                                 const SizedBox(height: AppSpacing.md),
-                            itemBuilder: (context, index) => _DocumentCard(
-                              document: filtered[index],
-                              onDownload:
-                                  filtered[index].isDownloadable &&
-                                          filtered[index].fileUrl != null
-                                      ? () =>
-                                          _launchDownload(filtered[index].fileUrl!)
-                                      : null,
+                            itemBuilder: (context, index) => AnimatedEntrance(
+                              delay: AppAnimations.getEntranceDelay(index),
+                              child: _DocumentCard(
+                                document: filtered[index],
+                                onDownload:
+                                    filtered[index].isDownloadable &&
+                                            filtered[index].fileUrl != null
+                                        ? () =>
+                                            _launchDownload(filtered[index].fileUrl!)
+                                        : null,
+                              ),
                             ),
                           ),
                         ),
@@ -140,17 +198,12 @@ class ClientDocumentsScreen extends ConsumerWidget {
     String? filter,
   ) {
     if (filter == null) return documents;
-    if (filter == 'pending') {
-      return documents.where((d) => d.isPending).toList();
-    }
-    if (filter == 'ready') {
-      return documents.where((d) => d.status == 'ready').toList();
-    }
-    return documents;
+    return documents.where((d) => d.status == filter).toList();
   }
 
   Future<void> _launchDownload(String url) async {
-    final uri = Uri.parse(url);
+    final fullUrl = buildDownloadUrl(url);
+    final uri = Uri.parse(fullUrl);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
@@ -172,33 +225,31 @@ class _FilterTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected ? colors.surfaceContainerLowest : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: colors.primary.withValues(alpha: 0.06),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: isSelected ? colors.primary : colors.onSurfaceVariant,
-                ),
-          ),
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? colors.surfaceContainerLowest : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: colors.primary.withValues(alpha: 0.06),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: isSelected ? colors.primary : colors.onSurfaceVariant,
+              ),
         ),
       ),
     );
@@ -235,8 +286,10 @@ class _DocumentCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isReady = document.status == 'ready';
+    final isProcessing = document.status == 'processing';
 
     return GlassCard(
+      onTap: () => showDocumentDetailSheet(context, document),
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Row(
         children: [
@@ -269,9 +322,9 @@ class _DocumentCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  _formatDate(document.requestedAt),
+                  'Solicitado em ${_formatDateTime(document.requestedAt)}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colors.onSurfaceVariant,
+                        color: isDark ? colors.onSurfaceVariant : colors.onSurface.withValues(alpha: 0.55),
                       ),
                 ),
               ],
@@ -282,13 +335,17 @@ class _DocumentCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: isReady
-                  ? colors.tertiaryContainer.withValues(alpha: 0.1)
-                  : Colors.amber.withValues(alpha: isDark ? 0.15 : 0.1),
+                  ? Colors.green.withValues(alpha: isDark ? 0.15 : 0.1)
+                  : isProcessing
+                      ? Colors.blue.withValues(alpha: isDark ? 0.15 : 0.1)
+                      : Colors.amber.withValues(alpha: isDark ? 0.15 : 0.1),
               borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
               border: Border.all(
                 color: isReady
-                    ? colors.tertiary.withValues(alpha: 0.2)
-                    : Colors.amber.withValues(alpha: 0.2),
+                    ? Colors.green.withValues(alpha: 0.3)
+                    : isProcessing
+                        ? Colors.blue.withValues(alpha: 0.3)
+                        : Colors.amber.withValues(alpha: 0.3),
               ),
             ),
             child: Text(
@@ -298,7 +355,11 @@ class _DocumentCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: isReady ? colors.tertiary : (isDark ? Colors.amber.shade300 : Colors.amber.shade700),
+                color: isReady
+                    ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
+                    : isProcessing
+                        ? (isDark ? Colors.blue.shade300 : Colors.blue.shade700)
+                        : (isDark ? Colors.amber.shade300 : Colors.amber.shade700),
               ),
             ),
           ),
@@ -335,10 +396,12 @@ class _DocumentCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDateTime(DateTime date) {
     final day = date.day.toString().padLeft(2, '0');
     final month = date.month.toString().padLeft(2, '0');
     final year = date.year;
-    return '$day/$month/$year';
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    return '$day/$month/$year $hour:$minute';
   }
 }

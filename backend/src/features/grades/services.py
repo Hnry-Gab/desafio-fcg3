@@ -11,6 +11,7 @@ GradeService provides:
 
 from __future__ import annotations
 
+from collections import defaultdict
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any
 from uuid import UUID
@@ -19,7 +20,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from src.features.courses.models import Course
+from src.features.courses.models import ClassSchedule, Course
 from src.features.students.models import Grade
 from src.features.grades.schemas import (
     CourseInfo,
@@ -29,6 +30,8 @@ from src.features.grades.schemas import (
     TranscriptResponse,
 )
 from src.shared.exceptions import ConflictException, NotFoundException
+
+DAY_ABBREVS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 
 
 # Passing threshold (configurable)
@@ -129,6 +132,7 @@ class GradeService:
         """Query grades for a student, join courses for code/name.
 
         Filter by semester_year if provided.
+        Includes schedule_summary per course (e.g. "Seg/Qua 08:00-10:00").
         """
         query = (
             select(Grade, Course)
@@ -144,10 +148,19 @@ class GradeService:
         result = await db.execute(query)
         rows = result.all()
 
+        # Collect course IDs to batch-fetch schedules
+        course_ids = list({course.id for _, course in rows})
+        schedule_map = await self._build_schedule_summaries(db, course_ids)
+
         return [
             GradeResponse(
                 id=grade.id,
-                course=CourseInfo(code=course.code, name=course.name),
+                course=CourseInfo(
+                    code=course.code,
+                    name=course.name,
+                    professor=course.professor,
+                    schedule_summary=schedule_map.get(course.id),
+                ),
                 semester_year=grade.semester_year,
                 grade_1=float(grade.grade_1) if grade.grade_1 is not None else None,
                 grade_2=float(grade.grade_2) if grade.grade_2 is not None else None,
@@ -156,6 +169,48 @@ class GradeService:
             )
             for grade, course in rows
         ]
+
+    @staticmethod
+    async def _build_schedule_summaries(
+        db: AsyncSession,
+        course_ids: list[UUID],
+    ) -> dict[UUID, str]:
+        """Batch-fetch class_schedules for given courses and build human-readable summaries.
+
+        Returns a dict of course_id -> summary string, e.g. "Seg/Qua 08:00-10:00".
+        Courses with no schedules are omitted from the dict.
+        """
+        if not course_ids:
+            return {}
+
+        result = await db.execute(
+            select(ClassSchedule)
+            .where(ClassSchedule.course_id.in_(course_ids))
+            .order_by(ClassSchedule.day_of_week.asc(), ClassSchedule.start_time.asc())
+        )
+        schedules = result.scalars().all()
+
+        # Group by course_id
+        by_course: dict[UUID, list[ClassSchedule]] = defaultdict(list)
+        for s in schedules:
+            by_course[s.course_id].append(s)
+
+        summaries: dict[UUID, str] = {}
+        for course_id, slots in by_course.items():
+            # Group slots by time range to merge days
+            # e.g. two slots Mon 08:00-10:00 and Wed 08:00-10:00 -> "Seg/Qua 08:00-10:00"
+            time_groups: dict[str, list[str]] = defaultdict(list)
+            for slot in slots:
+                time_key = f"{slot.start_time.strftime('%H:%M')}-{slot.end_time.strftime('%H:%M')}"
+                day_abbr = DAY_ABBREVS[slot.day_of_week] if slot.day_of_week < 7 else "?"
+                time_groups[time_key].append(day_abbr)
+
+            parts = []
+            for time_range, days in time_groups.items():
+                parts.append(f"{'/'.join(days)} {time_range}")
+            summaries[course_id] = " | ".join(parts)
+
+        return summaries
 
     # ------------------------------------------------------------------
     # GRADES-02: Get transcript (full history with CRA)
@@ -196,6 +251,7 @@ class GradeService:
                 TranscriptEntry(
                     course_code=course.code,
                     course_name=course.name,
+                    professor=course.professor,
                     semester_year=grade.semester_year,
                     grade_final=float(grade.grade_final) if grade.grade_final is not None else None,
                     status=grade.status,
