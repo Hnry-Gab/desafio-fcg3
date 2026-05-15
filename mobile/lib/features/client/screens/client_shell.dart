@@ -40,7 +40,7 @@ class _ClientShellState extends ConsumerState<ClientShell> {
     if (location.startsWith(RoutePaths.clientDocuments)) return 2;
     if (location.startsWith(RoutePaths.clientSchedule)) return 3;
     if (location.startsWith(RoutePaths.clientResources)) return 4;
-    if (location.startsWith(RoutePaths.clientSupport)) return 4; // fallback
+    if (location.startsWith(RoutePaths.clientSupport)) return 0; // sub-page of home
     if (location.startsWith(RoutePaths.clientEnrollment)) return 5; // sub-page of profile
     if (location.startsWith(RoutePaths.clientProfile)) return 5;
     return 0;

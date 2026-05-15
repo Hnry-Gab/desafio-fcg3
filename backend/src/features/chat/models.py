@@ -74,7 +74,7 @@ class McpActionLog(Base):
     __tablename__ = "mcp_action_logs"
     __table_args__ = (
         CheckConstraint(
-            "status IN ('success', 'error', 'retry_success')",
+            "status IN ('success', 'error', 'retry_success', 'blocked_verification')",
             name="ck_mcp_action_logs_status",
         ),
         Index("idx_mcp_logs_session", "chat_session_id", "created_at"),

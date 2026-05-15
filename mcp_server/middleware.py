@@ -8,6 +8,7 @@ from uuid import UUID
 from fastmcp.exceptions import ToolError
 from fastmcp.server.dependencies import get_http_headers
 from fastmcp.server.middleware import Middleware, MiddlewareContext
+from fastmcp.tools.base import ToolResult
 
 from mcp_server.api_client import RETRY_STATE_KEY
 from mcp_server.dependencies import (
@@ -94,17 +95,19 @@ class ToolLoggingMiddleware(Middleware):
 
     async def _check_verification_gate(
         self, context: MiddlewareContext, session_data: dict
-    ) -> str | None:
+    ) -> ToolResult | None:
         """Check whether to block a mutating tool call for unverified students.
 
         Read-only tools (readOnlyHint=True) are allowed for all students.
         Mutating tools (no readOnlyHint) require verification_state='verified'.
 
-        Returns None if the call is allowed, or a response string with
-        verification instructions if blocked. Unlike the previous approach
-        that raised ToolError, returning a normal response ensures the
-        LangChain agent receives the instructions reliably without exception
-        propagation issues (D-15/D-21).
+        Returns None if the call is allowed, or a ToolResult with
+        verification instructions if blocked. The result is returned as a
+        proper ToolResult (not a raw string) so that the FastMCP framework
+        can serialize it correctly via to_mcp_result(). Unlike the previous
+        approach that raised ToolError, returning a normal response ensures
+        the LangChain agent receives the instructions reliably without
+        exception propagation issues (D-15/D-21).
         """
         verification_state = session_data.get("verification_state", "unverified")
         if verification_state == "verified":
@@ -121,13 +124,22 @@ class ToolLoggingMiddleware(Middleware):
             pass  # If we can't determine, block by default (safe side)
 
         # Mutating tool + unverified student → return verification instructions
-        return (
+        # Wrapped in ToolResult with structured_content so FastMCP output
+        # validation passes (tools declare dict[str, Any] return types).
+        message = (
             f"VERIFICACAO NECESSARIA: A acao '{tool_name}' requer verificacao de identidade do aluno. "
             "O aluno ainda NAO verificou sua identidade nesta sessao de chat. "
-            "Para prosseguir, solicite que o aluno informe o email institucional cadastrado "
+            "Para prosseguir, solicite que o aluno informe o email cadastrado "
             "no sistema para receber um codigo de verificacao por email. "
             "Seja amigavel, explique que e um procedimento de seguranca rapido. "
             "Apos o aluno verificar a identidade, voce podera executar a acao novamente."
+        )
+        return ToolResult(
+            content=message,
+            structured_content={
+                "status": "blocked_verification",
+                "message": message,
+            },
         )
 
     async def _log_call(

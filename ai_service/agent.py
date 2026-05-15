@@ -206,13 +206,10 @@ async def invoke_agent(
     if verification_state != "verified":
         verification_context = SystemMessage(
             content=(
-                "CONTEXTO DE VERIFICACAO: O aluno ainda nao verificou sua identidade. "
-                "Operacoes de leitura (consultar notas, historico, disciplinas, documentos, horarios) "
-                "estao LIBERADAS — responda normalmente sem pedir verificacao. "
                 "NAO peca email, nome ou qualquer identificacao proativamente. "
                 "Voce ja sabe quem e o aluno pelo contexto da sessao. "
-                "SOMENTE se o aluno pedir uma acao que ALTERE dados (matricula, trancamento, agendamento, documento) "
-                "E a ferramenta retornar ERRO de verificacao, ENTAO solicite o email cadastrado para enviar o codigo."
+                "Quando o aluno pedir qualquer acao, chame a ferramenta correspondente normalmente. "
+                "A ferramenta informara se ha algum procedimento adicional necessario."
             )
         )
         all_messages.append(verification_context)
