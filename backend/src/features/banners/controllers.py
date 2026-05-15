@@ -159,8 +159,12 @@ async def upload_banner(
             },
         )
 
-    with open(file_path, "wb") as f:
-        f.write(content)
+    def _write_file() -> None:
+        with open(file_path, "wb") as f:
+            f.write(content)
+
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, _write_file)
 
     # Create banner record
     image_url = f"banners/{safe_filename}"
