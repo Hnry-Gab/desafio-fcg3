@@ -40,6 +40,7 @@ from src.features.staff.routes import staff_router
 from src.features.webhook.router import router as webhook_router
 from src.features.chat.router import router as chat_router
 from src.features.notifications.routes import notifications_router
+from src.features.banners.routes import banners_router
 
 
 @asynccontextmanager
@@ -134,6 +135,7 @@ app.include_router(staff_router, prefix="/api/v1")
 app.include_router(webhook_router, prefix="/api/v1")
 app.include_router(chat_router, prefix="/api/v1")
 app.include_router(notifications_router, prefix="/api/v1")
+app.include_router(banners_router, prefix="/api/v1")
 
 
 @app.get("/health")
@@ -144,4 +146,5 @@ async def health() -> dict[str, str]:
 # Static file serving for uploads (MVP — production should use nginx/CDN)
 os.makedirs("uploads/documents", exist_ok=True)
 os.makedirs("uploads/authorizations", exist_ok=True)
+os.makedirs("uploads/banners", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
