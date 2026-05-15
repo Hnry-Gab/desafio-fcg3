@@ -10,8 +10,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import os
 import uuid as uuid_mod
+from pathlib import PurePosixPath
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
@@ -109,11 +111,26 @@ async def upload_banner(
             },
         )
 
-    # Save file with UUID prefix
+    # Save file with UUID prefix — sanitize original filename
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     file_id = str(uuid_mod.uuid4())
-    safe_filename = f"{file_id}_{file.filename}"
+    # Extract only the basename to prevent path traversal (../../ etc.)
+    original_name = PurePosixPath(file.filename or "upload").name
+    safe_filename = f"{file_id}_{original_name}"
     file_path = os.path.join(UPLOAD_DIR, safe_filename)
+
+    # Defense-in-depth: verify resolved path stays inside UPLOAD_DIR
+    resolved = os.path.realpath(file_path)
+    if not resolved.startswith(os.path.realpath(UPLOAD_DIR)):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": {
+                    "code": "INVALID_FILENAME",
+                    "message": "Invalid filename",
+                }
+            },
+        )
 
     with open(file_path, "wb") as f:
         f.write(content)
