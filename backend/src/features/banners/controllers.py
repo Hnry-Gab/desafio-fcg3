@@ -34,6 +34,21 @@ UPLOAD_DIR = "uploads/banners"
 MAX_FILE_SIZE = 2 * 1024 * 1024  # 2MB
 ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
+# Magic byte signatures for validating actual file content (not just Content-Type header)
+_MAGIC_BYTES: dict[bytes, str] = {
+    b"\xff\xd8\xff": "image/jpeg",
+    b"\x89PNG": "image/png",
+    b"RIFF": "image/webp",  # WebP files start with RIFF
+}
+
+
+def _validate_image_magic(content: bytes) -> bool:
+    """Return True if *content* starts with a known image magic signature."""
+    for magic in _MAGIC_BYTES:
+        if content[: len(magic)] == magic:
+            return True
+    return False
+
 
 # ------------------------------------------------------------------
 # BNNR-01/02: GET /banners — public listing (enabled only)
@@ -107,6 +122,18 @@ async def upload_banner(
                 "error": {
                     "code": "FILE_TOO_LARGE",
                     "message": "Maximum file size is 2MB",
+                }
+            },
+        )
+
+    # Validate actual file content via magic bytes (Content-Type can be spoofed)
+    if not _validate_image_magic(content):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": {
+                    "code": "INVALID_FILE_TYPE",
+                    "message": "File content does not match a supported image format",
                 }
             },
         )
