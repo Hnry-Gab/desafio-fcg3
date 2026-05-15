@@ -211,10 +211,13 @@ async def delete_banner(
     image_url = await banner_service.delete_banner(db, banner_id)
     await db.commit()
 
-    # Remove file from disk (ignore if already missing)
+    # Remove file from disk asynchronously (ignore if already missing)
     try:
-        os.remove(os.path.join("uploads", image_url))
-    except OSError:
-        pass
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(
+            None, os.remove, os.path.join("uploads", image_url)
+        )
+    except FileNotFoundError:
+        pass  # File already removed — acceptable
 
     return {"deleted": True}
