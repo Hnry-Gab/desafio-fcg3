@@ -81,7 +81,7 @@ GROUP 4 — Polish (depends on all above):
 - [ ] **Phase 23: New Features** - Perfil do aluno, campo professor, visualização staff do aluno
 - [ ] **Phase 24: UI Polish & Integration** - Splash screen, dashboard metrics, end-to-end coherence
 - [x] **Phase 25: Chatbot Interaction Polish** - System prompt rewrite, proactive behavior, tone calibration, hardcoded messages (completed 2026-05-12)
-- [ ] **Phase 26: Banner Carousel** - Carrossel de banners no painel do aluno + tela de gestão de banners para staff/provider
+- [x] **Phase 26: Banner Carousel** - Carrossel de banners no painel do aluno + tela de gestão de banners para staff/provider (completed 2026-05-15)
 
 ## Phase Details
 
@@ -272,12 +272,12 @@ Plans:
   4. Staff/provider can delete existing banners from the management screen
   5. Banner management screen shows a preview of all currently enabled banners
   6. Uploaded banners are immediately visible to all students
-**Plans:** 1/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 26-01-PLAN.md — Backend feature slice (model, migration, CRUD endpoints, file upload)
-- [ ] 26-02-PLAN.md — Flutter banner management screen (staff/provider grid, toggle, delete, upload)
-- [ ] 26-03-PLAN.md — Flutter student banner carousel (auto-scroll, swipe, dots, home screen integration)
+- [x] 26-02-PLAN.md — Flutter banner management screen (staff/provider grid, toggle, delete, upload)
+- [x] 26-03-PLAN.md — Flutter student banner carousel (auto-scroll, swipe, dots, home screen integration)
 
 **Branch**: `feature/banner-carousel`
 **UI hint**: yes
@@ -302,7 +302,7 @@ Plans:
 | 23. New Features | v3.0 | 3/4 | In progress | - |
 | 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |
 | 25. Chatbot Interaction Polish | v3.0 | 3/3 | Complete | 2026-05-12 |
-| 26. Banner Carousel | v3.0 | 1/3 | In Progress|  |
+| 26. Banner Carousel | v3.0 | 3/3 | Complete   | 2026-05-15 |
 
 ---
 

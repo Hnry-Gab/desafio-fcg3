@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
-status: executing
-last_updated: "2026-05-15T05:20:03.843Z"
+status: verifying
+last_updated: "2026-05-15T05:33:50.010Z"
 last_activity: 2026-05-15
 progress:
   total_phases: 9
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 41
-  completed_plans: 36
-  percent: 88
+  completed_plans: 38
+  percent: 93
 ---
 
 # Project State
@@ -18,8 +18,8 @@ progress:
 ## Current Position
 
 Phase: 26 (Banner Carousel) — EXECUTING
-Plan: 2 of 3
-Status: Ready to execute
+Plan: 3 of 3
+Status: Phase complete — ready for verification
 Last activity: 2026-05-15
 
 ## Project Reference
@@ -167,6 +167,9 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **26-01:** Banner feature slice: Banner model (image_url, is_enabled, display_order), Alembic 021a migration, BannerService singleton, 5 REST endpoints
 - **26-01:** GET /banners is public (no auth) for student carousel; GET /banners/all is staff-only
 - **26-01:** POST /banners/upload validates content-type (jpeg/png/webp) and enforces 2MB limit; UUID-prefix filenames
+- **26-03:** BannerItem lightweight model in client providers (decoupled from staff BannerModel for parallel plan execution)
+- **26-03:** BannerCarousel: auto-scroll 4s, swipe pause/resume 6s, expanding-dot indicators, 0/1 banner edge cases
+- **26-03:** Image URL from AppConfig.apiBaseUrl with /api/v1 stripped for /uploads/ path; silent failure on load/error
 
 ### Quick Tasks Completed
 
