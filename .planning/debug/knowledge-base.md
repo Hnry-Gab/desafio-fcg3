@@ -24,3 +24,13 @@ Resolved debug sessions. Used by `gsd-debugger` to surface known-pattern hypothe
 - **Files changed:** backend/alembic/versions/011_add_pg_cron_session_autoclose.py, backend/alembic/versions/012_fix_pg_cron_session_autoclose_quoting.py, backend/tests/unit/test_pg_cron_session_autoclose_quoting.py
 
 ---
+
+## llm-skips-tools-long-session — LLM hallucinates tool results in long conversations instead of calling MCP tools
+
+- **Date:** 2026-05-15
+- **Error patterns:** hallucination, DOC-XXXX, agendamento confirmado, solicitação realizada, request_document, book_appointment, no tool call, long session, rich history, Gemini Flash, tool skipping, fabricated document code, compounding hallucination
+- **Root cause:** Gemini Flash hallucinates tool results when conversation history is rich enough to fabricate plausible responses. Chat history stores only user/assistant/system text — no tool call artifacts. After seeing its own prior "success" messages (from real tool calls in earlier invocations), the LLM mimics the pattern without calling tools. Compounding: first hallucination (appointment) reinforces pattern for subsequent requests (document). Read-only tools (get_grades) still work because the LLM needs actual data it doesn't have.
+- **Fix:** (1) System prompt: Added "REGRA CRITICA: Anti-Alucinacao de Ferramentas" section requiring tool calls even when history suggests action was done. (2) Runtime hallucination guard in agent.py: post-invocation regex check detects when response claims mutating action but no mutating MCP tool was called; retries with correction prompt if detected.
+- **Files changed:** ai_service/agent.py, ai_service/prompts/system_prompt.txt
+
+---
