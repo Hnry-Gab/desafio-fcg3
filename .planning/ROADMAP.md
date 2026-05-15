@@ -272,7 +272,13 @@ Plans:
   4. Staff/provider can delete existing banners from the management screen
   5. Banner management screen shows a preview of all currently enabled banners
   6. Uploaded banners are immediately visible to all students
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 26-01-PLAN.md — Backend feature slice (model, migration, CRUD endpoints, file upload)
+- [ ] 26-02-PLAN.md — Flutter banner management screen (staff/provider grid, toggle, delete, upload)
+- [ ] 26-03-PLAN.md — Flutter student banner carousel (auto-scroll, swipe, dots, home screen integration)
+
 **Branch**: `feature/banner-carousel`
 **UI hint**: yes
 
@@ -296,7 +302,7 @@ Plans:
 | 23. New Features | v3.0 | 3/4 | In progress | - |
 | 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |
 | 25. Chatbot Interaction Polish | v3.0 | 3/3 | Complete | 2026-05-12 |
-| 26. Banner Carousel | v3.0 | 0/TBD | Not started | - |
+| 26. Banner Carousel | v3.0 | 0/3 | Planned | - |
 
 ---
 
