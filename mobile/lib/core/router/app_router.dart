@@ -30,6 +30,7 @@ import '../../features/staff/screens/staff_resources_screen.dart';
 import '../../features/staff/screens/staff_intervention_screen.dart';
 import '../../features/staff/screens/staff_intervention_chat_screen.dart';
 import '../../features/staff/screens/staff_cadastro_screen.dart';
+import '../../features/staff/screens/staff_banner_management_screen.dart';
 import '../../features/client/models/appointment_model.dart';
 import '../theme/app_animations.dart';
 import 'route_names.dart';
@@ -344,6 +345,14 @@ GoRouter appRouter(Ref ref) {
             path: RoutePaths.staffCadastro,
             name: RouteNames.staffCadastro,
             builder: (context, state) => const StaffCadastroScreen(),
+          ),
+          GoRoute(
+            path: RoutePaths.staffBanners,
+            name: RouteNames.staffBanners,
+            pageBuilder: (context, state) => _fadeThroughPage(
+              key: state.pageKey,
+              child: const StaffBannerManagementScreen(),
+            ),
           ),
           GoRoute(
             path: '/staff/students/:studentId',

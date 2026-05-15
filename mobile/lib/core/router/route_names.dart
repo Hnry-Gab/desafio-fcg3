@@ -28,6 +28,7 @@ class RouteNames {
   static const String staffResources = 'staff-resources';
   static const String staffIntervention = 'staff-intervention';
   static const String staffCadastro = 'staff-cadastro';
+  static const String staffBanners = 'staff-banners';
 
   // Staff detail
   static const String staffAppointmentDetail = 'staff-appointment-detail';
@@ -63,6 +64,7 @@ class RoutePaths {
   static const String staffResources = '/staff/resources';
   static const String staffIntervention = '/staff/intervention';
   static const String staffCadastro = '/staff/cadastro';
+  static const String staffBanners = '/staff/banners';
 
   // Staff detail
   static const String staffAppointmentDetail = '/staff/schedule/:appointmentId';

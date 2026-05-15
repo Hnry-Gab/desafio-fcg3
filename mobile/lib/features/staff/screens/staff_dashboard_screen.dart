@@ -313,6 +313,50 @@ class StaffDashboardScreen extends ConsumerWidget {
                               ),
                             ),
                           ),
+                          const SizedBox(height: AppSpacing.md),
+                          AnimatedEntrance(
+                            delay: AppAnimations.getEntranceDelay(8),
+                            child: GlassCard(
+                              onTap: () => context.go(RoutePaths.staffBanners),
+                              padding: const EdgeInsets.all(AppSpacing.md),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.photo_library_outlined,
+                                      color: colors.secondary),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Gerenciar Banners',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleSmall
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                        Text(
+                                          'Upload e gerenciamento de banners',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                color:
+                                                    colors.onSurfaceVariant,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(Icons.chevron_right,
+                                      color: colors.onSurfaceVariant),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
