@@ -12,11 +12,13 @@ import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/responsive_container.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/providers/auth_state.dart';
+import '../providers/banner_provider.dart';
 import '../providers/chat_provider.dart';
 import '../providers/document_provider.dart';
 import '../providers/appointment_provider.dart';
 import '../models/chat_session_model.dart';
 import '../models/appointment_model.dart';
+import 'widgets/banner_carousel.dart';
 
 
 String _formatDateTime(DateTime dt) {
@@ -34,10 +36,12 @@ class ClientHomeScreen extends ConsumerWidget {
     ref.invalidate(chatSessionsProvider);
     ref.invalidate(documentsProvider);
     ref.invalidate(appointmentsProvider);
+    ref.invalidate(studentBannersProvider);
     await Future.wait([
       ref.read(chatSessionsProvider.future),
       ref.read(documentsProvider.future),
       ref.read(appointmentsProvider.future),
+      ref.read(studentBannersProvider.future),
     ]);
   }
 
@@ -52,6 +56,7 @@ class ClientHomeScreen extends ConsumerWidget {
 
     final chatSessionsAsync = ref.watch(chatSessionsProvider);
     final appointmentsAsync = ref.watch(appointmentsProvider);
+    final bannersAsync = ref.watch(studentBannersProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -132,6 +137,23 @@ class ClientHomeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.xl),
 
+                // Banner carousel (BNNR-01: below greeting card)
+                bannersAsync.when(
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                  data: (banners) => banners.isEmpty
+                      ? const SizedBox.shrink()
+                      : Column(
+                          children: [
+                            AnimatedEntrance(
+                              delay: AppAnimations.getEntranceDelay(1),
+                              child: BannerCarousel(banners: banners),
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                          ],
+                        ),
+                ),
+
                 // Summary cards grid
                 LayoutBuilder(
                   builder: (context, constraints) {
@@ -142,7 +164,7 @@ class ClientHomeScreen extends ConsumerWidget {
                         children: [
                           Expanded(
                             child: AnimatedEntrance(
-                              delay: AppAnimations.getEntranceDelay(1),
+                              delay: AppAnimations.getEntranceDelay(2),
                               child: _buildChatSummaryCard(
                                   context, chatSessionsAsync, colors),
                             ),
@@ -150,7 +172,7 @@ class ClientHomeScreen extends ConsumerWidget {
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
                             child: AnimatedEntrance(
-                              delay: AppAnimations.getEntranceDelay(2),
+                              delay: AppAnimations.getEntranceDelay(3),
                               child: _buildAppointmentSummaryCard(
                                   context, appointmentsAsync, colors),
                             ),
@@ -161,13 +183,13 @@ class ClientHomeScreen extends ConsumerWidget {
                     return Column(
                       children: [
                         AnimatedEntrance(
-                          delay: AppAnimations.getEntranceDelay(1),
+                          delay: AppAnimations.getEntranceDelay(2),
                           child: _buildChatSummaryCard(
                               context, chatSessionsAsync, colors),
                         ),
                         const SizedBox(height: AppSpacing.md),
                         AnimatedEntrance(
-                          delay: AppAnimations.getEntranceDelay(2),
+                          delay: AppAnimations.getEntranceDelay(3),
                           child: _buildAppointmentSummaryCard(
                               context, appointmentsAsync, colors),
                         ),
@@ -179,7 +201,7 @@ class ClientHomeScreen extends ConsumerWidget {
 
                 // Quick Actions
                 AnimatedEntrance(
-                  delay: AppAnimations.getEntranceDelay(3),
+                  delay: AppAnimations.getEntranceDelay(4),
                   child: Text(
                     'Ações Rápidas',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -335,7 +357,7 @@ class ClientHomeScreen extends ConsumerWidget {
         final index = entry.key;
         final action = entry.value;
         return AnimatedEntrance(
-          delay: AppAnimations.getEntranceDelay(4 + index),
+          delay: AppAnimations.getEntranceDelay(5 + index),
           child: GlassCard(
             onTap: action.onTap,
             padding: const EdgeInsets.all(AppSpacing.md),
