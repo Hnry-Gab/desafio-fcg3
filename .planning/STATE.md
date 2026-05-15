@@ -3,31 +3,31 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
 status: executing
-last_updated: "2026-05-15T01:00:00.000Z"
-last_activity: 2026-05-15 -- Descriptive notifications with resource details, new appointment events, correct tap navigation
+last_updated: "2026-05-15T05:20:03.843Z"
+last_activity: 2026-05-15
 progress:
-  total_phases: 8
-  completed_phases: 7
-  total_plans: 39
-  completed_plans: 39
-  percent: 100
+  total_phases: 9
+  completed_phases: 5
+  total_plans: 41
+  completed_plans: 36
+  percent: 88
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 23 (complete) + staff schedule management + resource booking fix + notification details
-Plan: All 4 plans complete. Notifications now descriptive with correct navigation.
-Status: Executing
-Last activity: 2026-05-15 -- Descriptive notifications: 3 new events (cancelled/completed/no_show), body includes resource name+date+time, tap navigates to Meus Agendamentos, distinct icons/colors per event.
+Phase: 26 (Banner Carousel) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-05-15
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação acadêmica — com ações concretas executadas em tempo real.
-**Current focus:** Notification details complete — Next: Phase 24 (UI Polish & Integration)
+**Current focus:** Phase 26 — Banner Carousel
 **Branch:** `feature/notification-details-and-navigation` (from `fix/resource-booking-authorization`)
 
 ## Milestones Shipped
@@ -164,6 +164,9 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **25-fix:** MCP api_client wraps list responses as {"items": [...]}, tool errors instruct LLM not to retry
 - **25-fix:** Session locks dict uses timestamps + periodic stale cleanup (WR-01), load_chat_history wrapped in asyncio.to_thread (WR-04)
 - **25-review:** Code review: 9 findings (1 critical, 5 warning, 3 info). 4 fixed, 2 deferred. Automated tests: 46/49 (94%)
+- **26-01:** Banner feature slice: Banner model (image_url, is_enabled, display_order), Alembic 021a migration, BannerService singleton, 5 REST endpoints
+- **26-01:** GET /banners is public (no auth) for student carousel; GET /banners/all is staff-only
+- **26-01:** POST /banners/upload validates content-type (jpeg/png/webp) and enforces 2MB limit; UUID-prefix filenames
 
 ### Quick Tasks Completed
 
