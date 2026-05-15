@@ -115,6 +115,15 @@ Requirements for milestone v3.0. Each maps to roadmap phases.
 - [ ] **UIPOL-02**: Dashboard staff/provider exibe métricas adicionais relevantes
 - [ ] **UIPOL-03**: Navegação end-to-end coerente após todas correções aplicadas
 
+### Features Novas — Banner Carousel
+
+- [ ] **BNNR-01**: Painel do aluno exibe carrossel de banners abaixo do card de saudação com rolagem automática
+- [ ] **BNNR-02**: Carrossel passa automaticamente por todos os banners habilitados no sistema
+- [ ] **BNNR-03**: Staff/provider acessa tela de gestão de banners para upload de novos banners
+- [ ] **BNNR-04**: Staff/provider pode excluir banners existentes da tela de gestão
+- [ ] **BNNR-05**: Tela de gestão exibe preview dos banners habilitados
+- [ ] **BNNR-06**: Banners enviados ficam imediatamente visíveis para todos os alunos
+
 ## Future Requirements
 
 ### Deferred
@@ -222,10 +231,16 @@ Requirements for milestone v3.0. Each maps to roadmap phases.
 | UIPOL-01 | Phase 24 | Pending |
 | UIPOL-02 | Phase 24 | Pending |
 | UIPOL-03 | Phase 24 | Pending |
+| BNNR-01 | Phase 26 | Pending |
+| BNNR-02 | Phase 26 | Pending |
+| BNNR-03 | Phase 26 | Pending |
+| BNNR-04 | Phase 26 | Pending |
+| BNNR-05 | Phase 26 | Pending |
+| BNNR-06 | Phase 26 | Pending |
 
 **Coverage:**
-- v3.0 requirements: 81 total (corrected from initial 68 estimate)
-- Mapped to phases: 81
+- v3.0 requirements: 87 total (added 6 BNNR requirements)
+- Mapped to phases: 87
 - Unmapped: 0 ✓
 
 ---

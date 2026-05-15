@@ -81,6 +81,7 @@ GROUP 4 — Polish (depends on all above):
 - [ ] **Phase 23: New Features** - Perfil do aluno, campo professor, visualização staff do aluno
 - [ ] **Phase 24: UI Polish & Integration** - Splash screen, dashboard metrics, end-to-end coherence
 - [x] **Phase 25: Chatbot Interaction Polish** - System prompt rewrite, proactive behavior, tone calibration, hardcoded messages (completed 2026-05-12)
+- [ ] **Phase 26: Banner Carousel** - Carrossel de banners no painel do aluno + tela de gestão de banners para staff/provider
 
 ## Phase Details
 
@@ -259,6 +260,22 @@ Plans:
 
 **Canonical refs:** `ai_service/prompts/system_prompt.txt`, `ai_service/agent.py`, `backend/src/features/webhook/background.py`, `backend/src/features/webhook/idle_monitor.py`, `ai_service/knowledge/`
 
+### Phase 26: Banner Carousel
+
+**Goal**: Students see a banner carousel on their home screen; staff/provider can upload, preview, and delete banners from a dedicated management screen
+**Depends on**: Nothing (independent feature)
+**Requirements**: BNNR-01, BNNR-02, BNNR-03, BNNR-04, BNNR-05, BNNR-06
+**Success Criteria** (what must be TRUE):
+  1. Student home screen displays an auto-scrolling banner carousel below the greeting card
+  2. Banners rotate automatically through all enabled banners registered in the system
+  3. Staff/provider can access a banner management screen to upload new banners
+  4. Staff/provider can delete existing banners from the management screen
+  5. Banner management screen shows a preview of all currently enabled banners
+  6. Uploaded banners are immediately visible to all students
+**Plans**: TBD
+**Branch**: `feature/banner-carousel`
+**UI hint**: yes
+
 ---
 
 ## Progress
@@ -279,10 +296,11 @@ Plans:
 | 23. New Features | v3.0 | 3/4 | In progress | - |
 | 24. UI Polish & Integration | v3.0 | 0/TBD | Not started | - |
 | 25. Chatbot Interaction Polish | v3.0 | 3/3 | Complete | 2026-05-12 |
+| 26. Banner Carousel | v3.0 | 0/TBD | Not started | - |
 
 ---
 
-**Total project:** 25 phases across 3 milestones.
+**Total project:** 26 phases across 3 milestones.
 
 ### Branch History
 
@@ -295,3 +313,4 @@ Plans:
 | `feature/staff-schedule-tabs` | `feat/notifications-backend-persistence` | 2026-05-14 | Staff schedule management: TabBar, grouped slots with occupancy bar, batch delete, no-show, slot CRUD |
 | `fix/resource-booking-authorization` | `feature/staff-schedule-tabs` | 2026-05-14 | Fix resource booking authorization upload, provider 403 on appointment actions, staff authorization doc download |
 | `feature/notification-details-and-navigation` | `fix/resource-booking-authorization` | 2026-05-14 | Descriptive notifications with resource/date/time, new events (cancelled/completed/no-show), correct navigation to Meus Agendamentos |
+| `feature/banner-carousel` | `feature/notification-details-and-navigation` | 2026-05-15 | Phase 26: Banner carousel on student home + staff/provider banner management |
