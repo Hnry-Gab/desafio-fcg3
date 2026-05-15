@@ -54,6 +54,39 @@ class BannersNotifier extends AsyncNotifier<List<BannerModel>> {
     }
   }
 
+  /// Reorder banners: move item at [oldIndex] to [newIndex].
+  /// Updates local state optimistically, then persists display_order via API.
+  Future<void> reorder(int oldIndex, int newIndex) async {
+    final current = state.valueOrNull;
+    if (current == null) return;
+
+    final reordered = List<BannerModel>.from(current);
+    final item = reordered.removeAt(oldIndex);
+    reordered.insert(newIndex, item);
+
+    // Assign display_order = index for each banner
+    final updated = [
+      for (int i = 0; i < reordered.length; i++)
+        reordered[i].copyWith(displayOrder: i),
+    ];
+
+    // Optimistic update
+    state = AsyncData(updated);
+
+    try {
+      final service = ref.read(bannerServiceProvider);
+      // Persist each changed display_order
+      await Future.wait([
+        for (int i = 0; i < updated.length; i++)
+          if (current.indexOf(reordered[i]) != i)
+            service.updateOrder(updated[i].id, i),
+      ]);
+    } catch (_) {
+      ref.invalidateSelf();
+      rethrow;
+    }
+  }
+
   /// Delete a banner (remove from local state immediately).
   Future<void> delete(String id) async {
     // Optimistic removal

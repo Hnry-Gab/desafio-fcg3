@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Correções, Melhorias & Features
-status: verifying
-last_updated: "2026-05-15T05:33:50.010Z"
-last_activity: 2026-05-15
+status: executing
+last_updated: "2026-05-15T07:00:00.000Z"
+last_activity: 2026-05-15 -- Phase 26 complete, post-execution polish applied
 progress:
   total_phases: 9
   completed_phases: 6
@@ -17,18 +17,18 @@ progress:
 
 ## Current Position
 
-Phase: 26 (Banner Carousel) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
-Last activity: 2026-05-15
+Phase: 26 (Banner Carousel) — COMPLETE (human verification pending)
+Plan: 3/3 complete + code review fixes + post-execution polish
+Status: Phase 26 executed, verified, awaiting human UAT
+Last activity: 2026-05-15 -- Post-execution polish: uploads volume, remove grade button, fix delete dialog, drag-and-drop reorder
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Aluno envia mensagem no WhatsApp e recebe resposta precisa sobre sua situação acadêmica — com ações concretas executadas em tempo real.
-**Current focus:** Phase 26 — Banner Carousel
-**Branch:** `feature/notification-details-and-navigation` (from `fix/resource-booking-authorization`)
+**Current focus:** Phase 26 complete — Next: Phase 24 (UI Polish & Integration)
+**Branch:** `feature/banner-carousel` (from `feature/notification-details-and-navigation`)
 
 ## Milestones Shipped
 
@@ -173,6 +173,11 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 - **26-03:** BannerItem lightweight model in client providers (decoupled from staff BannerModel for parallel plan execution)
 - **26-03:** BannerCarousel: auto-scroll 4s, swipe pause/resume 6s, expanding-dot indicators, 0/1 banner edge cases
 - **26-03:** Image URL from AppConfig.apiBaseUrl with /api/v1 stripped for /uploads/ path; silent failure on load/error
+- **26-fix:** CR-01 path traversal fixed (PurePosixPath.name + realpath check); WR-01/02 sync I/O replaced with run_in_executor; WR-03 magic bytes validation added
+- **26-polish:** docker-compose uploads_data volume for banner image persistence across rebuilds
+- **26-polish:** Removed "Grade semanal de aulas" from student home quick actions (2 actions remain)
+- **26-polish:** Delete dialog: stacked vertical layout (FilledButton + OutlinedButton, full width)
+- **26-polish:** Drag-and-drop reorder on banner management grid (LongPressDraggable + DragTarget, display_order persisted via PUT)
 
 ### Quick Tasks Completed
 

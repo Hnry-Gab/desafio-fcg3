@@ -14,10 +14,11 @@ import '../../../shared/widgets/responsive_container.dart';
 import '../models/banner_model.dart';
 import '../providers/banner_management_provider.dart';
 
-/// Staff/provider screen for managing banners (upload, toggle, delete).
+/// Staff/provider screen for managing banners (upload, toggle, delete, reorder).
 ///
 /// Displays a grid of banner cards with thumbnail, active/inactive badge,
-/// Switch toggle, and delete button. FAB opens file picker for image upload.
+/// Switch toggle, and delete button. Long-press a card to drag and reorder.
+/// FAB opens file picker for image upload.
 class StaffBannerManagementScreen extends ConsumerWidget {
   const StaffBannerManagementScreen({super.key});
 
@@ -57,6 +58,26 @@ class StaffBannerManagementScreen extends ConsumerWidget {
           return Column(
             children: [
               if (bannersAsync.isRefreshing) const LinearProgressIndicator(),
+              // Reorder hint
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: AppSpacing.xs,
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.drag_indicator,
+                        size: 14, color: colors.onSurfaceVariant),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Segure e arraste para reordenar',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () async {
@@ -68,22 +89,9 @@ class StaffBannerManagementScreen extends ConsumerWidget {
                       horizontal: 20,
                       vertical: AppSpacing.sm,
                     ),
-                    child: GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.85,
-                        mainAxisSpacing: AppSpacing.md,
-                        crossAxisSpacing: AppSpacing.md,
-                      ),
-                      itemCount: banners.length,
-                      itemBuilder: (context, index) => AnimatedEntrance(
-                        delay: AppAnimations.getEntranceDelay(index),
-                        child: _BannerCard(
-                          banner: banners[index],
-                          colors: colors,
-                        ),
-                      ),
+                    child: _ReorderableBannerGrid(
+                      banners: banners,
+                      colors: colors,
                     ),
                   ),
                 ),
@@ -157,9 +165,6 @@ class StaffBannerManagementScreen extends ConsumerWidget {
 }
 
 /// Builds the full URL for a banner image.
-///
-/// The backend stores `image_url` as a relative path (e.g., `banners/uuid_file.jpg`).
-/// Static files are served at `/uploads/` on the same origin as the API.
 String _buildBannerImageUrl(String imageUrl) {
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
     return imageUrl;
@@ -170,7 +175,146 @@ String _buildBannerImageUrl(String imageUrl) {
   return '$origin/uploads/$imageUrl';
 }
 
-/// Individual banner card for the grid.
+// ---------------------------------------------------------------------------
+// Reorderable banner grid using LongPressDraggable + DragTarget
+// ---------------------------------------------------------------------------
+
+class _ReorderableBannerGrid extends ConsumerStatefulWidget {
+  final List<BannerModel> banners;
+  final ColorScheme colors;
+
+  const _ReorderableBannerGrid({
+    required this.banners,
+    required this.colors,
+  });
+
+  @override
+  ConsumerState<_ReorderableBannerGrid> createState() =>
+      _ReorderableBannerGridState();
+}
+
+class _ReorderableBannerGridState
+    extends ConsumerState<_ReorderableBannerGrid> {
+  int? _draggedIndex;
+  int? _hoveredIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const crossAxisCount = 2;
+        const spacing = AppSpacing.md;
+        final cardWidth =
+            (constraints.maxWidth - spacing * (crossAxisCount - 1)) /
+                crossAxisCount;
+        final cardHeight = cardWidth / 0.85; // match aspect ratio
+
+        return GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            childAspectRatio: 0.85,
+            mainAxisSpacing: spacing,
+            crossAxisSpacing: spacing,
+          ),
+          itemCount: widget.banners.length,
+          itemBuilder: (context, index) {
+            final banner = widget.banners[index];
+            final isDragged = _draggedIndex == index;
+            final isHovered = _hoveredIndex == index;
+
+            return AnimatedEntrance(
+              delay: AppAnimations.getEntranceDelay(index),
+              child: DragTarget<int>(
+                onWillAcceptWithDetails: (details) {
+                  if (details.data != index) {
+                    setState(() => _hoveredIndex = index);
+                    return true;
+                  }
+                  return false;
+                },
+                onLeave: (_) {
+                  setState(() => _hoveredIndex = null);
+                },
+                onAcceptWithDetails: (details) {
+                  setState(() => _hoveredIndex = null);
+                  ref
+                      .read(bannersProvider.notifier)
+                      .reorder(details.data, index);
+                },
+                builder: (context, candidateData, rejectedData) {
+                  return LongPressDraggable<int>(
+                    data: index,
+                    delay: const Duration(milliseconds: 200),
+                    hapticFeedbackOnStart: true,
+                    onDragStarted: () {
+                      setState(() => _draggedIndex = index);
+                    },
+                    onDragEnd: (_) {
+                      setState(() {
+                        _draggedIndex = null;
+                        _hoveredIndex = null;
+                      });
+                    },
+                    feedback: Material(
+                      color: Colors.transparent,
+                      elevation: 12,
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusLg),
+                      child: SizedBox(
+                        width: cardWidth,
+                        height: cardHeight,
+                        child: Opacity(
+                          opacity: 0.9,
+                          child: _BannerCard(
+                            banner: banner,
+                            colors: widget.colors,
+                          ),
+                        ),
+                      ),
+                    ),
+                    childWhenDragging: Opacity(
+                      opacity: 0.25,
+                      child: _BannerCard(
+                        banner: banner,
+                        colors: widget.colors,
+                      ),
+                    ),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusLg),
+                        border: isHovered
+                            ? Border.all(
+                                color: widget.colors.primary, width: 2)
+                            : null,
+                      ),
+                      transform: isHovered
+                          ? (Matrix4.identity()..scale(0.95, 0.95))
+                          : (isDragged
+                              ? (Matrix4.identity()..scale(0.95, 0.95))
+                              : Matrix4.identity()),
+                      transformAlignment: Alignment.center,
+                      child: _BannerCard(
+                        banner: banner,
+                        colors: widget.colors,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Individual banner card
+// ---------------------------------------------------------------------------
+
 class _BannerCard extends ConsumerWidget {
   final BannerModel banner;
   final ColorScheme colors;
@@ -194,29 +338,51 @@ class _BannerCard extends ConsumerWidget {
                 topLeft: Radius.circular(AppSpacing.radiusLg),
                 topRight: Radius.circular(AppSpacing.radiusLg),
               ),
-              child: Image.network(
-                _buildBannerImageUrl(banner.imageUrl),
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => Container(
-                  color: colors.surfaceContainerLow,
-                  child: Icon(
-                    Icons.broken_image_outlined,
-                    color: colors.onSurfaceVariant,
-                    size: 40,
-                  ),
-                ),
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                          : null,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.network(
+                    _buildBannerImageUrl(banner.imageUrl),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => Container(
+                      color: colors.surfaceContainerLow,
+                      child: Icon(
+                        Icons.broken_image_outlined,
+                        color: colors.onSurfaceVariant,
+                        size: 40,
+                      ),
                     ),
-                  );
-                },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                              : null,
+                        ),
+                      );
+                    },
+                  ),
+                  // Drag handle hint at top-right
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Icon(
+                        Icons.drag_indicator,
+                        size: 16,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -305,17 +471,29 @@ class _BannerCard extends ConsumerWidget {
         content: const Text(
           'Tem certeza que deseja excluir este banner? Esta ação não pode ser desfeita.',
         ),
+        actionsAlignment: MainAxisAlignment.center,
+        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-            child: const Text('Excluir'),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              FilledButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(ctx).colorScheme.error,
+                  minimumSize: const Size(double.infinity, 48),
+                ),
+                child: const Text('Excluir'),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48),
+                ),
+                child: const Text('Cancelar'),
+              ),
+            ],
           ),
         ],
       ),

@@ -55,6 +55,15 @@ class BannerService {
     return BannerModel.fromJson(response.data as Map<String, dynamic>);
   }
 
+  /// Update a banner's display order.
+  Future<BannerModel> updateOrder(String id, int displayOrder) async {
+    final response = await _client.dio.put(
+      '/banners/$id',
+      data: {'display_order': displayOrder},
+    );
+    return BannerModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
   /// Delete a banner permanently.
   Future<void> deleteBanner(String id) async {
     await _client.dio.delete('/banners/$id');

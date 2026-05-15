@@ -330,20 +330,6 @@ class ClientHomeScreen extends ConsumerWidget {
           }
         },
       ),
-      _QuickAction(
-        label: 'Grade semanal de aulas',
-        icon: Icons.calendar_month_outlined,
-        color: colors.tertiary,
-        onTap: () {
-          final authState = ref.read(authProvider);
-          if (authState is AuthAuthenticated) {
-            context.go(
-              RoutePaths.clientSchedule,
-              extra: {'studentId': authState.user.id},
-            );
-          }
-        },
-      ),
     ];
 
     return GridView.count(
